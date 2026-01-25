@@ -336,18 +336,18 @@ const AuthPage = ({ onLogin }) => {
   )
 }
 
-// Tile Component - Equal sized with solid colors
+// Tile Component - Horizontal rectangular with colored left border (matching screenshot)
 const Tile = ({ icon: Icon, label, colorClass, isLocked, onClick }) => {
   return (
     <button
       onClick={onClick}
-      className={`tile ${colorClass} relative w-full aspect-square rounded-2xl flex flex-col items-center justify-center gap-2 p-3 group`}
+      className={`tile ${colorClass} relative w-full h-14 rounded-xl flex items-center gap-3 px-4 group`}
     >
-      <Icon className="w-7 h-7 text-white drop-shadow-lg" />
-      <span className="text-white font-semibold text-sm drop-shadow-md">{label}</span>
+      <Icon className="w-5 h-5 text-white/90" />
+      <span className="text-white/90 font-medium text-sm">{label}</span>
       {isLocked && (
-        <div className="absolute top-2 right-2 bg-black/30 rounded-full p-1">
-          <Lock className="w-4 h-4 text-white" />
+        <div className="absolute top-2 right-2">
+          <Lock className="w-3.5 h-3.5 text-white/60" />
         </div>
       )}
     </button>
