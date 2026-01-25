@@ -10,9 +10,18 @@ let clientPromise = null
 function getMongoUri() {
   // Support both MONGODB_URI (Vercel standard) and MONGO_URL (local)
   const uri = process.env.MONGODB_URI || process.env.MONGO_URL
+  
+  // Debug logging for Vercel
   if (!uri) {
-    throw new Error('MONGODB_URI or MONGO_URL environment variable is not defined')
+    console.error('[MongoDB] ERROR: No MongoDB URI found in environment variables')
+    console.error('[MongoDB] Available env vars:', Object.keys(process.env).filter(k => k.includes('MONGO') || k.includes('DB')))
+    throw new Error('MONGODB_URI environment variable is not defined. Please set it in Vercel dashboard.')
   }
+  
+  // Log connection attempt (masked)
+  const maskedUri = uri.replace(/\/\/([^:]+):([^@]+)@/, '//***:***@')
+  console.log('[MongoDB] Connecting to:', maskedUri)
+  
   return uri
 }
 
@@ -21,26 +30,31 @@ function getDbName() {
 }
 
 async function connectToMongo() {
-  // Only connect at runtime, not during build
-  if (typeof window !== 'undefined') {
-    throw new Error('MongoDB should only be accessed on the server')
-  }
-
-  const uri = getMongoUri()
-  
-  if (!clientPromise) {
-    const options = {
-      maxPoolSize: 10,
-      serverSelectionTimeoutMS: 5000,
-      socketTimeoutMS: 45000,
+  try {
+    const uri = getMongoUri()
+    
+    if (!clientPromise) {
+      const options = {
+        maxPoolSize: 10,
+        serverSelectionTimeoutMS: 10000,
+        socketTimeoutMS: 45000,
+      }
+      
+      client = new MongoClient(uri, options)
+      clientPromise = client.connect()
+      console.log('[MongoDB] New connection initiated')
     }
     
-    client = new MongoClient(uri, options)
-    clientPromise = client.connect()
+    await clientPromise
+    const dbName = getDbName()
+    console.log('[MongoDB] Connected successfully to database:', dbName)
+    return client.db(dbName)
+  } catch (error) {
+    console.error('[MongoDB] Connection error:', error.message)
+    clientPromise = null
+    client = null
+    throw error
   }
-  
-  await clientPromise
-  return client.db(getDbName())
 }
 
 // Helper function to hash password
