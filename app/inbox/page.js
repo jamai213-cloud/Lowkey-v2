@@ -420,3 +420,16 @@ function InboxContent() {
     </div>
   )
 }
+
+// Wrap in Suspense for useSearchParams
+export default function InboxPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-[#0a0a0f] flex items-center justify-center">
+        <div className="text-white">Loading...</div>
+      </div>
+    }>
+      <InboxContent />
+    </Suspense>
+  )
+}
