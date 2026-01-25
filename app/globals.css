@@ -36,92 +36,225 @@ body {
   border-radius: 3px;
 }
 
-/* ========== ANIMATED LOGIN BACKGROUND ========== */
+/* ========== ANIMATED LOGIN BACKGROUND - VISIBLE DRIFTING CLOUDS ========== */
 .animated-bg {
   position: fixed;
   inset: 0;
   overflow: hidden;
   z-index: 0;
+  background: #0a0612;
 }
 
 .animated-bg::before {
   content: '';
   position: absolute;
-  inset: -50%;
-  background: linear-gradient(
-    45deg,
-    #1a0a2e 0%,
-    #16082a 20%,
-    #2d1b4e 40%,
-    #1a0a2e 60%,
-    #0f051a 80%,
-    #1a0a2e 100%
-  );
-  background-size: 400% 400%;
-  animation: gradientShift 25s ease infinite;
+  inset: 0;
+  background: radial-gradient(ellipse at 50% 50%, rgba(20, 10, 30, 0.8) 0%, #0a0612 100%);
 }
 
-/* Animated color blobs/clouds */
+/* Animated color cloud blobs - VISIBLE AND MOVING */
 .blob {
   position: absolute;
   border-radius: 50%;
-  filter: blur(100px);
-  opacity: 0.7;
+  filter: blur(60px);
+  opacity: 0.85;
   mix-blend-mode: screen;
+  will-change: transform;
 }
 
+/* Large purple cloud - drifts right and down */
 .blob-1 {
+  width: 800px;
+  height: 800px;
+  background: radial-gradient(circle at 30% 30%, rgba(168, 85, 247, 0.95) 0%, rgba(139, 92, 246, 0.6) 40%, rgba(124, 58, 237, 0.3) 60%, transparent 70%);
+  top: -20%;
+  left: -30%;
+  animation: cloudDrift1 30s ease-in-out infinite;
+}
+
+/* Hot pink cloud - drifts left and up */
+.blob-2 {
   width: 700px;
   height: 700px;
-  background: radial-gradient(circle, rgba(147, 51, 234, 0.9) 0%, rgba(139, 92, 246, 0.5) 40%, transparent 70%);
-  top: -20%;
-  left: -20%;
-  animation: blobFloat1 18s ease-in-out infinite;
+  background: radial-gradient(circle at 40% 40%, rgba(236, 72, 153, 0.9) 0%, rgba(244, 114, 182, 0.5) 40%, rgba(219, 39, 119, 0.2) 60%, transparent 70%);
+  top: 10%;
+  right: -25%;
+  animation: cloudDrift2 35s ease-in-out infinite;
 }
 
-.blob-2 {
+/* Orange/amber cloud - drifts across bottom */
+.blob-3 {
+  width: 650px;
+  height: 650px;
+  background: radial-gradient(circle at 50% 50%, rgba(251, 146, 60, 0.85) 0%, rgba(249, 115, 22, 0.5) 40%, rgba(234, 88, 12, 0.2) 60%, transparent 70%);
+  bottom: -15%;
+  left: 10%;
+  animation: cloudDrift3 28s ease-in-out infinite;
+}
+
+/* Golden yellow cloud - floats in center-right */
+.blob-4 {
   width: 600px;
   height: 600px;
-  background: radial-gradient(circle, rgba(236, 72, 153, 0.85) 0%, rgba(244, 114, 182, 0.4) 40%, transparent 70%);
-  top: 20%;
-  right: -20%;
-  animation: blobFloat2 22s ease-in-out infinite;
+  background: radial-gradient(circle at 60% 40%, rgba(250, 204, 21, 0.8) 0%, rgba(253, 224, 71, 0.4) 40%, rgba(234, 179, 8, 0.15) 60%, transparent 70%);
+  bottom: 20%;
+  right: 5%;
+  animation: cloudDrift4 32s ease-in-out infinite;
 }
 
-.blob-3 {
+/* Magenta/rose cloud - top center */
+.blob-5 {
   width: 550px;
   height: 550px;
-  background: radial-gradient(circle, rgba(249, 115, 22, 0.8) 0%, rgba(251, 146, 60, 0.4) 40%, transparent 70%);
-  bottom: -15%;
-  left: 15%;
-  animation: blobFloat3 20s ease-in-out infinite;
+  background: radial-gradient(circle at 50% 50%, rgba(217, 70, 239, 0.85) 0%, rgba(192, 38, 211, 0.45) 40%, rgba(168, 85, 247, 0.2) 60%, transparent 70%);
+  top: 5%;
+  left: 35%;
+  animation: cloudDrift5 38s ease-in-out infinite;
 }
 
-.blob-4 {
+/* Deep violet cloud - bottom right */
+.blob-6 {
   width: 500px;
   height: 500px;
-  background: radial-gradient(circle, rgba(250, 204, 21, 0.75) 0%, rgba(253, 224, 71, 0.4) 40%, transparent 70%);
-  bottom: 15%;
-  right: 15%;
-  animation: blobFloat4 24s ease-in-out infinite;
+  background: radial-gradient(circle at 40% 60%, rgba(139, 92, 246, 0.8) 0%, rgba(109, 40, 217, 0.4) 40%, rgba(91, 33, 182, 0.15) 60%, transparent 70%);
+  bottom: -10%;
+  right: 25%;
+  animation: cloudDrift6 25s ease-in-out infinite;
 }
 
-.blob-5 {
-  width: 450px;
-  height: 450px;
-  background: radial-gradient(circle, rgba(34, 197, 94, 0.7) 0%, rgba(74, 222, 128, 0.3) 40%, transparent 70%);
-  top: 50%;
-  left: 40%;
-  animation: blobFloat5 26s ease-in-out infinite;
+/* Cloud drift animations - continuous visible motion */
+@keyframes cloudDrift1 {
+  0% {
+    transform: translate(0, 0) scale(1);
+    opacity: 0.85;
+  }
+  25% {
+    transform: translate(150px, 80px) scale(1.15);
+    opacity: 0.9;
+  }
+  50% {
+    transform: translate(200px, 150px) scale(1.05);
+    opacity: 0.8;
+  }
+  75% {
+    transform: translate(80px, 100px) scale(1.2);
+    opacity: 0.95;
+  }
+  100% {
+    transform: translate(0, 0) scale(1);
+    opacity: 0.85;
+  }
 }
 
-.blob-6 {
-  width: 400px;
-  height: 400px;
-  background: radial-gradient(circle, rgba(59, 130, 246, 0.7) 0%, rgba(96, 165, 250, 0.3) 40%, transparent 70%);
-  top: 10%;
-  left: 50%;
-  animation: blobFloat6 28s ease-in-out infinite;
+@keyframes cloudDrift2 {
+  0% {
+    transform: translate(0, 0) scale(1);
+    opacity: 0.85;
+  }
+  20% {
+    transform: translate(-120px, 60px) scale(1.1);
+    opacity: 0.9;
+  }
+  40% {
+    transform: translate(-180px, -40px) scale(0.95);
+    opacity: 0.8;
+  }
+  60% {
+    transform: translate(-80px, -100px) scale(1.15);
+    opacity: 0.95;
+  }
+  80% {
+    transform: translate(-40px, 30px) scale(1.05);
+    opacity: 0.85;
+  }
+  100% {
+    transform: translate(0, 0) scale(1);
+    opacity: 0.85;
+  }
+}
+
+@keyframes cloudDrift3 {
+  0% {
+    transform: translate(0, 0) scale(1);
+    opacity: 0.8;
+  }
+  33% {
+    transform: translate(200px, -80px) scale(1.2);
+    opacity: 0.9;
+  }
+  66% {
+    transform: translate(350px, -40px) scale(1.05);
+    opacity: 0.85;
+  }
+  100% {
+    transform: translate(0, 0) scale(1);
+    opacity: 0.8;
+  }
+}
+
+@keyframes cloudDrift4 {
+  0% {
+    transform: translate(0, 0) scale(1);
+    opacity: 0.75;
+  }
+  25% {
+    transform: translate(-100px, -60px) scale(1.15);
+    opacity: 0.9;
+  }
+  50% {
+    transform: translate(-150px, -120px) scale(1.1);
+    opacity: 0.8;
+  }
+  75% {
+    transform: translate(-50px, -80px) scale(1.2);
+    opacity: 0.95;
+  }
+  100% {
+    transform: translate(0, 0) scale(1);
+    opacity: 0.75;
+  }
+}
+
+@keyframes cloudDrift5 {
+  0% {
+    transform: translate(0, 0) scale(1) rotate(0deg);
+    opacity: 0.8;
+  }
+  25% {
+    transform: translate(80px, 60px) scale(1.1) rotate(5deg);
+    opacity: 0.9;
+  }
+  50% {
+    transform: translate(-60px, 120px) scale(1.2) rotate(-5deg);
+    opacity: 0.85;
+  }
+  75% {
+    transform: translate(-100px, 40px) scale(1.05) rotate(3deg);
+    opacity: 0.95;
+  }
+  100% {
+    transform: translate(0, 0) scale(1) rotate(0deg);
+    opacity: 0.8;
+  }
+}
+
+@keyframes cloudDrift6 {
+  0% {
+    transform: translate(0, 0) scale(1);
+    opacity: 0.8;
+  }
+  30% {
+    transform: translate(-80px, -100px) scale(1.15);
+    opacity: 0.9;
+  }
+  60% {
+    transform: translate(60px, -60px) scale(1.05);
+    opacity: 0.85;
+  }
+  100% {
+    transform: translate(0, 0) scale(1);
+    opacity: 0.8;
+  }
 }
 
 /* Noise/grain overlay */
