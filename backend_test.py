@@ -414,8 +414,26 @@ class LowKeyAPITester:
         self.log("=== Testing Create Notification ===")
         
         if len(self.test_users) < 2:
-            self.log("❌ Need at least 2 users for notification test", "ERROR")
-            return False
+            # Create a second user for notification testing
+            unique_id = str(uuid.uuid4())[:8]
+            test_user2 = {
+                "email": f"testuser2_{unique_id}@example.com",
+                "password": "securepassword123",
+                "displayName": f"TestUser2_{unique_id}"
+            }
+            
+            response = self.make_request("POST", "/auth/register", test_user2, expected_status=200)
+            if response:
+                data = response.json()
+                self.test_users.append({
+                    "user_data": data["user"],
+                    "token": data["token"],
+                    "credentials": test_user2
+                })
+                self.log("✅ Created second user for notification testing")
+            else:
+                self.log("❌ Failed to create second user for notification testing", "ERROR")
+                return False
             
         notification_data = {
             "userId": self.test_users[1]["user_data"]["id"],
@@ -444,8 +462,8 @@ class LowKeyAPITester:
         """Test getting notifications for a user"""
         self.log("=== Testing Get Notifications for User ===")
         
-        if not self.test_users:
-            self.log("❌ No test users available", "ERROR")
+        if len(self.test_users) < 2:
+            self.log("❌ Need at least 2 users for notification test", "ERROR")
             return False
             
         user_id = self.test_users[1]["user_data"]["id"]  # User who should have notifications
