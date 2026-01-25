@@ -42,218 +42,163 @@ body {
   inset: 0;
   overflow: hidden;
   z-index: 0;
-  background: #0a0612;
+  background: linear-gradient(135deg, #0f0518 0%, #1a0a2e 50%, #0d0015 100%);
 }
 
-.animated-bg::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(ellipse at 50% 50%, rgba(20, 10, 30, 0.8) 0%, #0a0612 100%);
-}
-
-/* Animated color cloud blobs - VISIBLE AND MOVING */
+/* Animated color cloud blobs - CLEARLY VISIBLE MOTION */
 .blob {
   position: absolute;
   border-radius: 50%;
-  filter: blur(60px);
-  opacity: 0.85;
-  mix-blend-mode: screen;
-  will-change: transform;
+  filter: blur(40px);
+  will-change: transform, opacity;
+  pointer-events: none;
 }
 
-/* Large purple cloud - drifts right and down */
+/* Large purple cloud */
 .blob-1 {
-  width: 800px;
-  height: 800px;
-  background: radial-gradient(circle at 30% 30%, rgba(168, 85, 247, 0.95) 0%, rgba(139, 92, 246, 0.6) 40%, rgba(124, 58, 237, 0.3) 60%, transparent 70%);
-  top: -20%;
-  left: -30%;
-  animation: cloudDrift1 30s ease-in-out infinite;
+  width: 60vw;
+  height: 60vw;
+  max-width: 700px;
+  max-height: 700px;
+  background: radial-gradient(circle, rgba(147, 51, 234, 0.8) 0%, rgba(126, 34, 206, 0.4) 50%, transparent 70%);
+  top: -15%;
+  left: -15%;
+  animation: drift1 20s ease-in-out infinite;
 }
 
-/* Hot pink cloud - drifts left and up */
+/* Hot pink cloud */
 .blob-2 {
-  width: 700px;
-  height: 700px;
-  background: radial-gradient(circle at 40% 40%, rgba(236, 72, 153, 0.9) 0%, rgba(244, 114, 182, 0.5) 40%, rgba(219, 39, 119, 0.2) 60%, transparent 70%);
-  top: 10%;
-  right: -25%;
-  animation: cloudDrift2 35s ease-in-out infinite;
+  width: 55vw;
+  height: 55vw;
+  max-width: 650px;
+  max-height: 650px;
+  background: radial-gradient(circle, rgba(236, 72, 153, 0.75) 0%, rgba(219, 39, 119, 0.35) 50%, transparent 70%);
+  top: 20%;
+  right: -20%;
+  animation: drift2 25s ease-in-out infinite;
 }
 
-/* Orange/amber cloud - drifts across bottom */
+/* Orange/amber cloud */
 .blob-3 {
-  width: 650px;
-  height: 650px;
-  background: radial-gradient(circle at 50% 50%, rgba(251, 146, 60, 0.85) 0%, rgba(249, 115, 22, 0.5) 40%, rgba(234, 88, 12, 0.2) 60%, transparent 70%);
-  bottom: -15%;
-  left: 10%;
-  animation: cloudDrift3 28s ease-in-out infinite;
-}
-
-/* Golden yellow cloud - floats in center-right */
-.blob-4 {
-  width: 600px;
-  height: 600px;
-  background: radial-gradient(circle at 60% 40%, rgba(250, 204, 21, 0.8) 0%, rgba(253, 224, 71, 0.4) 40%, rgba(234, 179, 8, 0.15) 60%, transparent 70%);
-  bottom: 20%;
-  right: 5%;
-  animation: cloudDrift4 32s ease-in-out infinite;
-}
-
-/* Magenta/rose cloud - top center */
-.blob-5 {
-  width: 550px;
-  height: 550px;
-  background: radial-gradient(circle at 50% 50%, rgba(217, 70, 239, 0.85) 0%, rgba(192, 38, 211, 0.45) 40%, rgba(168, 85, 247, 0.2) 60%, transparent 70%);
-  top: 5%;
-  left: 35%;
-  animation: cloudDrift5 38s ease-in-out infinite;
-}
-
-/* Deep violet cloud - bottom right */
-.blob-6 {
-  width: 500px;
-  height: 500px;
-  background: radial-gradient(circle at 40% 60%, rgba(139, 92, 246, 0.8) 0%, rgba(109, 40, 217, 0.4) 40%, rgba(91, 33, 182, 0.15) 60%, transparent 70%);
+  width: 50vw;
+  height: 50vw;
+  max-width: 600px;
+  max-height: 600px;
+  background: radial-gradient(circle, rgba(251, 146, 60, 0.7) 0%, rgba(234, 88, 12, 0.3) 50%, transparent 70%);
   bottom: -10%;
-  right: 25%;
-  animation: cloudDrift6 25s ease-in-out infinite;
+  left: 20%;
+  animation: drift3 22s ease-in-out infinite;
 }
 
-/* Cloud drift animations - continuous visible motion */
-@keyframes cloudDrift1 {
-  0% {
-    transform: translate(0, 0) scale(1);
-    opacity: 0.85;
-  }
-  25% {
-    transform: translate(150px, 80px) scale(1.15);
-    opacity: 0.9;
-  }
-  50% {
-    transform: translate(200px, 150px) scale(1.05);
-    opacity: 0.8;
-  }
-  75% {
-    transform: translate(80px, 100px) scale(1.2);
-    opacity: 0.95;
-  }
-  100% {
-    transform: translate(0, 0) scale(1);
-    opacity: 0.85;
-  }
+/* Golden yellow cloud */
+.blob-4 {
+  width: 45vw;
+  height: 45vw;
+  max-width: 550px;
+  max-height: 550px;
+  background: radial-gradient(circle, rgba(250, 204, 21, 0.65) 0%, rgba(234, 179, 8, 0.25) 50%, transparent 70%);
+  bottom: 10%;
+  right: -5%;
+  animation: drift4 28s ease-in-out infinite;
 }
 
-@keyframes cloudDrift2 {
-  0% {
-    transform: translate(0, 0) scale(1);
-    opacity: 0.85;
-  }
-  20% {
-    transform: translate(-120px, 60px) scale(1.1);
-    opacity: 0.9;
-  }
-  40% {
-    transform: translate(-180px, -40px) scale(0.95);
-    opacity: 0.8;
-  }
-  60% {
-    transform: translate(-80px, -100px) scale(1.15);
-    opacity: 0.95;
-  }
-  80% {
-    transform: translate(-40px, 30px) scale(1.05);
-    opacity: 0.85;
-  }
-  100% {
-    transform: translate(0, 0) scale(1);
-    opacity: 0.85;
-  }
+/* Magenta cloud */
+.blob-5 {
+  width: 40vw;
+  height: 40vw;
+  max-width: 500px;
+  max-height: 500px;
+  background: radial-gradient(circle, rgba(217, 70, 239, 0.7) 0%, rgba(168, 85, 247, 0.3) 50%, transparent 70%);
+  top: 40%;
+  left: 30%;
+  animation: drift5 30s ease-in-out infinite;
 }
 
-@keyframes cloudDrift3 {
-  0% {
+/* Deep violet cloud */
+.blob-6 {
+  width: 35vw;
+  height: 35vw;
+  max-width: 450px;
+  max-height: 450px;
+  background: radial-gradient(circle, rgba(139, 92, 246, 0.6) 0%, rgba(91, 33, 182, 0.25) 50%, transparent 70%);
+  bottom: 30%;
+  right: 30%;
+  animation: drift6 24s ease-in-out infinite;
+}
+
+/* DRIFT ANIMATIONS - Large visible movements */
+@keyframes drift1 {
+  0%, 100% {
     transform: translate(0, 0) scale(1);
-    opacity: 0.8;
   }
   33% {
-    transform: translate(200px, -80px) scale(1.2);
-    opacity: 0.9;
+    transform: translate(25vw, 15vh) scale(1.1);
   }
   66% {
-    transform: translate(350px, -40px) scale(1.05);
-    opacity: 0.85;
-  }
-  100% {
-    transform: translate(0, 0) scale(1);
-    opacity: 0.8;
+    transform: translate(10vw, 25vh) scale(0.95);
   }
 }
 
-@keyframes cloudDrift4 {
-  0% {
+@keyframes drift2 {
+  0%, 100% {
     transform: translate(0, 0) scale(1);
-    opacity: 0.75;
   }
   25% {
-    transform: translate(-100px, -60px) scale(1.15);
-    opacity: 0.9;
+    transform: translate(-20vw, 10vh) scale(1.15);
   }
   50% {
-    transform: translate(-150px, -120px) scale(1.1);
-    opacity: 0.8;
+    transform: translate(-30vw, -5vh) scale(1.05);
   }
   75% {
-    transform: translate(-50px, -80px) scale(1.2);
-    opacity: 0.95;
-  }
-  100% {
-    transform: translate(0, 0) scale(1);
-    opacity: 0.75;
+    transform: translate(-10vw, -15vh) scale(0.9);
   }
 }
 
-@keyframes cloudDrift5 {
-  0% {
+@keyframes drift3 {
+  0%, 100% {
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    transform: translate(30vw, -20vh) scale(1.2);
+  }
+}
+
+@keyframes drift4 {
+  0%, 100% {
+    transform: translate(0, 0) scale(1);
+  }
+  33% {
+    transform: translate(-15vw, -25vh) scale(1.1);
+  }
+  66% {
+    transform: translate(-25vw, -10vh) scale(1.15);
+  }
+}
+
+@keyframes drift5 {
+  0%, 100% {
     transform: translate(0, 0) scale(1) rotate(0deg);
-    opacity: 0.8;
   }
   25% {
-    transform: translate(80px, 60px) scale(1.1) rotate(5deg);
-    opacity: 0.9;
+    transform: translate(15vw, -10vh) scale(1.1) rotate(10deg);
   }
   50% {
-    transform: translate(-60px, 120px) scale(1.2) rotate(-5deg);
-    opacity: 0.85;
+    transform: translate(-10vw, 15vh) scale(1.2) rotate(-5deg);
   }
   75% {
-    transform: translate(-100px, 40px) scale(1.05) rotate(3deg);
-    opacity: 0.95;
-  }
-  100% {
-    transform: translate(0, 0) scale(1) rotate(0deg);
-    opacity: 0.8;
+    transform: translate(-20vw, -5vh) scale(0.95) rotate(5deg);
   }
 }
 
-@keyframes cloudDrift6 {
-  0% {
+@keyframes drift6 {
+  0%, 100% {
     transform: translate(0, 0) scale(1);
-    opacity: 0.8;
   }
-  30% {
-    transform: translate(-80px, -100px) scale(1.15);
-    opacity: 0.9;
+  40% {
+    transform: translate(-20vw, -15vh) scale(1.15);
   }
-  60% {
-    transform: translate(60px, -60px) scale(1.05);
-    opacity: 0.85;
-  }
-  100% {
-    transform: translate(0, 0) scale(1);
-    opacity: 0.8;
+  70% {
+    transform: translate(10vw, -25vh) scale(1.05);
   }
 }
 
