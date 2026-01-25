@@ -667,10 +667,24 @@ async function handleRoute(request, { params }) {
     ))
 
   } catch (error) {
-    console.error('API Error:', error)
+    console.error('[API Error]', error.message)
+    console.error('[API Error Stack]', error.stack)
+    
+    // Check for specific MongoDB errors
+    let errorMessage = 'Internal server error'
+    let statusCode = 500
+    
+    if (error.message.includes('MONGODB_URI')) {
+      errorMessage = 'Database configuration error. Please contact support.'
+    } else if (error.message.includes('ECONNREFUSED') || error.message.includes('ETIMEDOUT')) {
+      errorMessage = 'Database connection failed. Please try again.'
+    } else if (error.message.includes('authentication failed')) {
+      errorMessage = 'Database authentication error. Please contact support.'
+    }
+    
     return handleCORS(NextResponse.json(
-      { error: 'Internal server error', details: error.message },
-      { status: 500 }
+      { error: errorMessage, debug: process.env.NODE_ENV === 'development' ? error.message : undefined },
+      { status: statusCode }
     ))
   }
 }
