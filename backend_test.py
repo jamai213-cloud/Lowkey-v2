@@ -357,6 +357,307 @@ class LowKeyAPITester:
         else:
             self.log("❌ Get messages for conversation failed", "ERROR")
         return False
+
+    def test_auth_forgot_password(self):
+        """Test forgot password functionality"""
+        self.log("=== Testing Auth Forgot Password ===")
+        
+        if not self.test_users:
+            self.log("❌ No test users available for forgot password test", "ERROR")
+            return False
+            
+        forgot_data = {
+            "email": self.test_users[0]["credentials"]["email"]
+        }
+        
+        response = self.make_request("POST", "/auth/forgot-password", forgot_data, expected_status=200)
+        if response:
+            data = response.json()
+            if "message" in data:
+                self.log("✅ Forgot password request successful")
+                return True
+            else:
+                self.log("❌ Forgot password response missing message", "ERROR")
+        else:
+            self.log("❌ Forgot password request failed", "ERROR")
+        return False
+
+    def test_auth_reset_password(self):
+        """Test reset password functionality"""
+        self.log("=== Testing Auth Reset Password ===")
+        
+        if not self.test_users:
+            self.log("❌ No test users available for reset password test", "ERROR")
+            return False
+            
+        # Note: This test will fail with invalid token, but we're testing the API structure
+        reset_data = {
+            "token": "dummy_token_for_testing",
+            "email": self.test_users[0]["credentials"]["email"],
+            "password": "newpassword123"
+        }
+        
+        response = self.make_request("POST", "/auth/reset-password", reset_data, expected_status=400)
+        if response:
+            data = response.json()
+            if "error" in data and "Invalid or expired reset token" in data["error"]:
+                self.log("✅ Reset password API working (correctly rejected invalid token)")
+                return True
+            else:
+                self.log("❌ Reset password response unexpected", "ERROR")
+        else:
+            self.log("❌ Reset password request failed", "ERROR")
+        return False
+
+    def test_notifications_create(self):
+        """Test creating a notification"""
+        self.log("=== Testing Create Notification ===")
+        
+        if len(self.test_users) < 2:
+            self.log("❌ Need at least 2 users for notification test", "ERROR")
+            return False
+            
+        notification_data = {
+            "userId": self.test_users[1]["user_data"]["id"],
+            "type": "test",
+            "message": "This is a test notification",
+            "fromUserId": self.test_users[0]["user_data"]["id"]
+        }
+        
+        response = self.make_request("POST", "/notifications", notification_data, expected_status=200)
+        if response:
+            data = response.json()
+            if "id" in data and data.get("message") == notification_data["message"]:
+                self.log("✅ Create notification successful")
+                # Store notification ID for later tests
+                if not hasattr(self, 'test_notifications'):
+                    self.test_notifications = []
+                self.test_notifications.append(data)
+                return True
+            else:
+                self.log("❌ Create notification response invalid", "ERROR")
+        else:
+            self.log("❌ Create notification failed", "ERROR")
+        return False
+
+    def test_notifications_get_for_user(self):
+        """Test getting notifications for a user"""
+        self.log("=== Testing Get Notifications for User ===")
+        
+        if not self.test_users:
+            self.log("❌ No test users available", "ERROR")
+            return False
+            
+        user_id = self.test_users[1]["user_data"]["id"]  # User who should have notifications
+        response = self.make_request("GET", f"/notifications/{user_id}", expected_status=200)
+        if response:
+            data = response.json()
+            if isinstance(data, list):
+                self.log(f"✅ Get notifications for user successful - found {len(data)} notifications")
+                return True
+            else:
+                self.log("❌ Get notifications returned invalid response", "ERROR")
+        else:
+            self.log("❌ Get notifications for user failed", "ERROR")
+        return False
+
+    def test_notifications_mark_read(self):
+        """Test marking notification as read"""
+        self.log("=== Testing Mark Notification as Read ===")
+        
+        if not hasattr(self, 'test_notifications') or not self.test_notifications:
+            self.log("❌ No test notifications available", "ERROR")
+            return False
+            
+        notification_id = self.test_notifications[0]["id"]
+        response = self.make_request("PUT", f"/notifications/{notification_id}/read", {}, expected_status=200)
+        if response:
+            data = response.json()
+            if data.get("success") == True:
+                self.log("✅ Mark notification as read successful")
+                return True
+            else:
+                self.log("❌ Mark notification as read response invalid", "ERROR")
+        else:
+            self.log("❌ Mark notification as read failed", "ERROR")
+        return False
+
+    def test_friends_send_request(self):
+        """Test sending a friend request"""
+        self.log("=== Testing Send Friend Request ===")
+        
+        if len(self.test_users) < 2:
+            self.log("❌ Need at least 2 users for friend request test", "ERROR")
+            return False
+            
+        friend_request_data = {
+            "fromUserId": self.test_users[0]["user_data"]["id"],
+            "toUserId": self.test_users[1]["user_data"]["id"]
+        }
+        
+        response = self.make_request("POST", "/friends/request", friend_request_data, expected_status=200)
+        if response:
+            data = response.json()
+            if data.get("success") == True:
+                self.log("✅ Send friend request successful")
+                return True
+            else:
+                self.log("❌ Send friend request response invalid", "ERROR")
+        else:
+            self.log("❌ Send friend request failed", "ERROR")
+        return False
+
+    def test_friends_accept_request(self):
+        """Test accepting a friend request"""
+        self.log("=== Testing Accept Friend Request ===")
+        
+        if len(self.test_users) < 2:
+            self.log("❌ Need at least 2 users for friend accept test", "ERROR")
+            return False
+            
+        accept_data = {
+            "userId": self.test_users[1]["user_data"]["id"],
+            "friendId": self.test_users[0]["user_data"]["id"]
+        }
+        
+        response = self.make_request("POST", "/friends/accept", accept_data, expected_status=200)
+        if response:
+            data = response.json()
+            if data.get("success") == True:
+                self.log("✅ Accept friend request successful")
+                return True
+            else:
+                self.log("❌ Accept friend request response invalid", "ERROR")
+        else:
+            self.log("❌ Accept friend request failed", "ERROR")
+        return False
+
+    def test_conversations_create_non_friend(self):
+        """Test creating a conversation from non-friend"""
+        self.log("=== Testing Create Non-Friend Conversation ===")
+        
+        if len(self.test_users) < 2:
+            self.log("❌ Need at least 2 users for non-friend conversation test", "ERROR")
+            return False
+        
+        # Create a third user for non-friend conversation
+        unique_id = str(uuid.uuid4())[:8]
+        test_user3 = {
+            "email": f"testuser3_{unique_id}@example.com",
+            "password": "securepassword123",
+            "displayName": f"TestUser3_{unique_id}"
+        }
+        
+        response = self.make_request("POST", "/auth/register", test_user3, expected_status=200)
+        if response:
+            data = response.json()
+            self.test_users.append({
+                "user_data": data["user"],
+                "token": data["token"],
+                "credentials": test_user3
+            })
+            self.log("✅ Created third user for non-friend conversation testing")
+        else:
+            self.log("❌ Failed to create third user", "ERROR")
+            return False
+        
+        # Create non-friend conversation
+        conversation_data = {
+            "participants": [
+                self.test_users[0]["user_data"]["id"],
+                self.test_users[2]["user_data"]["id"]  # Third user (non-friend)
+            ],
+            "isFromNonFriend": True
+        }
+        
+        response = self.make_request("POST", "/conversations", conversation_data, expected_status=200)
+        if response:
+            data = response.json()
+            if "id" in data and data.get("isFromNonFriend") == True and data.get("accepted") == False:
+                self.log("✅ Create non-friend conversation successful")
+                if not hasattr(self, 'test_non_friend_conversations'):
+                    self.test_non_friend_conversations = []
+                self.test_non_friend_conversations.append(data)
+                return True
+            else:
+                self.log("❌ Create non-friend conversation response invalid", "ERROR")
+        else:
+            self.log("❌ Create non-friend conversation failed", "ERROR")
+        return False
+
+    def test_conversations_accept(self):
+        """Test accepting a non-friend conversation"""
+        self.log("=== Testing Accept Non-Friend Conversation ===")
+        
+        if not hasattr(self, 'test_non_friend_conversations') or not self.test_non_friend_conversations:
+            self.log("❌ No non-friend conversations available", "ERROR")
+            return False
+            
+        conversation_id = self.test_non_friend_conversations[0]["id"]
+        response = self.make_request("PUT", f"/conversations/{conversation_id}/accept", {}, expected_status=200)
+        if response:
+            data = response.json()
+            if data.get("accepted") == True and data.get("isFromNonFriend") == False:
+                self.log("✅ Accept non-friend conversation successful")
+                return True
+            else:
+                self.log("❌ Accept non-friend conversation response invalid", "ERROR")
+        else:
+            self.log("❌ Accept non-friend conversation failed", "ERROR")
+        return False
+
+    def test_messages_with_notifications(self):
+        """Test that sending messages creates notifications"""
+        self.log("=== Testing Messages Create Notifications ===")
+        
+        if not self.test_conversations or len(self.test_users) < 2:
+            self.log("❌ No test conversations or insufficient users available", "ERROR")
+            return False
+        
+        # Get initial notification count for recipient
+        recipient_id = self.test_users[1]["user_data"]["id"]
+        initial_response = self.make_request("GET", f"/notifications/{recipient_id}", expected_status=200)
+        initial_count = 0
+        if initial_response:
+            initial_notifications = initial_response.json()
+            initial_count = len(initial_notifications)
+        
+        # Send a message
+        message_data = {
+            "conversationId": self.test_conversations[0]["id"],
+            "senderId": self.test_users[0]["user_data"]["id"],
+            "content": "This message should create a notification!"
+        }
+        
+        message_response = self.make_request("POST", "/messages", message_data, expected_status=200)
+        if not message_response:
+            self.log("❌ Failed to send message", "ERROR")
+            return False
+        
+        # Wait a moment for notification to be created
+        time.sleep(1)
+        
+        # Check if notification was created
+        final_response = self.make_request("GET", f"/notifications/{recipient_id}", expected_status=200)
+        if final_response:
+            final_notifications = final_response.json()
+            final_count = len(final_notifications)
+            
+            if final_count > initial_count:
+                # Check if the latest notification is about the message
+                latest_notification = final_notifications[0]  # Should be sorted by createdAt desc
+                if (latest_notification.get("type") == "dm" and 
+                    latest_notification.get("fromUserId") == self.test_users[0]["user_data"]["id"]):
+                    self.log("✅ Message successfully created notification")
+                    return True
+                else:
+                    self.log("❌ Latest notification is not the expected message notification", "ERROR")
+            else:
+                self.log("❌ No new notification created after sending message", "ERROR")
+        else:
+            self.log("❌ Failed to get notifications after sending message", "ERROR")
+        
+        return False
     
     def run_all_tests(self):
         """Run all backend API tests"""
