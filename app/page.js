@@ -491,14 +491,14 @@ const HomePage = ({ user, onLogout, setUser }) => {
           ))}          
         </div>
 
-        {/* Notices Tile */}
+        {/* Notices Tile - Same style as others */}
         <div className="mb-6">
           <button
             onClick={() => router.push('/notices')}
-            className="tile tile-notices w-full max-w-xs rounded-xl flex items-center gap-3 px-4 py-3"
+            className="tile tile-notices w-24 aspect-square rounded-2xl flex flex-col items-center justify-center gap-2 p-3"
           >
-            <Bell className="w-5 h-5 text-white/90" />
-            <span className="text-white font-medium text-sm">Notices</span>
+            <Bell className="w-7 h-7 text-white drop-shadow-lg" />
+            <span className="text-white font-semibold text-sm drop-shadow-md">Notices</span>
           </button>
         </div>
 
