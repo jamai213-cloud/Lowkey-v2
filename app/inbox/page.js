@@ -1,10 +1,10 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { ArrowLeft, Send, User, MessageSquare, Plus, Search, X, Check, Bell } from 'lucide-react'
 
-export default function InboxPage() {
+function InboxContent() {
   const [user, setUser] = useState(null)
   const [conversations, setConversations] = useState([])
   const [selectedConversation, setSelectedConversation] = useState(null)
