@@ -477,8 +477,8 @@ const HomePage = ({ user, onLogout, setUser }) => {
 
       {/* Main Content */}
       <main className="relative z-10 p-4 pb-24">
-        {/* Tiles Grid */}
-        <div className="grid grid-cols-4 gap-3 mb-6">
+        {/* Tiles Grid - 3 columns like screenshot */}
+        <div className="grid grid-cols-3 gap-3 mb-6">
           {tiles.map((tile) => (
             <Tile
               key={tile.id}
