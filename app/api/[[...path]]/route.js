@@ -47,6 +47,17 @@ export async function OPTIONS() {
   return handleCORS(new NextResponse(null, { status: 200 }))
 }
 
+// Helper to safely parse JSON body
+async function safeParseJson(request) {
+  try {
+    const text = await request.text()
+    if (!text || text.trim() === '') return {}
+    return JSON.parse(text)
+  } catch (e) {
+    return {}
+  }
+}
+
 // Route handler function
 async function handleRoute(request, { params }) {
   const { path = [] } = params
@@ -60,7 +71,7 @@ async function handleRoute(request, { params }) {
     
     // Register - POST /api/auth/register
     if (route === '/auth/register' && method === 'POST') {
-      const body = await request.json()
+      const body = await safeParseJson(request)
       const { email, password, displayName } = body
 
       if (!email || !password || !displayName) {
