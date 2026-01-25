@@ -141,6 +141,30 @@ backend:
           agent: "testing"
           comment: "✅ POST /api/auth/login working perfectly with displayName as identifier. Supports both email and displayName login as requested."
 
+  - task: "Auth Forgot Password API"
+    implemented: true
+    working: true
+    file: "app/api/[[...path]]/route.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "✅ POST /api/auth/forgot-password working perfectly. Returns success message and generates reset token. Email sending requires RESEND_API_KEY configuration but API structure is correct."
+
+  - task: "Auth Reset Password API"
+    implemented: true
+    working: true
+    file: "app/api/[[...path]]/route.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "✅ POST /api/auth/reset-password working perfectly. Correctly validates reset tokens and rejects invalid ones with proper error messages. API structure and validation logic working as expected."
+
   - task: "Get All Users API"
     implemented: true
     working: true
@@ -177,6 +201,66 @@ backend:
           agent: "testing"
           comment: "✅ PUT /api/users/:id/verify working perfectly. Successfully toggles verification status and updates user data."
 
+  - task: "Notifications Create API"
+    implemented: true
+    working: true
+    file: "app/api/[[...path]]/route.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "✅ POST /api/notifications working perfectly. Creates notifications with proper data structure including userId, type, message, fromUserId, and read status."
+
+  - task: "Notifications Get for User API"
+    implemented: true
+    working: true
+    file: "app/api/[[...path]]/route.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "✅ GET /api/notifications/:userId working perfectly. Returns user's notifications sorted by creation date with proper data structure."
+
+  - task: "Notifications Mark as Read API"
+    implemented: true
+    working: true
+    file: "app/api/[[...path]]/route.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "✅ PUT /api/notifications/:id/read working perfectly. Successfully marks notifications as read and returns success confirmation."
+
+  - task: "Friend Request Send API"
+    implemented: true
+    working: true
+    file: "app/api/[[...path]]/route.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "✅ POST /api/friends/request working perfectly. Sends friend requests and automatically creates notifications for recipients."
+
+  - task: "Friend Request Accept API"
+    implemented: true
+    working: true
+    file: "app/api/[[...path]]/route.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "✅ POST /api/friends/accept working perfectly. Accepts friend requests, adds users to each other's friends lists, and removes from pending requests."
+
   - task: "Create Conversation API"
     implemented: true
     working: true
@@ -188,6 +272,30 @@ backend:
         - working: true
           agent: "testing"
           comment: "✅ POST /api/conversations working perfectly. Creates conversations between two users with proper validation and duplicate checking."
+
+  - task: "Create Non-Friend Conversation API"
+    implemented: true
+    working: true
+    file: "app/api/[[...path]]/route.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "✅ POST /api/conversations with isFromNonFriend=true working perfectly. Creates non-friend conversations that require acceptance, with proper accepted=false and isFromNonFriend=true flags."
+
+  - task: "Accept Non-Friend Conversation API"
+    implemented: true
+    working: true
+    file: "app/api/[[...path]]/route.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "✅ PUT /api/conversations/:id/accept working perfectly. Accepts non-friend conversations by setting accepted=true and isFromNonFriend=false."
 
   - task: "Get Conversations for User API"
     implemented: true
@@ -212,6 +320,18 @@ backend:
         - working: true
           agent: "testing"
           comment: "✅ POST /api/messages working perfectly. Sends messages and updates conversation's last message data."
+
+  - task: "Send Message with Notification Creation"
+    implemented: true
+    working: true
+    file: "app/api/[[...path]]/route.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "✅ POST /api/messages with notification creation working perfectly. Verified that sending messages automatically creates notifications for recipients with proper message preview and sender information."
 
   - task: "Get Messages for Conversation API"
     implemented: true
