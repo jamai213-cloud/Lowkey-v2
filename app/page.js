@@ -210,9 +210,9 @@ const AuthPage = ({ onLogin }) => {
       
       <div className="relative z-10 w-full max-w-md">
         {/* Logo */}
-        <div className="flex flex-col items-center mb-8">
-          <LowKeyLogo size="lg" />
-          <p className="text-pink-200/80 mt-4 text-lg font-light tracking-wide">Grown chats. Real nights. Private parties.</p>
+        <div className="flex flex-col items-center mb-10">
+          <LowKeyLogo size="xl" />
+          <p className="text-pink-200/80 mt-6 text-xl font-light tracking-wide">Grown chats. Real nights. Private parties.</p>
         </div>
 
         {/* Auth Card */}
