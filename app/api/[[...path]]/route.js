@@ -692,52 +692,107 @@ async function handleRoute(request, { params }) {
     // Seed admin user endpoint (one-time use)
     if (route === '/debug/seed-admin' && method === 'POST') {
       try {
-        // Check if admin already exists
-        const existingAdmin = await db.collection('users').findOne({
+        const now = new Date()
+        const password = hashPassword('LowKey2026!')
+        
+        // Admin 1: LOWKEY
+        const existingAdmin1 = await db.collection('users').findOne({
           $or: [
             { email: 'lowkey2026@hotmail.com' },
             { displayNameLower: 'lowkey' }
           ]
         })
 
-        if (existingAdmin) {
-          return handleCORS(NextResponse.json({
-            status: 'exists',
-            message: 'Admin user already exists',
-            userId: existingAdmin.id
-          }))
+        let admin1Status = 'exists'
+        if (!existingAdmin1) {
+          const adminUser1 = {
+            id: uuidv4(),
+            email: 'lowkey2026@hotmail.com',
+            displayName: 'LOWKEY',
+            displayNameLower: 'lowkey',
+            password: password,
+            role: 'admin',
+            verified: true,
+            friends: [],
+            friendRequests: [],
+            createdAt: now,
+            updatedAt: now,
+            lastLogin: now,
+            token: generateToken()
+          }
+          await db.collection('users').insertOne(adminUser1)
+          admin1Status = 'created'
         }
 
-        // Create admin user
-        const adminUser = {
-          id: uuidv4(),
-          email: 'lowkey2026@hotmail.com',
-          displayName: 'LOWKEY',
-          displayNameLower: 'lowkey',
-          password: hashPassword('LowkeyBoss1'),
-          role: 'admin',
-          verified: true,
-          friends: [],
-          friendRequests: [],
-          createdAt: new Date(),
-          updatedAt: new Date(),
-          lastLogin: new Date(),
-          token: generateToken()
-        }
+        // Admin 2: JamaiAdmin
+        const existingAdmin2 = await db.collection('users').findOne({
+          email: 'jamai213@hotmail.co.uk'
+        })
 
-        await db.collection('users').insertOne(adminUser)
+        let admin2Status = 'exists'
+        if (!existingAdmin2) {
+          const adminUser2 = {
+            id: uuidv4(),
+            email: 'jamai213@hotmail.co.uk',
+            displayName: 'JamaiAdmin',
+            displayNameLower: 'jamaiadmin',
+            password: password,
+            role: 'admin',
+            verified: true,
+            friends: [],
+            friendRequests: [],
+            createdAt: now,
+            updatedAt: now,
+            lastLogin: now,
+            token: generateToken()
+          }
+          await db.collection('users').insertOne(adminUser2)
+          admin2Status = 'created'
+        }
 
         return handleCORS(NextResponse.json({
-          status: 'created',
-          message: 'Admin user created successfully',
-          userId: adminUser.id,
-          email: adminUser.email,
-          displayName: adminUser.displayName
+          status: 'success',
+          message: 'Admin users processed',
+          admins: [
+            { email: 'lowkey2026@hotmail.com', displayName: 'LOWKEY', status: admin1Status },
+            { email: 'jamai213@hotmail.co.uk', displayName: 'JamaiAdmin', status: admin2Status }
+          ],
+          loginPassword: 'LowKey2026!'
         }))
       } catch (seedError) {
         return handleCORS(NextResponse.json({
           status: 'error',
           error: seedError.message
+        }, { status: 500 }))
+      }
+    }
+
+    // Reset admin passwords endpoint
+    if (route === '/debug/reset-admin' && method === 'POST') {
+      try {
+        const newPassword = hashPassword('LowKey2026!')
+        
+        const result1 = await db.collection('users').updateOne(
+          { email: 'lowkey2026@hotmail.com' },
+          { $set: { password: newPassword, updatedAt: new Date() } }
+        )
+        
+        const result2 = await db.collection('users').updateOne(
+          { email: 'jamai213@hotmail.co.uk' },
+          { $set: { password: newPassword, updatedAt: new Date() } }
+        )
+
+        return handleCORS(NextResponse.json({
+          status: 'success',
+          message: 'Admin passwords reset',
+          lowkey2026Updated: result1.modifiedCount > 0,
+          jamai213Updated: result2.modifiedCount > 0,
+          newPassword: 'LowKey2026!'
+        }))
+      } catch (resetError) {
+        return handleCORS(NextResponse.json({
+          status: 'error',
+          error: resetError.message
         }, { status: 500 }))
       }
     }
