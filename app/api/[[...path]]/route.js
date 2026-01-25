@@ -660,6 +660,35 @@ async function handleRoute(request, { params }) {
       return handleCORS(NextResponse.json({ status: 'healthy', timestamp: new Date() }))
     }
 
+    // Database diagnostic endpoint
+    if (route === '/debug/db' && method === 'GET') {
+      try {
+        const uri = process.env.MONGODB_URI || process.env.MONGO_URL
+        const hasUri = !!uri
+        const uriPreview = uri ? uri.substring(0, 20) + '...' : 'NOT SET'
+        const dbName = process.env.DB_NAME || 'lowkey'
+        
+        // Try to count users
+        const userCount = await db.collection('users').countDocuments()
+        
+        return handleCORS(NextResponse.json({
+          status: 'connected',
+          hasMongoUri: hasUri,
+          uriPreview: uriPreview,
+          dbName: dbName,
+          userCount: userCount,
+          timestamp: new Date()
+        }))
+      } catch (dbError) {
+        return handleCORS(NextResponse.json({
+          status: 'error',
+          error: dbError.message,
+          hasMongoUri: !!(process.env.MONGODB_URI || process.env.MONGO_URL),
+          timestamp: new Date()
+        }, { status: 500 }))
+      }
+    }
+
     // Route not found
     return handleCORS(NextResponse.json(
       { error: `Route ${route} not found` },
