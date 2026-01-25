@@ -19,16 +19,19 @@ const AnimatedBackground = () => (
     <div className="blob blob-2" />
     <div className="blob blob-3" />
     <div className="blob blob-4" />
+    <div className="blob blob-5" />
+    <div className="blob blob-6" />
     <div className="noise-overlay" />
   </div>
 )
 
-// Logo Component - Using the uploaded logo
+// Logo Component - Using the uploaded logo - BIGGER
 const LowKeyLogo = ({ size = 'md', showText = true }) => {
   const sizes = {
-    sm: 'w-10 h-10',
-    md: 'w-16 h-16',
-    lg: 'w-24 h-24'
+    sm: 'w-12 h-12',
+    md: 'w-20 h-20',
+    lg: 'w-36 h-36',
+    xl: 'w-48 h-48'
   }
   
   return (
