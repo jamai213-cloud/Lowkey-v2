@@ -61,49 +61,67 @@ body {
   animation: gradientShift 25s ease infinite;
 }
 
-/* Animated color blobs */
+/* Animated color blobs/clouds */
 .blob {
   position: absolute;
   border-radius: 50%;
-  filter: blur(80px);
-  opacity: 0.6;
+  filter: blur(100px);
+  opacity: 0.7;
   mix-blend-mode: screen;
 }
 
 .blob-1 {
-  width: 600px;
-  height: 600px;
-  background: radial-gradient(circle, rgba(147, 51, 234, 0.8) 0%, transparent 70%);
-  top: -10%;
-  left: -10%;
-  animation: blobFloat1 20s ease-in-out infinite;
+  width: 700px;
+  height: 700px;
+  background: radial-gradient(circle, rgba(147, 51, 234, 0.9) 0%, rgba(139, 92, 246, 0.5) 40%, transparent 70%);
+  top: -20%;
+  left: -20%;
+  animation: blobFloat1 18s ease-in-out infinite;
 }
 
 .blob-2 {
-  width: 500px;
-  height: 500px;
-  background: radial-gradient(circle, rgba(236, 72, 153, 0.7) 0%, transparent 70%);
-  top: 30%;
-  right: -15%;
-  animation: blobFloat2 25s ease-in-out infinite;
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(circle, rgba(236, 72, 153, 0.85) 0%, rgba(244, 114, 182, 0.4) 40%, transparent 70%);
+  top: 20%;
+  right: -20%;
+  animation: blobFloat2 22s ease-in-out infinite;
 }
 
 .blob-3 {
-  width: 450px;
-  height: 450px;
-  background: radial-gradient(circle, rgba(249, 115, 22, 0.6) 0%, transparent 70%);
-  bottom: -10%;
-  left: 20%;
-  animation: blobFloat3 22s ease-in-out infinite;
+  width: 550px;
+  height: 550px;
+  background: radial-gradient(circle, rgba(249, 115, 22, 0.8) 0%, rgba(251, 146, 60, 0.4) 40%, transparent 70%);
+  bottom: -15%;
+  left: 15%;
+  animation: blobFloat3 20s ease-in-out infinite;
 }
 
 .blob-4 {
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(circle, rgba(250, 204, 21, 0.75) 0%, rgba(253, 224, 71, 0.4) 40%, transparent 70%);
+  bottom: 15%;
+  right: 15%;
+  animation: blobFloat4 24s ease-in-out infinite;
+}
+
+.blob-5 {
+  width: 450px;
+  height: 450px;
+  background: radial-gradient(circle, rgba(34, 197, 94, 0.7) 0%, rgba(74, 222, 128, 0.3) 40%, transparent 70%);
+  top: 50%;
+  left: 40%;
+  animation: blobFloat5 26s ease-in-out infinite;
+}
+
+.blob-6 {
   width: 400px;
   height: 400px;
-  background: radial-gradient(circle, rgba(250, 204, 21, 0.5) 0%, transparent 70%);
-  bottom: 20%;
-  right: 20%;
-  animation: blobFloat4 28s ease-in-out infinite;
+  background: radial-gradient(circle, rgba(59, 130, 246, 0.7) 0%, rgba(96, 165, 250, 0.3) 40%, transparent 70%);
+  top: 10%;
+  left: 50%;
+  animation: blobFloat6 28s ease-in-out infinite;
 }
 
 /* Noise/grain overlay */
