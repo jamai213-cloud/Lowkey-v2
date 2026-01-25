@@ -26,6 +26,17 @@ function generateToken() {
   return crypto.randomBytes(32).toString('hex')
 }
 
+// Helper to safely parse JSON body
+async function safeParseJson(request) {
+  try {
+    const text = await request.text()
+    if (!text || text.trim() === '') return {}
+    return JSON.parse(text)
+  } catch (e) {
+    return {}
+  }
+}
+
 // Helper function to handle CORS
 function handleCORS(response) {
   response.headers.set('Access-Control-Allow-Origin', process.env.CORS_ORIGINS || '*')
@@ -45,17 +56,6 @@ function cleanMongoDoc(doc) {
 // OPTIONS handler for CORS
 export async function OPTIONS() {
   return handleCORS(new NextResponse(null, { status: 200 }))
-}
-
-// Helper to safely parse JSON body
-async function safeParseJson(request) {
-  try {
-    const text = await request.text()
-    if (!text || text.trim() === '') return {}
-    return JSON.parse(text)
-  } catch (e) {
-    return {}
-  }
 }
 
 // Route handler function
@@ -81,7 +81,6 @@ async function handleRoute(request, { params }) {
         ))
       }
 
-      // Check if email already exists
       const existingEmail = await db.collection('users').findOne({ 
         email: email.toLowerCase() 
       })
@@ -92,7 +91,6 @@ async function handleRoute(request, { params }) {
         ))
       }
 
-      // Check if displayName already exists
       const existingName = await db.collection('users').findOne({ 
         displayNameLower: displayName.toLowerCase() 
       })
@@ -114,6 +112,8 @@ async function handleRoute(request, { params }) {
         displayNameLower: displayName.toLowerCase(),
         password: hashPassword(password),
         verified: false,
+        friends: [],
+        friendRequests: [],
         createdAt: now,
         updatedAt: now,
         lastLogin: now,
@@ -140,7 +140,6 @@ async function handleRoute(request, { params }) {
         ))
       }
 
-      // Find user by email or displayName
       const user = await db.collection('users').findOne({
         $or: [
           { email: identifier.toLowerCase() },
@@ -155,7 +154,6 @@ async function handleRoute(request, { params }) {
         ))
       }
 
-      // Check password
       if (user.password !== hashPassword(password)) {
         return handleCORS(NextResponse.json(
           { error: 'Invalid credentials' },
@@ -163,7 +161,6 @@ async function handleRoute(request, { params }) {
         ))
       }
 
-      // Update last login and generate new token
       const token = generateToken()
       await db.collection('users').updateOne(
         { id: user.id },
@@ -181,10 +178,133 @@ async function handleRoute(request, { params }) {
       }))
     }
 
+    // Forgot Password - POST /api/auth/forgot-password
+    if (route === '/auth/forgot-password' && method === 'POST') {
+      const body = await safeParseJson(request)
+      const { email } = body
+
+      if (!email) {
+        return handleCORS(NextResponse.json(
+          { error: 'Email is required' },
+          { status: 400 }
+        ))
+      }
+
+      const user = await db.collection('users').findOne({ email: email.toLowerCase() })
+      
+      // Always return success to prevent email enumeration
+      if (!user) {
+        return handleCORS(NextResponse.json({
+          message: 'If an account exists with that email, a reset link has been sent.'
+        }))
+      }
+
+      // Generate reset token
+      const resetToken = crypto.randomBytes(32).toString('hex')
+      const resetTokenHash = crypto.createHash('sha256').update(resetToken).digest('hex')
+      const resetTokenExpiry = new Date(Date.now() + 60 * 60 * 1000) // 1 hour
+
+      await db.collection('users').updateOne(
+        { id: user.id },
+        { 
+          $set: { 
+            resetToken: resetTokenHash,
+            resetTokenExpiry: resetTokenExpiry
+          } 
+        }
+      )
+
+      // Check if Resend API key is configured
+      if (!process.env.RESEND_API_KEY) {
+        console.warn('⚠️ RESEND_API_KEY not configured - email not sent')
+        console.log(`Reset token for ${email}: ${resetToken}`)
+        return handleCORS(NextResponse.json({
+          message: 'If an account exists with that email, a reset link has been sent.',
+          devNote: 'RESEND_API_KEY not configured - check server logs for token'
+        }))
+      }
+
+      // Send email via Resend
+      try {
+        const { Resend } = await import('resend')
+        const resend = new Resend(process.env.RESEND_API_KEY)
+        
+        const resetUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/reset-password?token=${resetToken}&email=${encodeURIComponent(email)}`
+        
+        await resend.emails.send({
+          from: 'LowKey <noreply@lowkey.app>',
+          to: email,
+          subject: 'Reset Your LowKey Password',
+          html: `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #1a1a2e; color: white; padding: 40px; border-radius: 16px;">
+              <h1 style="color: #a855f7;">Reset Your Password</h1>
+              <p>You requested to reset your password. Click the button below:</p>
+              <a href="${resetUrl}" style="display: inline-block; background: linear-gradient(to right, #f59e0b, #eab308); color: black; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: bold; margin: 20px 0;">Reset Password</a>
+              <p style="color: #888;">This link expires in 1 hour.</p>
+              <p style="color: #888;">If you didn't request this, ignore this email.</p>
+            </div>
+          `
+        })
+      } catch (emailError) {
+        console.error('Failed to send reset email:', emailError)
+      }
+
+      return handleCORS(NextResponse.json({
+        message: 'If an account exists with that email, a reset link has been sent.'
+      }))
+    }
+
+    // Reset Password - POST /api/auth/reset-password
+    if (route === '/auth/reset-password' && method === 'POST') {
+      const body = await safeParseJson(request)
+      const { token, email, password } = body
+
+      if (!token || !email || !password) {
+        return handleCORS(NextResponse.json(
+          { error: 'Missing required fields' },
+          { status: 400 }
+        ))
+      }
+
+      if (password.length < 6) {
+        return handleCORS(NextResponse.json(
+          { error: 'Password must be at least 6 characters' },
+          { status: 400 }
+        ))
+      }
+
+      const tokenHash = crypto.createHash('sha256').update(token).digest('hex')
+
+      const user = await db.collection('users').findOne({
+        email: decodeURIComponent(email).toLowerCase(),
+        resetToken: tokenHash,
+        resetTokenExpiry: { $gt: new Date() }
+      })
+
+      if (!user) {
+        return handleCORS(NextResponse.json(
+          { error: 'Invalid or expired reset token' },
+          { status: 400 }
+        ))
+      }
+
+      await db.collection('users').updateOne(
+        { id: user.id },
+        { 
+          $set: { password: hashPassword(password) },
+          $unset: { resetToken: '', resetTokenExpiry: '' }
+        }
+      )
+
+      return handleCORS(NextResponse.json({
+        message: 'Password has been reset successfully'
+      }))
+    }
+
     // ==================== USER ROUTES ====================
 
     // Get user - GET /api/users/:id
-    if (route.startsWith('/users/') && method === 'GET') {
+    if (route.match(/^\/users\/[^/]+$/) && method === 'GET' && path[1] !== 'search') {
       const userId = path[1]
       const user = await db.collection('users').findOne({ id: userId })
       
@@ -226,6 +346,100 @@ async function handleRoute(request, { params }) {
       return handleCORS(NextResponse.json(users.map(cleanMongoDoc)))
     }
 
+    // ==================== NOTIFICATIONS ROUTES ====================
+
+    // Get notifications - GET /api/notifications/:userId
+    if (route.match(/^\/notifications\/[^/]+$/) && method === 'GET') {
+      const userId = path[1]
+      
+      const notifications = await db.collection('notifications').find({
+        userId: userId
+      }).sort({ createdAt: -1 }).limit(50).toArray()
+
+      return handleCORS(NextResponse.json(notifications.map(cleanMongoDoc)))
+    }
+
+    // Create notification - POST /api/notifications
+    if (route === '/notifications' && method === 'POST') {
+      const body = await safeParseJson(request)
+      const { userId, type, message, conversationId, fromUserId } = body
+
+      const notification = {
+        id: uuidv4(),
+        userId,
+        type,
+        message,
+        conversationId,
+        fromUserId,
+        read: false,
+        createdAt: new Date()
+      }
+
+      await db.collection('notifications').insertOne(notification)
+      return handleCORS(NextResponse.json(cleanMongoDoc(notification)))
+    }
+
+    // Mark notification as read - PUT /api/notifications/:id/read
+    if (route.match(/^\/notifications\/[^/]+\/read$/) && method === 'PUT') {
+      const notificationId = path[1]
+      
+      await db.collection('notifications').updateOne(
+        { id: notificationId },
+        { $set: { read: true } }
+      )
+
+      return handleCORS(NextResponse.json({ success: true }))
+    }
+
+    // ==================== FRIEND REQUESTS ====================
+
+    // Send friend request - POST /api/friends/request
+    if (route === '/friends/request' && method === 'POST') {
+      const body = await safeParseJson(request)
+      const { fromUserId, toUserId } = body
+
+      // Add to target user's friend requests
+      await db.collection('users').updateOne(
+        { id: toUserId },
+        { $addToSet: { friendRequests: fromUserId } }
+      )
+
+      // Create notification
+      const fromUser = await db.collection('users').findOne({ id: fromUserId })
+      await db.collection('notifications').insertOne({
+        id: uuidv4(),
+        userId: toUserId,
+        type: 'friend_request',
+        message: `${fromUser.displayName} sent you a friend request`,
+        fromUserId,
+        read: false,
+        createdAt: new Date()
+      })
+
+      return handleCORS(NextResponse.json({ success: true }))
+    }
+
+    // Accept friend request - POST /api/friends/accept
+    if (route === '/friends/accept' && method === 'POST') {
+      const body = await safeParseJson(request)
+      const { userId, friendId } = body
+
+      // Add each other as friends
+      await db.collection('users').updateOne(
+        { id: userId },
+        { 
+          $addToSet: { friends: friendId },
+          $pull: { friendRequests: friendId }
+        }
+      )
+      await db.collection('users').updateOne(
+        { id: friendId },
+        { $addToSet: { friends: userId } }
+      )
+
+      return handleCORS(NextResponse.json({ success: true }))
+    }
+
     // ==================== MESSAGING ROUTES ====================
 
     // Get conversations for user - GET /api/conversations/:userId
@@ -236,14 +450,22 @@ async function handleRoute(request, { params }) {
         participants: userId
       }).sort({ updatedAt: -1 }).toArray()
 
-      // Get participant details for each conversation
       const enrichedConversations = await Promise.all(
         conversations.map(async (conv) => {
           const otherParticipantId = conv.participants.find(p => p !== userId)
           const otherUser = await db.collection('users').findOne({ id: otherParticipantId })
+          
+          // Count unread messages
+          const unreadCount = await db.collection('messages').countDocuments({
+            conversationId: conv.id,
+            senderId: { $ne: userId },
+            read: false
+          })
+          
           return {
             ...cleanMongoDoc(conv),
-            otherUser: otherUser ? cleanMongoDoc(otherUser) : null
+            otherUser: otherUser ? cleanMongoDoc(otherUser) : null,
+            unreadCount
           }
         })
       )
@@ -254,7 +476,7 @@ async function handleRoute(request, { params }) {
     // Create conversation - POST /api/conversations
     if (route === '/conversations' && method === 'POST') {
       const body = await safeParseJson(request)
-      const { participants } = body
+      const { participants, isFromNonFriend } = body
 
       if (!participants || participants.length !== 2) {
         return handleCORS(NextResponse.json(
@@ -263,7 +485,6 @@ async function handleRoute(request, { params }) {
         ))
       }
 
-      // Check if conversation already exists
       const existing = await db.collection('conversations').findOne({
         participants: { $all: participants, $size: 2 }
       })
@@ -278,6 +499,8 @@ async function handleRoute(request, { params }) {
       const newConversation = {
         id: conversationId,
         participants: participants,
+        isFromNonFriend: isFromNonFriend || false,
+        accepted: !isFromNonFriend,
         createdAt: now,
         updatedAt: now,
         lastMessage: null
@@ -285,6 +508,19 @@ async function handleRoute(request, { params }) {
 
       await db.collection('conversations').insertOne(newConversation)
       return handleCORS(NextResponse.json(cleanMongoDoc(newConversation)))
+    }
+
+    // Accept conversation (from non-friend) - PUT /api/conversations/:id/accept
+    if (route.match(/^\/conversations\/[^/]+\/accept$/) && method === 'PUT') {
+      const conversationId = path[1]
+      
+      await db.collection('conversations').updateOne(
+        { id: conversationId },
+        { $set: { accepted: true, isFromNonFriend: false } }
+      )
+
+      const conversation = await db.collection('conversations').findOne({ id: conversationId })
+      return handleCORS(NextResponse.json(cleanMongoDoc(conversation)))
     }
 
     // Get messages for conversation - GET /api/messages/:conversationId
@@ -339,7 +575,38 @@ async function handleRoute(request, { params }) {
         }
       )
 
+      // Get conversation to find recipient
+      const conversation = await db.collection('conversations').findOne({ id: conversationId })
+      const recipientId = conversation.participants.find(p => p !== senderId)
+      const sender = await db.collection('users').findOne({ id: senderId })
+
+      // Create notification for recipient
+      await db.collection('notifications').insertOne({
+        id: uuidv4(),
+        userId: recipientId,
+        type: 'dm',
+        message: `${sender.displayName}: ${content.substring(0, 50)}${content.length > 50 ? '...' : ''}`,
+        conversationId: conversationId,
+        fromUserId: senderId,
+        read: false,
+        createdAt: now
+      })
+
       return handleCORS(NextResponse.json(cleanMongoDoc(newMessage)))
+    }
+
+    // Mark messages as read - PUT /api/messages/:conversationId/read
+    if (route.match(/^\/messages\/[^/]+\/read$/) && method === 'PUT') {
+      const conversationId = path[1]
+      const body = await safeParseJson(request)
+      const { userId } = body
+
+      await db.collection('messages').updateMany(
+        { conversationId, senderId: { $ne: userId }, read: false },
+        { $set: { read: true } }
+      )
+
+      return handleCORS(NextResponse.json({ success: true }))
     }
 
     // ==================== ROOT/STATUS ROUTES ====================

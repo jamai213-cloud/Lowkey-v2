@@ -2,46 +2,57 @@
 
 import { useState, useEffect, createContext, useContext } from 'react'
 import { useRouter } from 'next/navigation'
-import { Users, MessageSquare, Sofa, Search, Wallet, Moon, Gamepad2, Radio, Music, Calendar, Bell, Lock, X, Eye, EyeOff, Volume2, UserPlus, CheckCircle, LogOut, Settings, ChevronRight, Sparkles, Plus, Home, User } from 'lucide-react'
+import { 
+  Users, MessageSquare, Sofa, Search, Wallet, Moon, Gamepad2, Radio, Music, 
+  Calendar, Bell, Lock, X, Eye, EyeOff, Volume2, UserPlus, CheckCircle, 
+  LogOut, Settings, Sparkles, Home, User, ChevronRight, Send
+} from 'lucide-react'
 
 // Auth Context
 const AuthContext = createContext(null)
-
 export const useAuth = () => useContext(AuthContext)
 
-// Logo Component
-const LowKeyLogo = ({ size = 'md' }) => {
+// Animated Background Component
+const AnimatedBackground = () => (
+  <div className="animated-bg">
+    <div className="blob blob-1" />
+    <div className="blob blob-2" />
+    <div className="blob blob-3" />
+    <div className="blob blob-4" />
+    <div className="noise-overlay" />
+  </div>
+)
+
+// Logo Component - Using the uploaded logo
+const LowKeyLogo = ({ size = 'md', showText = true }) => {
   const sizes = {
-    sm: 'w-12 h-12',
-    md: 'w-20 h-20',
-    lg: 'w-32 h-32'
+    sm: 'w-10 h-10',
+    md: 'w-16 h-16',
+    lg: 'w-24 h-24'
   }
   
   return (
-    <div className={`${sizes[size]} relative flex items-center justify-center`}>
-      <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-purple-600/30 via-pink-500/20 to-amber-500/30 blur-xl" />
-      <div className="relative bg-[#1a1a2e] rounded-2xl border-2 border-purple-500/50 p-3 shadow-2xl">
-        <div className="flex items-center">
-          <span className="text-2xl font-bold bg-gradient-to-br from-purple-400 via-purple-500 to-amber-400 bg-clip-text text-transparent">L</span>
-          <span className="text-2xl font-bold bg-gradient-to-br from-amber-400 via-purple-400 to-purple-500 bg-clip-text text-transparent">K</span>
-          <span className="ml-1 text-xl">🎭</span>
-        </div>
-        <div className="text-[8px] text-center text-purple-300 font-medium tracking-wider mt-0.5">LOWKEY</div>
-      </div>
+    <div className="flex flex-col items-center">
+      <img 
+        src="https://customer-assets.emergentagent.com/job_9cfb4bde-566c-4101-8a52-a8ca747e74ca/artifacts/xjtcpb4e_095E7AA1-912D-48A9-A667-A5A89F16DBD7.png" 
+        alt="LowKey"
+        className={`${sizes[size]} object-contain drop-shadow-2xl`}
+      />
     </div>
   )
 }
 
 // Lock Modal Component
 const LockModal = ({ isOpen, onClose }) => {
+  const router = useRouter()
   if (!isOpen) return null
   
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm" onClick={onClose}>
-      <div className="bg-[#1a1a2e] rounded-2xl p-6 max-w-sm mx-4 border border-purple-500/30 shadow-2xl" onClick={e => e.stopPropagation()}>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm" onClick={onClose}>
+      <div className="glass-card rounded-2xl p-6 max-w-sm mx-4 shadow-2xl" onClick={e => e.stopPropagation()}>
         <div className="flex justify-between items-start mb-4">
-          <div className="w-12 h-12 rounded-full bg-purple-500/20 flex items-center justify-center">
-            <Lock className="w-6 h-6 text-purple-400" />
+          <div className="w-14 h-14 rounded-full bg-gradient-to-br from-purple-500/30 to-pink-500/30 flex items-center justify-center border border-purple-500/30">
+            <Lock className="w-7 h-7 text-purple-400" />
           </div>
           <button onClick={onClose} className="text-gray-400 hover:text-white transition-colors">
             <X className="w-5 h-5" />
@@ -51,12 +62,94 @@ const LockModal = ({ isOpen, onClose }) => {
         <p className="text-gray-400 mb-6">
           Finish verification to unlock this feature. Upload your verification photo and complete the steps.
         </p>
-        <button 
-          onClick={onClose}
-          className="w-full py-3 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 text-white font-semibold hover:opacity-90 transition-opacity"
-        >
-          Got it
-        </button>
+        <div className="space-y-3">
+          <button 
+            onClick={() => { onClose(); router.push('/verification'); }}
+            className="w-full py-3 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 text-white font-semibold hover:opacity-90 transition-opacity"
+          >
+            Start Verification
+          </button>
+          <button 
+            onClick={onClose}
+            className="w-full py-3 rounded-xl bg-white/5 border border-white/10 text-gray-300 font-medium hover:bg-white/10 transition-colors"
+          >
+            Maybe Later
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// Forgot Password Modal
+const ForgotPasswordModal = ({ isOpen, onClose }) => {
+  const [email, setEmail] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [sent, setSent] = useState(false)
+  const [error, setError] = useState('')
+
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    setLoading(true)
+    setError('')
+    
+    try {
+      const res = await fetch('/api/auth/forgot-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email })
+      })
+      
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error)
+      
+      setSent(true)
+    } catch (err) {
+      setError(err.message || 'Failed to send reset email')
+    }
+    setLoading(false)
+  }
+
+  if (!isOpen) return null
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm" onClick={onClose}>
+      <div className="glass-card rounded-2xl p-6 max-w-sm mx-4 w-full" onClick={e => e.stopPropagation()}>
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-xl font-semibold text-white">Reset Password</h3>
+          <button onClick={onClose} className="text-gray-400 hover:text-white">
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+        
+        {sent ? (
+          <div className="text-center py-4">
+            <div className="w-16 h-16 rounded-full bg-green-500/20 flex items-center justify-center mx-auto mb-4">
+              <CheckCircle className="w-8 h-8 text-green-400" />
+            </div>
+            <p className="text-gray-300">If an account exists with that email, a reset link has been sent.</p>
+          </div>
+        ) : (
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <p className="text-gray-400 text-sm">Enter your email and we'll send you a link to reset your password.</p>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="your@email.com"
+              className="w-full px-4 py-3 rounded-xl bg-black/40 border border-white/10 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500/50"
+              required
+            />
+            {error && <p className="text-red-400 text-sm">{error}</p>}
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full py-3 rounded-xl bg-gradient-to-r from-amber-400 to-yellow-500 text-black font-semibold disabled:opacity-50"
+            >
+              {loading ? 'Sending...' : 'Send Reset Link'}
+            </button>
+          </form>
+        )}
       </div>
     </div>
   )
@@ -72,6 +165,7 @@ const AuthPage = ({ onLogin }) => {
   const [rememberMe, setRememberMe] = useState(false)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [showForgotPassword, setShowForgotPassword] = useState(false)
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -98,7 +192,6 @@ const AuthPage = ({ onLogin }) => {
         return
       }
 
-      // Store user data
       localStorage.setItem('lowkey_user', JSON.stringify(data.user))
       localStorage.setItem('lowkey_token', data.token)
       onLogin(data.user)
@@ -110,23 +203,17 @@ const AuthPage = ({ onLogin }) => {
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden">
-      {/* Animated gradient background */}
-      <div className="absolute inset-0 auth-gradient opacity-80" />
-      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/30 to-black/60" />
-      
-      {/* Floating orbs */}
-      <div className="absolute top-1/4 left-1/4 w-64 h-64 rounded-full bg-purple-500/30 blur-3xl animate-pulse" />
-      <div className="absolute bottom-1/4 right-1/4 w-96 h-96 rounded-full bg-pink-500/20 blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
+      <AnimatedBackground />
       
       <div className="relative z-10 w-full max-w-md">
         {/* Logo */}
         <div className="flex flex-col items-center mb-8">
           <LowKeyLogo size="lg" />
-          <p className="text-pink-200 mt-4 text-lg font-light">Grown chats. Real nights. Private parties.</p>
+          <p className="text-pink-200/80 mt-4 text-lg font-light tracking-wide">Grown chats. Real nights. Private parties.</p>
         </div>
 
         {/* Auth Card */}
-        <div className="glass rounded-3xl p-6 shadow-2xl">
+        <div className="glass-card rounded-3xl p-6 shadow-2xl">
           {/* Tabs */}
           <div className="flex mb-6 bg-black/30 rounded-xl p-1">
             <button
@@ -210,7 +297,11 @@ const AuthPage = ({ onLogin }) => {
                   />
                   <span className="text-gray-300 text-sm">Remember me</span>
                 </label>
-                <button type="button" className="text-amber-400 text-sm hover:underline">
+                <button 
+                  type="button" 
+                  onClick={() => setShowForgotPassword(true)}
+                  className="text-amber-400 text-sm hover:underline"
+                >
                   Forgot password?
                 </button>
               </div>
@@ -236,6 +327,8 @@ const AuthPage = ({ onLogin }) => {
           </p>
         </div>
       </div>
+      
+      <ForgotPasswordModal isOpen={showForgotPassword} onClose={() => setShowForgotPassword(false)} />
     </div>
   )
 }
@@ -245,7 +338,7 @@ const Tile = ({ icon: Icon, label, colorClass, isLocked, onClick }) => {
   return (
     <button
       onClick={onClick}
-      className={`relative group w-full aspect-[2/1] rounded-xl border-l-4 ${colorClass} hover:scale-[1.02] transition-all duration-200 flex items-center gap-3 px-4 backdrop-blur-sm`}
+      className={`tile ${colorClass} relative w-full aspect-[2/1] rounded-xl flex items-center gap-3 px-4 group`}
     >
       <div className="flex items-center gap-3 flex-1">
         <Icon className="w-5 h-5 text-white/90" />
@@ -253,20 +346,47 @@ const Tile = ({ icon: Icon, label, colorClass, isLocked, onClick }) => {
       </div>
       {isLocked && (
         <div className="absolute top-2 right-2">
-          <Lock className="w-4 h-4 text-purple-400" />
+          <Lock className="w-4 h-4 text-purple-400 animate-pulse-soft" />
         </div>
       )}
     </button>
   )
 }
 
+// Notification Bell Component
+const NotificationBell = ({ count, onClick }) => (
+  <button onClick={onClick} className="relative p-2 rounded-full hover:bg-white/10 transition-colors">
+    <Bell className="w-5 h-5 text-gray-300" />
+    {count > 0 && (
+      <span className="notification-badge">{count > 9 ? '9+' : count}</span>
+    )}
+  </button>
+)
+
 // Home Page Component
-const HomePage = ({ user, onLogout }) => {
+const HomePage = ({ user, onLogout, setUser }) => {
   const [showLockModal, setShowLockModal] = useState(false)
-  const [currentPage, setCurrentPage] = useState('home')
+  const [notifications, setNotifications] = useState([])
+  const [showNotifications, setShowNotifications] = useState(false)
   const router = useRouter()
   
   const lockedFeatures = ['radio', 'music', 'afterdark']
+  
+  useEffect(() => {
+    fetchNotifications()
+  }, [])
+
+  const fetchNotifications = async () => {
+    try {
+      const res = await fetch(`/api/notifications/${user.id}`)
+      if (res.ok) {
+        const data = await res.json()
+        setNotifications(data)
+      }
+    } catch (err) {
+      console.error('Failed to fetch notifications')
+    }
+  }
   
   const handleTileClick = (tileId, path) => {
     if (lockedFeatures.includes(tileId) && !user.verified) {
@@ -276,44 +396,47 @@ const HomePage = ({ user, onLogout }) => {
     router.push(path)
   }
 
+  const unreadCount = notifications.filter(n => !n.read).length
+
   const tiles = [
     { id: 'friends', icon: Users, label: 'Friends', colorClass: 'tile-friends', path: '/friends' },
     { id: 'inbox', icon: MessageSquare, label: 'Inbox', colorClass: 'tile-inbox', path: '/inbox' },
     { id: 'lounge', icon: Sofa, label: 'Lounge', colorClass: 'tile-lounge', path: '/lounge' },
-    { id: 'quiet', icon: Volume2, label: 'Quiet', colorClass: 'tile-quiet', path: '/quiet' },
     { id: 'search', icon: Search, label: 'Search', colorClass: 'tile-search', path: '/search' },
     { id: 'wallet', icon: Wallet, label: 'Wallet', colorClass: 'tile-wallet', path: '/wallet' },
+    { id: 'meet', icon: UserPlus, label: 'Meet', colorClass: 'tile-meet', path: '/meet' },
+    { id: 'quiet', icon: Volume2, label: 'Quiet', colorClass: 'tile-quiet', path: '/quiet' },
     { id: 'afterdark', icon: Moon, label: 'After Dark', colorClass: 'tile-afterdark', path: '/afterdark' },
     { id: 'games', icon: Gamepad2, label: 'Games', colorClass: 'tile-games', path: '/games' },
-    { id: 'meet', icon: UserPlus, label: 'Meet', colorClass: 'tile-meet', path: '/meet' },
-    { id: 'events', icon: Calendar, label: 'Events', colorClass: 'tile-events', path: '/events' },
     { id: 'radio', icon: Radio, label: 'Radio', colorClass: 'tile-radio', path: '/radio' },
     { id: 'music', icon: Music, label: 'Music', colorClass: 'tile-music', path: '/music' },
+    { id: 'events', icon: Calendar, label: 'Events', colorClass: 'tile-events', path: '/events' },
   ]
 
   return (
     <div className="min-h-screen bg-[#0a0a0f] relative">
       {/* Background glow */}
-      <div className="absolute top-0 left-0 w-96 h-96 rounded-full bg-gradient-to-br from-pink-500/30 via-purple-500/20 to-transparent blur-3xl" />
+      <div className="absolute top-0 left-0 w-[500px] h-[500px] rounded-full bg-gradient-to-br from-pink-500/20 via-purple-500/15 to-transparent blur-3xl pointer-events-none" />
       
       {/* Header */}
       <header className="relative z-10 flex items-center justify-between p-4 border-b border-white/5">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
-            <span className="text-white font-bold text-sm">{user.displayName?.charAt(0).toUpperCase() || 'U'}</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="text-lg font-semibold text-white">LowKey</span>
-          </div>
+          <img 
+            src="https://customer-assets.emergentagent.com/job_9cfb4bde-566c-4101-8a52-a8ca747e74ca/artifacts/xjtcpb4e_095E7AA1-912D-48A9-A667-A5A89F16DBD7.png" 
+            alt="LowKey" 
+            className="w-10 h-10 object-contain"
+          />
+          <span className="text-lg font-semibold text-white">LowKey</span>
         </div>
         
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
           {user.verified && (
             <span className="flex items-center gap-1 px-2 py-1 rounded-full bg-green-500/20 border border-green-500/30 text-green-400 text-xs">
               <CheckCircle className="w-3 h-3" />
               Verified
             </span>
           )}
+          <NotificationBell count={unreadCount} onClick={() => setShowNotifications(!showNotifications)} />
           <button onClick={() => router.push('/admin')} className="p-2 rounded-full hover:bg-white/10 transition-colors">
             <Settings className="w-5 h-5 text-gray-400" />
           </button>
@@ -322,6 +445,34 @@ const HomePage = ({ user, onLogout }) => {
           </button>
         </div>
       </header>
+
+      {/* Notifications Dropdown */}
+      {showNotifications && (
+        <div className="absolute top-16 right-4 z-30 w-80 glass-card rounded-xl shadow-2xl max-h-96 overflow-y-auto">
+          <div className="p-4 border-b border-white/10">
+            <h3 className="text-white font-semibold">Notifications</h3>
+          </div>
+          {notifications.length === 0 ? (
+            <div className="p-4 text-center text-gray-400">No notifications</div>
+          ) : (
+            notifications.map((notif) => (
+              <div 
+                key={notif.id} 
+                onClick={() => {
+                  if (notif.type === 'dm') {
+                    router.push(`/inbox?conversation=${notif.conversationId}`)
+                  }
+                  setShowNotifications(false)
+                }}
+                className={`p-4 border-b border-white/5 hover:bg-white/5 cursor-pointer ${!notif.read ? 'bg-purple-500/10' : ''}`}
+              >
+                <p className="text-white text-sm">{notif.message}</p>
+                <p className="text-gray-500 text-xs mt-1">{new Date(notif.createdAt).toLocaleString()}</p>
+              </div>
+            ))
+          )}
+        </div>
+      )}
 
       {/* Main Content */}
       <main className="relative z-10 p-4 pb-24">
@@ -339,14 +490,14 @@ const HomePage = ({ user, onLogout }) => {
           ))}          
         </div>
 
-        {/* Notices Tile - Full width */}
+        {/* Notices Tile */}
         <div className="mb-6">
           <button
             onClick={() => router.push('/notices')}
-            className="w-full max-w-xs rounded-xl border-l-4 tile-notices glass hover:scale-[1.02] transition-all duration-200 flex items-center gap-3 px-4 py-3"
+            className="tile tile-notices w-full max-w-xs rounded-xl flex items-center gap-3 px-4 py-3"
           >
-            <Bell className="w-5 h-5 text-white/80" />
-            <span className="text-white/90 font-medium text-sm">Notices</span>
+            <Bell className="w-5 h-5 text-white/90" />
+            <span className="text-white font-medium text-sm">Notices</span>
           </button>
         </div>
 
@@ -357,7 +508,7 @@ const HomePage = ({ user, onLogout }) => {
         </div>
 
         {/* Featured Spotlight */}
-        <div className="glass rounded-2xl p-4 mb-6 border border-purple-500/20">
+        <div className="glass-card rounded-2xl p-4 mb-6">
           <div className="flex items-start gap-3">
             <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-amber-500 flex items-center justify-center">
               <Sparkles className="w-5 h-5 text-white" />
@@ -372,9 +523,6 @@ const HomePage = ({ user, onLogout }) => {
                 <span className="text-gray-500 text-sm">• Neutral placement</span>
               </div>
             </div>
-            <button className="text-gray-400 hover:text-white transition-colors">
-              <X className="w-5 h-5" />
-            </button>
           </div>
         </div>
 
@@ -398,31 +546,19 @@ const HomePage = ({ user, onLogout }) => {
       {/* Bottom Navigation */}
       <nav className="fixed bottom-0 left-0 right-0 z-20 bg-[#0a0a0f]/95 backdrop-blur-lg border-t border-white/5">
         <div className="flex items-center justify-around py-3">
-          <button 
-            onClick={() => setCurrentPage('home')}
-            className={`flex flex-col items-center gap-1 px-4 py-1 ${currentPage === 'home' ? 'text-white' : 'text-gray-500'}`}
-          >
+          <button className="flex flex-col items-center gap-1 px-4 py-1 text-white">
             <Home className="w-5 h-5" />
             <span className="text-xs">Home</span>
           </button>
-          <button 
-            onClick={() => router.push('/lounge')}
-            className="flex flex-col items-center gap-1 px-4 py-1 text-gray-500 hover:text-white transition-colors"
-          >
+          <button onClick={() => router.push('/lounge')} className="flex flex-col items-center gap-1 px-4 py-1 text-gray-500 hover:text-white transition-colors">
             <Sofa className="w-5 h-5" />
             <span className="text-xs">Lounge</span>
           </button>
-          <button 
-            onClick={() => handleTileClick('afterdark', '/afterdark')}
-            className="flex flex-col items-center gap-1 px-4 py-1 text-gray-500 hover:text-white transition-colors"
-          >
+          <button onClick={() => handleTileClick('afterdark', '/afterdark')} className="flex flex-col items-center gap-1 px-4 py-1 text-gray-500 hover:text-white transition-colors">
             <Moon className="w-5 h-5" />
             <span className="text-xs">After Dark</span>
           </button>
-          <button 
-            onClick={() => router.push('/profile')}
-            className="flex flex-col items-center gap-1 px-4 py-1 text-gray-500 hover:text-white transition-colors"
-          >
+          <button onClick={() => router.push('/profile')} className="flex flex-col items-center gap-1 px-4 py-1 text-gray-500 hover:text-white transition-colors">
             <User className="w-5 h-5" />
             <span className="text-xs">Profile</span>
           </button>
@@ -440,7 +576,6 @@ export default function App() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    // Check for existing session
     const storedUser = localStorage.getItem('lowkey_user')
     if (storedUser) {
       setUser(JSON.parse(storedUser))
@@ -474,7 +609,7 @@ export default function App() {
 
   return (
     <AuthContext.Provider value={{ user, setUser, handleLogout }}>
-      <HomePage user={user} onLogout={handleLogout} />
+      <HomePage user={user} onLogout={handleLogout} setUser={setUser} />
     </AuthContext.Provider>
   )
 }
