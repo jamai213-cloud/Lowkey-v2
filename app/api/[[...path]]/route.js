@@ -689,6 +689,59 @@ async function handleRoute(request, { params }) {
       }
     }
 
+    // Seed admin user endpoint (one-time use)
+    if (route === '/debug/seed-admin' && method === 'POST') {
+      try {
+        // Check if admin already exists
+        const existingAdmin = await db.collection('users').findOne({
+          $or: [
+            { email: 'lowkey2026@hotmail.com' },
+            { displayNameLower: 'lowkey' }
+          ]
+        })
+
+        if (existingAdmin) {
+          return handleCORS(NextResponse.json({
+            status: 'exists',
+            message: 'Admin user already exists',
+            userId: existingAdmin.id
+          }))
+        }
+
+        // Create admin user
+        const adminUser = {
+          id: uuidv4(),
+          email: 'lowkey2026@hotmail.com',
+          displayName: 'LOWKEY',
+          displayNameLower: 'lowkey',
+          password: hashPassword('LowkeyBoss1'),
+          role: 'admin',
+          verified: true,
+          friends: [],
+          friendRequests: [],
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          lastLogin: new Date(),
+          token: generateToken()
+        }
+
+        await db.collection('users').insertOne(adminUser)
+
+        return handleCORS(NextResponse.json({
+          status: 'created',
+          message: 'Admin user created successfully',
+          userId: adminUser.id,
+          email: adminUser.email,
+          displayName: adminUser.displayName
+        }))
+      } catch (seedError) {
+        return handleCORS(NextResponse.json({
+          status: 'error',
+          error: seedError.message
+        }, { status: 500 }))
+      }
+    }
+
     // Route not found
     return handleCORS(NextResponse.json(
       { error: `Route ${route} not found` },
