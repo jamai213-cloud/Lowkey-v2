@@ -3,17 +3,44 @@ import { v4 as uuidv4 } from 'uuid'
 import { NextResponse } from 'next/server'
 import crypto from 'crypto'
 
-// MongoDB connection
-let client
-let db
+// MongoDB connection - App Router safe pattern
+let client = null
+let clientPromise = null
+
+function getMongoUri() {
+  // Support both MONGODB_URI (Vercel standard) and MONGO_URL (local)
+  const uri = process.env.MONGODB_URI || process.env.MONGO_URL
+  if (!uri) {
+    throw new Error('MONGODB_URI or MONGO_URL environment variable is not defined')
+  }
+  return uri
+}
+
+function getDbName() {
+  return process.env.DB_NAME || 'lowkey'
+}
 
 async function connectToMongo() {
-  if (!client) {
-    client = new MongoClient(process.env.MONGO_URL)
-    await client.connect()
-    db = client.db(process.env.DB_NAME || 'lowkey')
+  // Only connect at runtime, not during build
+  if (typeof window !== 'undefined') {
+    throw new Error('MongoDB should only be accessed on the server')
   }
-  return db
+
+  const uri = getMongoUri()
+  
+  if (!clientPromise) {
+    const options = {
+      maxPoolSize: 10,
+      serverSelectionTimeoutMS: 5000,
+      socketTimeoutMS: 45000,
+    }
+    
+    client = new MongoClient(uri, options)
+    clientPromise = client.connect()
+  }
+  
+  await clientPromise
+  return client.db(getDbName())
 }
 
 // Helper function to hash password
