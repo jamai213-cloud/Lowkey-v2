@@ -130,7 +130,7 @@ async function handleRoute(request, { params }) {
 
     // Login - POST /api/auth/login
     if (route === '/auth/login' && method === 'POST') {
-      const body = await request.json()
+      const body = await safeParseJson(request)
       const { identifier, password } = body
 
       if (!identifier || !password) {
@@ -201,7 +201,7 @@ async function handleRoute(request, { params }) {
     // Update user verification - PUT /api/users/:id/verify
     if (route.match(/^\/users\/[^/]+\/verify$/) && method === 'PUT') {
       const userId = path[1]
-      const body = await request.json()
+      const body = await safeParseJson(request)
       const { verified } = body
 
       const result = await db.collection('users').updateOne(
@@ -253,7 +253,7 @@ async function handleRoute(request, { params }) {
 
     // Create conversation - POST /api/conversations
     if (route === '/conversations' && method === 'POST') {
-      const body = await request.json()
+      const body = await safeParseJson(request)
       const { participants } = body
 
       if (!participants || participants.length !== 2) {
@@ -300,7 +300,7 @@ async function handleRoute(request, { params }) {
 
     // Send message - POST /api/messages
     if (route === '/messages' && method === 'POST') {
-      const body = await request.json()
+      const body = await safeParseJson(request)
       const { conversationId, senderId, content } = body
 
       if (!conversationId || !senderId || !content) {
