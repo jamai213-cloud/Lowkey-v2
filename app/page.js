@@ -245,11 +245,11 @@ const Tile = ({ icon: Icon, label, colorClass, isLocked, onClick }) => {
   return (
     <button
       onClick={onClick}
-      className={`relative group w-full aspect-[2.5/1] rounded-xl border-l-4 ${colorClass} glass hover:scale-[1.02] transition-all duration-200 flex items-center gap-3 px-4`}
+      className={`relative group w-full aspect-[2/1] rounded-xl border-l-4 ${colorClass} hover:scale-[1.02] transition-all duration-200 flex items-center gap-3 px-4 backdrop-blur-sm`}
     >
       <div className="flex items-center gap-3 flex-1">
-        <Icon className="w-5 h-5 text-white/80" />
-        <span className="text-white/90 font-medium text-sm">{label}</span>
+        <Icon className="w-5 h-5 text-white/90" />
+        <span className="text-white font-medium text-sm">{label}</span>
       </div>
       {isLocked && (
         <div className="absolute top-2 right-2">
