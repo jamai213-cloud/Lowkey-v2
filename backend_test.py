@@ -397,8 +397,8 @@ class LowKeyAPITester:
             "password": "newpassword123"
         }
         
-        response = self.make_request("POST", "/auth/reset-password", reset_data, expected_status=400)
-        if response:
+        response = self.make_request("POST", "/auth/reset-password", reset_data)
+        if response and response.status_code == 400:
             data = response.json()
             if "error" in data and "Invalid or expired reset token" in data["error"]:
                 self.log("✅ Reset password API working (correctly rejected invalid token)")
@@ -406,7 +406,7 @@ class LowKeyAPITester:
             else:
                 self.log("❌ Reset password response unexpected", "ERROR")
         else:
-            self.log("❌ Reset password request failed", "ERROR")
+            self.log("❌ Reset password request failed or unexpected status", "ERROR")
         return False
 
     def test_notifications_create(self):
