@@ -59,12 +59,16 @@ class LowKeyAPITester:
         """Test basic health check endpoints"""
         self.log("=== Testing Health Check Endpoints ===")
         
+        root_success = False
+        health_success = False
+        
         # Test root endpoint
         response = self.make_request("GET", "/", expected_status=200)
         if response:
             data = response.json()
             if "message" in data:
                 self.log("✅ Root endpoint working")
+                root_success = True
             else:
                 self.log("❌ Root endpoint response invalid", "ERROR")
         else:
@@ -76,10 +80,13 @@ class LowKeyAPITester:
             data = response.json()
             if data.get("status") == "healthy":
                 self.log("✅ Health endpoint working")
+                health_success = True
             else:
                 self.log("❌ Health endpoint response invalid", "ERROR")
         else:
             self.log("❌ Health endpoint failed", "ERROR")
+            
+        return root_success and health_success
     
     def test_auth_register(self):
         """Test user registration"""
