@@ -336,20 +336,18 @@ const AuthPage = ({ onLogin }) => {
   )
 }
 
-// Tile Component
+// Tile Component - Equal sized with solid colors
 const Tile = ({ icon: Icon, label, colorClass, isLocked, onClick }) => {
   return (
     <button
       onClick={onClick}
-      className={`tile ${colorClass} relative w-full aspect-[2/1] rounded-xl flex items-center gap-3 px-4 group`}
+      className={`tile ${colorClass} relative w-full aspect-square rounded-2xl flex flex-col items-center justify-center gap-2 p-3 group`}
     >
-      <div className="flex items-center gap-3 flex-1">
-        <Icon className="w-5 h-5 text-white/90" />
-        <span className="text-white font-medium text-sm">{label}</span>
-      </div>
+      <Icon className="w-7 h-7 text-white drop-shadow-lg" />
+      <span className="text-white font-semibold text-sm drop-shadow-md">{label}</span>
       {isLocked && (
-        <div className="absolute top-2 right-2">
-          <Lock className="w-4 h-4 text-purple-400 animate-pulse-soft" />
+        <div className="absolute top-2 right-2 bg-black/30 rounded-full p-1">
+          <Lock className="w-4 h-4 text-white" />
         </div>
       )}
     </button>
