@@ -673,17 +673,31 @@ class LowKeyAPITester:
         test_results["auth_register"] = self.test_auth_register()
         test_results["auth_login_email"] = self.test_auth_login_email()
         test_results["auth_login_displayname"] = self.test_auth_login_displayname()
+        test_results["auth_forgot_password"] = self.test_auth_forgot_password()
+        test_results["auth_reset_password"] = self.test_auth_reset_password()
         
         # User tests
         test_results["users_get_all"] = self.test_users_get_all()
         test_results["users_get_specific"] = self.test_users_get_specific()
         test_results["users_verify_toggle"] = self.test_users_verify_toggle()
         
+        # Notification tests
+        test_results["notifications_create"] = self.test_notifications_create()
+        test_results["notifications_get_for_user"] = self.test_notifications_get_for_user()
+        test_results["notifications_mark_read"] = self.test_notifications_mark_read()
+        
+        # Friend request tests
+        test_results["friends_send_request"] = self.test_friends_send_request()
+        test_results["friends_accept_request"] = self.test_friends_accept_request()
+        
         # Messaging tests
         test_results["conversations_create"] = self.test_conversations_create()
         test_results["conversations_get_for_user"] = self.test_conversations_get_for_user()
+        test_results["conversations_create_non_friend"] = self.test_conversations_create_non_friend()
+        test_results["conversations_accept"] = self.test_conversations_accept()
         test_results["messages_send"] = self.test_messages_send()
         test_results["messages_get_for_conversation"] = self.test_messages_get_for_conversation()
+        test_results["messages_with_notifications"] = self.test_messages_with_notifications()
         
         # Summary
         self.log("=" * 60)
