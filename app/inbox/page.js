@@ -1,8 +1,8 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { useRouter } from 'next/navigation'
-import { ArrowLeft, Send, User, MessageSquare, Plus, Search, X } from 'lucide-react'
+import { useRouter, useSearchParams } from 'next/navigation'
+import { ArrowLeft, Send, User, MessageSquare, Plus, Search, X, Check, Bell } from 'lucide-react'
 
 export default function InboxPage() {
   const [user, setUser] = useState(null)
@@ -15,8 +15,10 @@ export default function InboxPage() {
   const [showNewChat, setShowNewChat] = useState(false)
   const [allUsers, setAllUsers] = useState([])
   const [searchQuery, setSearchQuery] = useState('')
+  const [pendingRequests, setPendingRequests] = useState([])
   const messagesEndRef = useRef(null)
   const router = useRouter()
+  const searchParams = useSearchParams()
 
   useEffect(() => {
     const storedUser = localStorage.getItem('lowkey_user')
@@ -34,8 +36,20 @@ export default function InboxPage() {
   }, [user])
 
   useEffect(() => {
+    // Check for conversation param from notification click
+    const conversationId = searchParams.get('conversation')
+    if (conversationId && conversations.length > 0) {
+      const conv = conversations.find(c => c.id === conversationId)
+      if (conv) {
+        setSelectedConversation(conv)
+      }
+    }
+  }, [searchParams, conversations])
+
+  useEffect(() => {
     if (selectedConversation) {
       fetchMessages(selectedConversation.id)
+      markMessagesAsRead(selectedConversation.id)
     }
   }, [selectedConversation])
 
@@ -51,7 +65,13 @@ export default function InboxPage() {
     try {
       const res = await fetch(`/api/conversations/${user.id}`)
       const data = await res.json()
-      setConversations(data)
+      
+      // Separate pending (from non-friends) and accepted conversations
+      const accepted = data.filter(c => c.accepted !== false)
+      const pending = data.filter(c => c.accepted === false && c.isFromNonFriend)
+      
+      setConversations(accepted)
+      setPendingRequests(pending)
     } catch (err) {
       console.error('Failed to fetch conversations:', err)
     }
@@ -65,6 +85,18 @@ export default function InboxPage() {
       setMessages(data)
     } catch (err) {
       console.error('Failed to fetch messages:', err)
+    }
+  }
+
+  const markMessagesAsRead = async (conversationId) => {
+    try {
+      await fetch(`/api/messages/${conversationId}/read`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: user.id })
+      })
+    } catch (err) {
+      console.error('Failed to mark as read:', err)
     }
   }
 
@@ -98,7 +130,7 @@ export default function InboxPage() {
         const message = await res.json()
         setMessages([...messages, message])
         setNewMessage('')
-        fetchConversations() // Refresh to update last message
+        fetchConversations()
       }
     } catch (err) {
       console.error('Failed to send message:', err)
@@ -108,11 +140,15 @@ export default function InboxPage() {
 
   const startNewConversation = async (otherUser) => {
     try {
+      // Check if they're friends
+      const isFriend = user.friends?.includes(otherUser.id)
+      
       const res = await fetch('/api/conversations', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          participants: [user.id, otherUser.id]
+          participants: [user.id, otherUser.id],
+          isFromNonFriend: !isFriend
         })
       })
 
@@ -126,6 +162,20 @@ export default function InboxPage() {
       }
     } catch (err) {
       console.error('Failed to create conversation:', err)
+    }
+  }
+
+  const acceptConversation = async (conversation) => {
+    try {
+      await fetch(`/api/conversations/${conversation.id}/accept`, {
+        method: 'PUT'
+      })
+      
+      // Move from pending to conversations
+      setPendingRequests(pendingRequests.filter(c => c.id !== conversation.id))
+      setConversations([{ ...conversation, accepted: true }, ...conversations])
+    } catch (err) {
+      console.error('Failed to accept conversation:', err)
     }
   }
 
@@ -181,7 +231,7 @@ export default function InboxPage() {
                     className={`max-w-[75%] rounded-2xl px-4 py-2 ${
                       msg.senderId === user.id
                         ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white'
-                        : 'glass text-white'
+                        : 'glass-card text-white'
                     }`}
                   >
                     <p className="text-sm">{msg.content}</p>
@@ -217,60 +267,107 @@ export default function InboxPage() {
         </div>
       ) : (
         // Conversations List
-        <div className="flex-1 overflow-y-auto p-4">
-          {loading ? (
-            <div className="text-center text-gray-400 py-8">Loading conversations...</div>
-          ) : conversations.length === 0 ? (
-            <div className="text-center py-12">
-              <MessageSquare className="w-12 h-12 text-gray-600 mx-auto mb-4" />
-              <p className="text-gray-400">No conversations yet</p>
-              <button
-                onClick={() => {
-                  setShowNewChat(true)
-                  fetchAllUsers()
-                }}
-                className="mt-4 px-4 py-2 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 text-white text-sm hover:opacity-90 transition-opacity"
-              >
-                Start a conversation
-              </button>
-            </div>
-          ) : (
-            <div className="space-y-2">
-              {conversations.map((conv) => (
-                <button
-                  key={conv.id}
-                  onClick={() => setSelectedConversation(conv)}
-                  className="w-full glass rounded-xl p-4 flex items-center gap-3 hover:bg-white/5 transition-colors text-left"
-                >
-                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
-                    <span className="text-white font-bold">
-                      {conv.otherUser?.displayName?.charAt(0).toUpperCase() || '?'}
-                    </span>
+        <div className="flex-1 overflow-y-auto">
+          {/* Pending Message Requests */}
+          {pendingRequests.length > 0 && (
+            <div className="p-4 border-b border-white/5">
+              <div className="flex items-center gap-2 mb-3">
+                <Bell className="w-4 h-4 text-amber-400" />
+                <span className="text-amber-400 text-sm font-medium">Message Requests</span>
+                <span className="px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-400 text-xs">{pendingRequests.length}</span>
+              </div>
+              <div className="space-y-2">
+                {pendingRequests.map((conv) => (
+                  <div
+                    key={conv.id}
+                    className="glass-card rounded-xl p-4 flex items-center gap-3"
+                  >
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center">
+                      <span className="text-white font-bold">
+                        {conv.otherUser?.displayName?.charAt(0).toUpperCase() || '?'}
+                      </span>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="text-white font-medium">
+                        {conv.otherUser?.displayName || 'Unknown'}
+                      </div>
+                      <div className="text-gray-400 text-sm">Wants to message you</div>
+                    </div>
+                    <button
+                      onClick={() => acceptConversation(conv)}
+                      className="px-3 py-1.5 rounded-lg bg-green-500/20 border border-green-500/30 text-green-400 text-sm hover:bg-green-500/30 transition-colors"
+                    >
+                      <Check className="w-4 h-4" />
+                    </button>
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="text-white font-medium">
-                      {conv.otherUser?.displayName || 'Unknown User'}
-                    </div>
-                    <div className="text-gray-400 text-sm truncate">
-                      {conv.lastMessage?.content || 'No messages yet'}
-                    </div>
-                  </div>
-                  {conv.lastMessage && (
-                    <div className="text-gray-500 text-xs">
-                      {new Date(conv.lastMessage.createdAt).toLocaleDateString()}
-                    </div>
-                  )}
-                </button>
-              ))}
+                ))}
+              </div>
             </div>
           )}
+
+          {/* Regular Conversations */}
+          <div className="p-4">
+            {loading ? (
+              <div className="text-center text-gray-400 py-8">Loading conversations...</div>
+            ) : conversations.length === 0 ? (
+              <div className="text-center py-12">
+                <MessageSquare className="w-12 h-12 text-gray-600 mx-auto mb-4" />
+                <p className="text-gray-400">No conversations yet</p>
+                <button
+                  onClick={() => {
+                    setShowNewChat(true)
+                    fetchAllUsers()
+                  }}
+                  className="mt-4 px-4 py-2 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 text-white text-sm hover:opacity-90 transition-opacity"
+                >
+                  Start a conversation
+                </button>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {conversations.map((conv) => (
+                  <button
+                    key={conv.id}
+                    onClick={() => setSelectedConversation(conv)}
+                    className="w-full glass-card rounded-xl p-4 flex items-center gap-3 hover:bg-white/5 transition-colors text-left"
+                  >
+                    <div className="relative">
+                      <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
+                        <span className="text-white font-bold">
+                          {conv.otherUser?.displayName?.charAt(0).toUpperCase() || '?'}
+                        </span>
+                      </div>
+                      {conv.unreadCount > 0 && (
+                        <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-red-500 text-white text-xs flex items-center justify-center font-semibold">
+                          {conv.unreadCount > 9 ? '9+' : conv.unreadCount}
+                        </span>
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="text-white font-medium">
+                        {conv.otherUser?.displayName || 'Unknown User'}
+                      </div>
+                      <div className={`text-sm truncate ${conv.unreadCount > 0 ? 'text-white font-medium' : 'text-gray-400'}`}>
+                        {conv.lastMessage?.content || 'No messages yet'}
+                      </div>
+                    </div>
+                    {conv.lastMessage && (
+                      <div className="text-gray-500 text-xs">
+                        {new Date(conv.lastMessage.createdAt).toLocaleDateString()}
+                      </div>
+                    )}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       )}
 
       {/* New Chat Modal */}
       {showNewChat && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm" onClick={() => setShowNewChat(false)}>
-          <div className="bg-[#1a1a2e] rounded-2xl p-6 w-full max-w-md mx-4 max-h-[80vh] flex flex-col" onClick={e => e.stopPropagation()}>
+          <div className="glass-card rounded-2xl p-6 w-full max-w-md mx-4 max-h-[80vh] flex flex-col" onClick={e => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-xl font-semibold text-white">New Conversation</h3>
               <button onClick={() => setShowNewChat(false)} className="text-gray-400 hover:text-white transition-colors">
@@ -310,6 +407,9 @@ export default function InboxPage() {
                       <div className="text-white font-medium">{otherUser.displayName}</div>
                       <div className="text-gray-400 text-sm">{otherUser.email}</div>
                     </div>
+                    {user.friends?.includes(otherUser.id) && (
+                      <span className="ml-auto text-xs text-green-400">Friend</span>
+                    )}
                   </button>
                 ))
               )}

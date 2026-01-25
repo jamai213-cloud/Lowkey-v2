@@ -39,7 +39,6 @@ export default function AdminPage() {
         const updatedUser = await res.json()
         setUsers(users.map(u => u.id === userId ? updatedUser : u))
         
-        // Update local storage if this is the current user
         const storedUser = localStorage.getItem('lowkey_user')
         if (storedUser) {
           const currentUser = JSON.parse(storedUser)
@@ -56,7 +55,6 @@ export default function AdminPage() {
 
   return (
     <div className="min-h-screen bg-[#0a0a0f] p-4">
-      {/* Header */}
       <header className="flex items-center gap-4 mb-6">
         <button
           onClick={() => router.push('/')}
@@ -73,7 +71,6 @@ export default function AdminPage() {
         </button>
       </header>
 
-      {/* Users List */}
       <div className="space-y-3">
         {loading ? (
           <div className="text-center text-gray-400 py-8">Loading users...</div>
@@ -83,7 +80,7 @@ export default function AdminPage() {
           users.map((user) => (
             <div
               key={user.id}
-              className="glass rounded-xl p-4 flex items-center justify-between"
+              className="glass-card rounded-xl p-4 flex items-center justify-between"
             >
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
