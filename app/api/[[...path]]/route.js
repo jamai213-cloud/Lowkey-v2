@@ -689,8 +689,8 @@ async function handleRoute(request, { params }) {
       }
     }
 
-    // Seed admin user endpoint (one-time use)
-    if (route === '/debug/seed-admin' && method === 'POST') {
+    // Seed admin user endpoint - GET for easy browser access
+    if (route === '/debug/seed-admin' && (method === 'POST' || method === 'GET')) {
       try {
         const now = new Date()
         const password = hashPassword('LowKey2026!')
