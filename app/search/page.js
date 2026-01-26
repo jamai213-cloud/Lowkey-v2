@@ -2,15 +2,14 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { ArrowLeft, Search as SearchIcon, User, Users, Calendar, UserPlus, Check } from 'lucide-react'
+import { ArrowLeft, Search as SearchIcon, User, Users, Calendar, UserPlus, Check, Crown, Sparkles } from 'lucide-react'
 
 export default function SearchPage() {
   const router = useRouter()
   const [user, setUser] = useState(null)
   const [query, setQuery] = useState('')
   const [results, setResults] = useState({ users: [], lounges: [], events: [] })
-  const [loading, setLoading] = useState(false)
-  const [searched, setSearched] = useState(false)
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     const storedUser = localStorage.getItem('lowkey_user')
@@ -18,20 +17,34 @@ export default function SearchPage() {
       router.push('/')
       return
     }
-    setUser(JSON.parse(storedUser))
+    const userData = JSON.parse(storedUser)
+    setUser(userData)
+    // Load all users on page load
+    loadAllMembers()
   }, [])
+
+  const loadAllMembers = async () => {
+    setLoading(true)
+    try {
+      const res = await fetch('/api/search?q=')
+      if (res.ok) {
+        const data = await res.json()
+        setResults(data)
+      }
+    } catch (err) {
+      console.error('Failed to load members')
+    }
+    setLoading(false)
+  }
 
   const search = async (e) => {
     e?.preventDefault()
-    if (!query.trim()) return
-
     setLoading(true)
     try {
       const res = await fetch(`/api/search?q=${encodeURIComponent(query)}`)
       if (res.ok) {
         const data = await res.json()
         setResults(data)
-        setSearched(true)
       }
     } catch (err) {
       console.error('Search failed')
@@ -83,6 +96,15 @@ export default function SearchPage() {
 
   const isFriend = (userId) => user?.friends?.includes(userId)
 
+  // Get verification badge
+  const getVerificationBadge = (u) => {
+    if (u.isFounder) return { icon: Crown, color: 'text-amber-400', label: 'Founder' }
+    if (u.verificationTier === 'inner-circle') return { icon: Sparkles, color: 'text-purple-400', label: 'Inner Circle' }
+    if (u.verificationTier === 'trusted') return { icon: Check, color: 'text-blue-400', label: 'Trusted' }
+    if (u.verified) return { icon: Check, color: 'text-green-400', label: 'Verified' }
+    return null
+  }
+
   return (
     <div className="min-h-screen bg-[#0a0a0f]">
       {/* Header */}
@@ -102,50 +124,75 @@ export default function SearchPage() {
               type="text"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search users, lounges, events..."
+              placeholder="Search members..."
               className="w-full pl-12 pr-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-gray-400 focus:outline-none focus:border-amber-500/50"
             />
           </div>
         </form>
 
         {loading && (
-          <div className="text-center text-gray-400">Searching...</div>
+          <div className="text-center text-gray-400">Loading members...</div>
         )}
 
-        {searched && !loading && (
+        {!loading && (
           <div className="space-y-6">
-            {/* Users */}
-            {results.users.length > 0 && (
-              <div>
-                <h2 className="text-white font-semibold mb-3 flex items-center gap-2">
-                  <User className="w-4 h-4" /> Users
-                </h2>
-                <div className="space-y-2">
-                  {results.users.filter(u => u.id !== user?.id).map(u => (
-                    <div key={u.id} className="flex items-center gap-3 p-3 rounded-xl bg-white/5">
-                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
-                        <User className="w-5 h-5 text-white" />
-                      </div>
-                      <div className="flex-1">
-                        <p className="text-white font-medium">{u.displayName}</p>
-                      </div>
-                      {isFriend(u.id) ? (
-                        <span className="text-green-400 text-sm flex items-center gap-1">
-                          <Check className="w-4 h-4" /> Friend
-                        </span>
-                      ) : (
-                        <button 
-                          onClick={() => addFriend(u.id)}
-                          className="px-3 py-1.5 rounded-lg bg-amber-500/20 text-amber-400 text-sm flex items-center gap-1"
-                        >
-                          <UserPlus className="w-4 h-4" /> Add
-                        </button>
-                      )}
-                    </div>
-                  ))}
+            {/* Users - All Members */}
+            <div>
+              <h2 className="text-white font-semibold mb-3 flex items-center gap-2">
+                <User className="w-4 h-4" /> 
+                {query ? 'Results' : 'All Members'} 
+                <span className="text-gray-500 text-sm font-normal">({results.users.filter(u => u.id !== user?.id).length})</span>
+              </h2>
+              {results.users.filter(u => u.id !== user?.id).length === 0 ? (
+                <div className="text-center text-gray-400 py-8">
+                  <User className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                  <p>No members found</p>
                 </div>
-              </div>
-            )}
+              ) : (
+                <div className="space-y-2">
+                  {results.users.filter(u => u.id !== user?.id).map(u => {
+                    const badge = getVerificationBadge(u)
+                    return (
+                      <div key={u.id} className="flex items-center gap-3 p-3 rounded-xl bg-white/5">
+                        <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                          u.isFounder ? 'bg-gradient-to-br from-amber-500 to-yellow-600' :
+                          u.isCreator ? 'bg-gradient-to-br from-pink-500 to-purple-500' :
+                          'bg-gradient-to-br from-purple-500 to-pink-500'
+                        }`}>
+                          <User className="w-5 h-5 text-white" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2">
+                            <p className="text-white font-medium truncate">{u.displayName}</p>
+                            {badge && (
+                              <badge.icon className={`w-4 h-4 flex-shrink-0 ${badge.color}`} />
+                            )}
+                            {u.isCreator && !u.isFounder && (
+                              <span className="text-xs px-1.5 py-0.5 rounded bg-pink-500/20 text-pink-400 flex-shrink-0">Creator</span>
+                            )}
+                          </div>
+                          {u.verificationTier && u.verificationTier !== 'new' && (
+                            <p className="text-gray-500 text-xs capitalize">{u.verificationTier.replace('-', ' ')}</p>
+                          )}
+                        </div>
+                        {isFriend(u.id) ? (
+                          <span className="text-green-400 text-sm flex items-center gap-1 flex-shrink-0">
+                            <Check className="w-4 h-4" /> Friend
+                          </span>
+                        ) : (
+                          <button 
+                            onClick={() => addFriend(u.id)}
+                            className="px-3 py-1.5 rounded-lg bg-amber-500/20 text-amber-400 text-sm flex items-center gap-1 flex-shrink-0"
+                          >
+                            <UserPlus className="w-4 h-4" /> Add
+                          </button>
+                        )}
+                      </div>
+                    )
+                  })}
+                </div>
+              )}
+            </div>
 
             {/* Lounges */}
             {results.lounges.length > 0 && (
@@ -198,21 +245,6 @@ export default function SearchPage() {
                 </div>
               </div>
             )}
-
-            {/* No Results */}
-            {results.users.length === 0 && results.lounges.length === 0 && results.events.length === 0 && (
-              <div className="text-center text-gray-400 py-8">
-                <SearchIcon className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                <p>No results found for "{query}"</p>
-              </div>
-            )}
-          </div>
-        )}
-
-        {!searched && (
-          <div className="text-center text-gray-400 py-8">
-            <SearchIcon className="w-12 h-12 mx-auto mb-4 opacity-50" />
-            <p>Search for users, lounges, or events</p>
           </div>
         )}
       </div>
