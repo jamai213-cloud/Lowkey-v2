@@ -324,7 +324,180 @@ async function handleRoute(request, { params }) {
       return handleCORS(NextResponse.json({ success: true }))
     }
 
-    // ==================== LOUNGES ====================
+    // ==================== MAIN LOUNGE (Single Global Lounge) ====================
+    if (route === '/main-lounge' && method === 'GET') {
+      // Get or create the main lounge
+      let mainLounge = await db.collection('lounges').findOne({ isMainLounge: true })
+      if (!mainLounge) {
+        mainLounge = { 
+          id: 'main-lounge', 
+          name: 'LowKey Lounge', 
+          description: 'The main lounge for all LowKey members', 
+          isMainLounge: true, 
+          members: [], 
+          createdAt: new Date() 
+        }
+        await db.collection('lounges').insertOne(mainLounge)
+      }
+      const members = await db.collection('users').find({ id: { $in: mainLounge.members || [] } }).toArray()
+      return handleCORS(NextResponse.json({ ...cleanMongoDoc(mainLounge), memberDetails: members.map(cleanMongoDoc), memberCount: members.length }))
+    }
+
+    if (route === '/main-lounge/join' && method === 'POST') {
+      const body = await safeParseJson(request)
+      await db.collection('lounges').updateOne({ isMainLounge: true }, { $addToSet: { members: body.userId } })
+      return handleCORS(NextResponse.json({ success: true }))
+    }
+
+    if (route === '/main-lounge/messages' && method === 'GET') {
+      const msgs = await db.collection('lounge_messages').find({ loungeId: 'main-lounge' }).sort({ createdAt: -1 }).limit(100).toArray()
+      return handleCORS(NextResponse.json(msgs.reverse().map(cleanMongoDoc)))
+    }
+
+    if (route === '/main-lounge/messages' && method === 'POST') {
+      const body = await safeParseJson(request)
+      const msg = { id: uuidv4(), loungeId: 'main-lounge', senderId: body.senderId, senderName: body.senderName, content: body.content, createdAt: new Date() }
+      await db.collection('lounge_messages').insertOne(msg)
+      return handleCORS(NextResponse.json(cleanMongoDoc(msg)))
+    }
+
+    // ==================== CONTENT CREATOR POSTS (Teaser for Sale) ====================
+    if (route === '/main-lounge/posts' && method === 'GET') {
+      const posts = await db.collection('creator_posts').find({}).sort({ createdAt: -1 }).limit(50).toArray()
+      const enriched = await Promise.all(posts.map(async (p) => {
+        const creator = await db.collection('users').findOne({ id: p.creatorId })
+        return { ...cleanMongoDoc(p), creatorName: creator?.displayName || 'Anonymous' }
+      }))
+      return handleCORS(NextResponse.json(enriched))
+    }
+
+    if (route === '/main-lounge/posts' && method === 'POST') {
+      const body = await safeParseJson(request)
+      const post = {
+        id: uuidv4(),
+        creatorId: body.creatorId,
+        imageUrl: body.imageUrl,
+        caption: body.caption,
+        price: body.price || 0,
+        isBlurred: true,
+        createdAt: new Date()
+      }
+      await db.collection('creator_posts').insertOne(post)
+      return handleCORS(NextResponse.json(cleanMongoDoc(post)))
+    }
+
+    // ==================== COMMUNITIES (With Invite Codes) ====================
+    if (route === '/communities' && method === 'GET') {
+      const url = new URL(request.url)
+      const userId = url.searchParams.get('userId')
+      // Get communities user is member of
+      const communities = await db.collection('communities').find({ members: userId }).sort({ createdAt: -1 }).toArray()
+      return handleCORS(NextResponse.json(communities.map(cleanMongoDoc)))
+    }
+
+    if (route === '/communities' && method === 'POST') {
+      const body = await safeParseJson(request)
+      // Generate unique invite code
+      const inviteCode = Math.random().toString(36).substring(2, 8).toUpperCase()
+      const community = {
+        id: uuidv4(),
+        name: body.name,
+        description: body.description,
+        adminId: body.adminId,
+        inviteCode,
+        members: [body.adminId],
+        createdAt: new Date()
+      }
+      await db.collection('communities').insertOne(community)
+      return handleCORS(NextResponse.json(cleanMongoDoc(community)))
+    }
+
+    if (route === '/communities/join' && method === 'POST') {
+      const body = await safeParseJson(request)
+      const { userId, inviteCode } = body
+      const community = await db.collection('communities').findOne({ inviteCode: inviteCode.toUpperCase() })
+      if (!community) {
+        return handleCORS(NextResponse.json({ error: 'Invalid invite code' }, { status: 404 }))
+      }
+      await db.collection('communities').updateOne({ id: community.id }, { $addToSet: { members: userId } })
+      return handleCORS(NextResponse.json({ success: true, community: cleanMongoDoc(community) }))
+    }
+
+    if (route.match(/^\/communities\/[^/]+$/) && method === 'GET') {
+      const communityId = path[1]
+      const community = await db.collection('communities').findOne({ id: communityId })
+      if (!community) return handleCORS(NextResponse.json({ error: 'Not found' }, { status: 404 }))
+      const members = await db.collection('users').find({ id: { $in: community.members || [] } }).toArray()
+      return handleCORS(NextResponse.json({ ...cleanMongoDoc(community), memberDetails: members.map(cleanMongoDoc) }))
+    }
+
+    if (route.match(/^\/communities\/[^/]+\/messages$/) && method === 'GET') {
+      const communityId = path[1]
+      const msgs = await db.collection('community_messages').find({ communityId }).sort({ createdAt: -1 }).limit(100).toArray()
+      return handleCORS(NextResponse.json(msgs.reverse().map(cleanMongoDoc)))
+    }
+
+    if (route.match(/^\/communities\/[^/]+\/messages$/) && method === 'POST') {
+      const communityId = path[1]
+      const body = await safeParseJson(request)
+      const msg = { id: uuidv4(), communityId, senderId: body.senderId, senderName: body.senderName, content: body.content, createdAt: new Date() }
+      await db.collection('community_messages').insertOne(msg)
+      return handleCORS(NextResponse.json(cleanMongoDoc(msg)))
+    }
+
+    // ==================== AFTER DARK ROOMS (Anonymous Safe Space) ====================
+    if (route === '/afterdark/rooms' && method === 'GET') {
+      const rooms = await db.collection('afterdark_rooms').find({}).sort({ createdAt: -1 }).toArray()
+      return handleCORS(NextResponse.json(rooms.map(cleanMongoDoc)))
+    }
+
+    if (route === '/afterdark/rooms' && method === 'POST') {
+      const body = await safeParseJson(request)
+      const room = {
+        id: uuidv4(),
+        name: body.name,
+        description: body.description,
+        category: body.category || 'general', // kink, chat, safe-space, etc
+        creatorId: body.creatorId,
+        isAnonymous: true,
+        members: [body.creatorId],
+        createdAt: new Date()
+      }
+      await db.collection('afterdark_rooms').insertOne(room)
+      return handleCORS(NextResponse.json(cleanMongoDoc(room)))
+    }
+
+    if (route.match(/^\/afterdark\/rooms\/[^/]+$/) && method === 'GET') {
+      const roomId = path[2]
+      const room = await db.collection('afterdark_rooms').findOne({ id: roomId })
+      if (!room) return handleCORS(NextResponse.json({ error: 'Not found' }, { status: 404 }))
+      return handleCORS(NextResponse.json(cleanMongoDoc(room)))
+    }
+
+    if (route.match(/^\/afterdark\/rooms\/[^/]+\/join$/) && method === 'POST') {
+      const roomId = path[2]
+      const body = await safeParseJson(request)
+      await db.collection('afterdark_rooms').updateOne({ id: roomId }, { $addToSet: { members: body.userId } })
+      return handleCORS(NextResponse.json({ success: true }))
+    }
+
+    if (route.match(/^\/afterdark\/rooms\/[^/]+\/messages$/) && method === 'GET') {
+      const roomId = path[2]
+      const msgs = await db.collection('afterdark_messages').find({ roomId }).sort({ createdAt: -1 }).limit(100).toArray()
+      // Return with anonymous names
+      const anonMsgs = msgs.reverse().map(m => ({ ...cleanMongoDoc(m), senderName: `Anonymous ${m.senderId.substring(0, 4)}` }))
+      return handleCORS(NextResponse.json(anonMsgs))
+    }
+
+    if (route.match(/^\/afterdark\/rooms\/[^/]+\/messages$/) && method === 'POST') {
+      const roomId = path[2]
+      const body = await safeParseJson(request)
+      const msg = { id: uuidv4(), roomId, senderId: body.senderId, content: body.content, createdAt: new Date() }
+      await db.collection('afterdark_messages').insertOne(msg)
+      return handleCORS(NextResponse.json({ ...cleanMongoDoc(msg), senderName: `Anonymous ${body.senderId.substring(0, 4)}` }))
+    }
+
+    // ==================== LEGACY LOUNGES (keeping for backwards compat) ====================
     if (route === '/lounges' && method === 'GET') {
       const url = new URL(request.url)
       const afterDark = url.searchParams.get('afterDark') === 'true'
