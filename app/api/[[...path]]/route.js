@@ -910,12 +910,23 @@ async function handleRoute(request, { params }) {
       const userId = url.searchParams.get('userId')
       // Get communities user is member of
       const communities = await db.collection('communities').find({ members: userId }).sort({ createdAt: -1 }).toArray()
-      return handleCORS(NextResponse.json(communities.map(cleanMongoDoc)))
+      
+      // Check if codes are expired and regenerate if needed for admin
+      const enriched = communities.map(c => {
+        const codeExpired = c.codeExpiresAt && new Date(c.codeExpiresAt) < new Date()
+        return {
+          ...cleanMongoDoc(c),
+          codeExpired: codeExpired,
+          isAdmin: c.adminId === userId
+        }
+      })
+      
+      return handleCORS(NextResponse.json(enriched))
     }
 
     if (route === '/communities' && method === 'POST') {
       const body = await safeParseJson(request)
-      // Generate unique invite code
+      // Generate unique invite code - expires in 24 hours
       const inviteCode = Math.random().toString(36).substring(2, 8).toUpperCase()
       const community = {
         id: uuidv4(),
@@ -923,11 +934,41 @@ async function handleRoute(request, { params }) {
         description: body.description,
         adminId: body.adminId,
         inviteCode,
+        codeExpiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 hours
         members: [body.adminId],
         createdAt: new Date()
       }
       await db.collection('communities').insertOne(community)
       return handleCORS(NextResponse.json(cleanMongoDoc(community)))
+    }
+
+    // Regenerate community invite code (Admin only) - 24 hour expiry
+    if (route === '/communities/regenerate-code' && method === 'POST') {
+      const body = await safeParseJson(request)
+      const { communityId, userId } = body
+      
+      const community = await db.collection('communities').findOne({ id: communityId })
+      if (!community) {
+        return handleCORS(NextResponse.json({ error: 'Community not found' }, { status: 404 }))
+      }
+      if (community.adminId !== userId) {
+        return handleCORS(NextResponse.json({ error: 'Only admin can regenerate code' }, { status: 403 }))
+      }
+      
+      const newCode = Math.random().toString(36).substring(2, 8).toUpperCase()
+      await db.collection('communities').updateOne(
+        { id: communityId },
+        { $set: { 
+          inviteCode: newCode, 
+          codeExpiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000)
+        }}
+      )
+      
+      return handleCORS(NextResponse.json({ 
+        success: true, 
+        inviteCode: newCode,
+        expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000)
+      }))
     }
 
     if (route === '/communities/join' && method === 'POST') {
@@ -937,6 +978,17 @@ async function handleRoute(request, { params }) {
       if (!community) {
         return handleCORS(NextResponse.json({ error: 'Invalid invite code' }, { status: 404 }))
       }
+      
+      // Check if code has expired
+      if (community.codeExpiresAt && new Date(community.codeExpiresAt) < new Date()) {
+        return handleCORS(NextResponse.json({ error: 'This invite code has expired. Ask the admin for a new one.' }, { status: 410 }))
+      }
+      
+      // Check if already a member
+      if (community.members?.includes(userId)) {
+        return handleCORS(NextResponse.json({ error: 'You are already a member of this community' }, { status: 400 }))
+      }
+      
       await db.collection('communities').updateOne({ id: community.id }, { $addToSet: { members: userId } })
       return handleCORS(NextResponse.json({ success: true, community: cleanMongoDoc(community) }))
     }
