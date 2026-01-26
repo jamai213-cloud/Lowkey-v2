@@ -244,13 +244,21 @@ export default function LoungePage() {
         <>
           {/* Creator Posts */}
           <div className="flex-1 overflow-y-auto p-4">
-            {/* Create Post Button */}
-            <button
-              onClick={() => setShowPostForm(true)}
-              className="w-full mb-4 py-3 rounded-xl bg-gradient-to-r from-pink-500 to-purple-500 text-white font-semibold flex items-center justify-center gap-2"
-            >
-              <Image className="w-5 h-5" /> Post a Tease
-            </button>
+            {/* Create Post Button - Only for Creators */}
+            {user?.isCreator ? (
+              <button
+                onClick={() => setShowPostForm(true)}
+                className="w-full mb-4 py-3 rounded-xl bg-gradient-to-r from-pink-500 to-purple-500 text-white font-semibold flex items-center justify-center gap-2"
+              >
+                <Image className="w-5 h-5" /> Post a Tease
+              </button>
+            ) : (
+              <div className="mb-4 p-4 rounded-xl bg-pink-500/10 border border-pink-500/30 text-center">
+                <Star className="w-6 h-6 text-pink-400 mx-auto mb-2" />
+                <p className="text-white text-sm font-medium">Want to post content?</p>
+                <p className="text-gray-400 text-xs">Contact the founder to become a creator</p>
+              </div>
+            )}
 
             {/* Posts Grid */}
             {posts.length === 0 ? (
@@ -288,10 +296,13 @@ export default function LoungePage() {
                       {post.caption && <p className="text-gray-400 text-xs truncate">{post.caption}</p>}
                       {post.price > 0 && (
                         <div className="flex items-center gap-1 mt-2 text-amber-400 text-sm font-semibold">
-                          <DollarSign className="w-4 h-4" />
+                          <PoundSterling className="w-4 h-4" />
                           {post.price.toFixed(2)}
                         </div>
                       )}
+                      <button className="w-full mt-2 py-2 rounded-lg bg-pink-500/20 text-pink-400 text-xs font-medium">
+                        Subscribe to View
+                      </button>
                     </div>
                   </div>
                 ))}
