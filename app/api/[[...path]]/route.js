@@ -1155,7 +1155,20 @@ async function handleRoute(request, { params }) {
 
     if (route === '/notices' && method === 'POST') {
       const body = await safeParseJson(request)
-      const notice = { id: uuidv4(), title: body.title, content: body.content, createdAt: new Date() }
+      
+      // Only Founder can post notices
+      const requester = await db.collection('users').findOne({ id: body.founderId })
+      if (requester?.email?.toLowerCase() !== FOUNDER_EMAIL.toLowerCase()) {
+        return handleCORS(NextResponse.json({ error: 'Only the Founder can post notices' }, { status: 403 }))
+      }
+      
+      const notice = { 
+        id: uuidv4(), 
+        title: body.title, 
+        content: body.content, 
+        postedBy: requester.displayName,
+        createdAt: new Date() 
+      }
       await db.collection('notices').insertOne(notice)
       return handleCORS(NextResponse.json(cleanMongoDoc(notice)))
     }
