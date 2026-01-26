@@ -554,14 +554,13 @@ async function handleRoute(request, { params }) {
       return handleCORS(NextResponse.json({ error: 'Not authorized' }, { status: 403 }))
     }
 
-    // ==================== PROFILE GALLERY ====================
+    // ==================== PROFILE GALLERY (Direct Upload) ====================
     if (route === '/gallery' && method === 'GET') {
       const url = new URL(request.url)
       const userId = url.searchParams.get('userId')
       const viewerId = url.searchParams.get('viewerId')
       
       const owner = await db.collection('users').findOne({ id: userId })
-      const viewer = await db.collection('users').findOne({ id: viewerId })
       
       // Check privacy settings
       const isFriend = owner?.friends?.includes(viewerId)
@@ -581,6 +580,30 @@ async function handleRoute(request, { params }) {
       return handleCORS(NextResponse.json({ items: items.map(cleanMongoDoc), restricted: false, isOwner }))
     }
 
+    // Upload photo (base64 data from phone)
+    if (route === '/gallery/upload' && method === 'POST') {
+      const body = await safeParseJson(request)
+      const { userId, imageData, caption, privacy } = body
+      
+      // imageData is base64 encoded image from phone
+      if (!imageData) {
+        return handleCORS(NextResponse.json({ error: 'No image data' }, { status: 400 }))
+      }
+      
+      const item = {
+        id: uuidv4(),
+        userId,
+        type: 'photo',
+        imageData, // Store base64 directly
+        caption: caption || '',
+        privacy: privacy || 'public',
+        filter: 'none',
+        createdAt: new Date()
+      }
+      await db.collection('gallery').insertOne(item)
+      return handleCORS(NextResponse.json(cleanMongoDoc(item)))
+    }
+
     if (route === '/gallery' && method === 'POST') {
       const body = await safeParseJson(request)
       const item = {
@@ -588,6 +611,7 @@ async function handleRoute(request, { params }) {
         userId: body.userId,
         type: body.type, // 'photo' or 'video'
         url: body.url,
+        imageData: body.imageData, // Support both URL and base64
         thumbnail: body.thumbnail,
         caption: body.caption,
         privacy: body.privacy || 'public', // 'public' or 'friends'
