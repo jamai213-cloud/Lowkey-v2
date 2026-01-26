@@ -518,26 +518,6 @@ const HomePage = ({ user, onLogout, setUser }) => {
           })}          
         </div>
 
-        {/* Communities Quick Access */}
-        <div className="mb-6">
-          <button
-            onClick={() => router.push('/communities')}
-            className="w-full h-14 rounded-xl flex items-center justify-between px-4 transition-all hover:scale-[1.01]"
-            style={{
-              background: 'linear-gradient(135deg, #F59E0B15, #F59E0B05)',
-              border: '1px solid #F59E0B40'
-            }}
-          >
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ backgroundColor: '#F59E0B25' }}>
-                <UserPlus className="w-4 h-4 text-amber-400" />
-              </div>
-              <span className="text-white font-medium text-sm">Communities</span>
-            </div>
-            <ChevronRight className="w-5 h-5 text-amber-400" />
-          </button>
-        </div>
-
         {/* Tagline */}
         <div className="mb-6">
           <p className="text-gray-400 text-sm">A private space for adults. Connection happens at your own pace.</p>
@@ -560,22 +540,6 @@ const HomePage = ({ user, onLogout, setUser }) => {
                 <span className="text-gray-500 text-sm">• Neutral placement</span>
               </div>
             </div>
-          </div>
-        </div>
-
-        {/* Communities Section */}
-        <div className="mb-6">
-          <h3 className="text-white font-semibold mb-3">Communities</h3>
-          <div className="flex gap-2">
-            <button className="px-4 py-2 rounded-full bg-white/5 border border-white/10 text-gray-300 text-sm hover:bg-white/10 transition-colors">
-              Browse
-            </button>
-            <button className="px-4 py-2 rounded-full bg-gradient-to-r from-amber-400 to-yellow-500 text-black text-sm font-semibold hover:opacity-90 transition-opacity">
-              Join
-            </button>
-            <button className="px-4 py-2 rounded-full bg-amber-500/20 border border-amber-500/30 text-amber-400 text-sm font-semibold hover:bg-amber-500/30 transition-colors">
-              + Create
-            </button>
           </div>
         </div>
       </main>
