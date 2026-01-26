@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { 
   ArrowLeft, Save, User, MapPin, Calendar, Heart, Users, Ruler, 
   Eye, Cigarette, Wine, MessageSquare, Lock, Globe, X, Trash2,
-  Camera, Sliders, Check
+  Camera, Sliders, Check, Upload, Image as ImageIcon, Flame
 } from 'lucide-react'
 
 // Photo filter options
@@ -20,6 +20,38 @@ const FILTERS = [
   { id: 'dark', name: 'Dark', css: 'brightness(85%) contrast(110%)' },
 ]
 
+// Extended kink categories (FabSwingers style)
+const KINK_CATEGORIES = {
+  'Basics': [
+    'Kissing', 'Cuddling', 'Massage', 'Oral giving', 'Oral receiving', 
+    'Protected sex', 'Unprotected sex', 'Toys', 'Lingerie', 'Role play'
+  ],
+  'Positions & Styles': [
+    'Missionary', 'Doggy style', 'Cowgirl', 'Reverse cowgirl', '69', 
+    'Standing', 'Outdoor', 'Car', 'Shower/Bath', 'Public places'
+  ],
+  'Group & Social': [
+    'Threesome (MFM)', 'Threesome (FMF)', 'Foursomes', 'Moresomes', 
+    'Gang bang', 'Dogging', 'Swinging', 'Club meets', 'Voyeurism', 'Exhibitionism'
+  ],
+  'BDSM Light': [
+    'Blindfolds', 'Handcuffs', 'Restraints', 'Light spanking', 'Hair pulling',
+    'Choking (light)', 'Biting', 'Scratching', 'Ice play', 'Wax play'
+  ],
+  'BDSM Advanced': [
+    'Dom/Sub', 'Master/Slave', 'Bondage', 'Rope play', 'Suspension',
+    'Impact play', 'Flogging', 'Caning', 'Electro play', 'CBT'
+  ],
+  'Fetish': [
+    'Feet', 'Latex/Rubber', 'Leather', 'PVC', 'Uniforms', 
+    'Cross dressing', 'Strap-on', 'Pegging', 'Feminization', 'Cuckolding'
+  ],
+  'Other': [
+    'Photography', 'Videoing', 'Phone sex', 'Sexting', 'Cam to cam',
+    'Tantric', 'Edging', 'Multiple orgasms', 'Squirting', 'Anal'
+  ]
+}
+
 export default function EditProfilePage() {
   const router = useRouter()
   const [user, setUser] = useState(null)
@@ -28,10 +60,16 @@ export default function EditProfilePage() {
   const [gallery, setGallery] = useState([])
   const [selectedPhoto, setSelectedPhoto] = useState(null)
   const [showUpload, setShowUpload] = useState(false)
+  const [showProfilePicUpload, setShowProfilePicUpload] = useState(false)
   const [uploadData, setUploadData] = useState({ url: '', caption: '', privacy: 'public' })
+  const [profilePicUrl, setProfilePicUrl] = useState('')
+  const [activeKinkCategory, setActiveKinkCategory] = useState('Basics')
 
   // Profile form fields (FabSwingers style)
   const [profile, setProfile] = useState({
+    // Profile Picture
+    profilePicture: '',
+    
     // Basic Info
     aboutMe: '',
     lookingFor: '',
@@ -61,22 +99,26 @@ export default function EditProfilePage() {
     interestedIn: [],
     openTo: [],
     
+    // Kinks (expanded)
+    kinks: [],
+    kinksHard: [], // Hard limits (things they won't do)
+    
     // Privacy
     profilePrivacy: 'public', // 'public' or 'friends'
   })
 
-  const genderOptions = ['Man', 'Woman', 'Non-binary', 'Trans Man', 'Trans Woman', 'Other', 'Prefer not to say']
-  const sexualityOptions = ['Straight', 'Gay', 'Lesbian', 'Bisexual', 'Pansexual', 'Curious', 'Other', 'Prefer not to say']
-  const relationshipOptions = ['Single', 'In a relationship', 'Married', 'Open relationship', 'Its complicated', 'Prefer not to say']
-  const bodyTypeOptions = ['Slim', 'Athletic', 'Average', 'Curvy', 'Plus size', 'Muscular', 'Dad bod', 'Prefer not to say']
+  const genderOptions = ['Man', 'Woman', 'Non-binary', 'Trans Man', 'Trans Woman', 'Couple (MF)', 'Couple (MM)', 'Couple (FF)', 'Other', 'Prefer not to say']
+  const sexualityOptions = ['Straight', 'Gay', 'Lesbian', 'Bisexual', 'Bicurious', 'Pansexual', 'Heteroflexible', 'Homoflexible', 'Other', 'Prefer not to say']
+  const relationshipOptions = ['Single', 'In a relationship', 'Married', 'Open relationship', 'Polyamorous', 'Its complicated', 'Separated', 'Divorced', 'Prefer not to say']
+  const bodyTypeOptions = ['Slim', 'Athletic', 'Average', 'Curvy', 'Plus size', 'Muscular', 'BBW/BHM', 'Dad bod', 'Prefer not to say']
   const eyeColorOptions = ['Brown', 'Blue', 'Green', 'Hazel', 'Grey', 'Other']
-  const hairColorOptions = ['Black', 'Brown', 'Blonde', 'Red', 'Grey', 'Bald', 'Other']
-  const ethnicityOptions = ['Asian', 'Black', 'Hispanic/Latino', 'Middle Eastern', 'Mixed', 'White', 'Other', 'Prefer not to say']
-  const smokingOptions = ['Non-smoker', 'Social smoker', 'Regular smoker', 'Vaper', 'Prefer not to say']
+  const hairColorOptions = ['Black', 'Brown', 'Blonde', 'Red', 'Grey', 'Bald', 'Shaved', 'Other']
+  const ethnicityOptions = ['Asian', 'Black', 'Hispanic/Latino', 'Middle Eastern', 'Mixed', 'White', 'Indian', 'Caribbean', 'African', 'Other', 'Prefer not to say']
+  const smokingOptions = ['Non-smoker', 'Social smoker', 'Regular smoker', 'Vaper', '420 friendly', 'Prefer not to say']
   const drinkingOptions = ['Non-drinker', 'Social drinker', 'Regular drinker', 'Prefer not to say']
   const travelOptions = ['No', '10 miles', '25 miles', '50 miles', '100+ miles', 'Anywhere']
-  const interestedInOptions = ['Men', 'Women', 'Couples', 'Groups', 'Trans']
-  const openToOptions = ['Chat', 'Friendship', 'Dating', 'Casual', 'Long-term', 'Discreet meets']
+  const interestedInOptions = ['Men', 'Women', 'Couples (MF)', 'Couples (MM)', 'Couples (FF)', 'Groups', 'Trans', 'Non-binary']
+  const openToOptions = ['Chat', 'Friendship', 'Dating', 'Casual', 'Long-term', 'Discreet meets', 'One night stands', 'Regular meets', 'NSA fun', 'FWB']
 
   useEffect(() => {
     const storedUser = localStorage.getItem('lowkey_user')
@@ -125,6 +167,19 @@ export default function EditProfilePage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId: user.id, ...profile })
       })
+      
+      // Update user's profile picture in users collection
+      if (profile.profilePicture) {
+        await fetch('/api/profile/picture', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ userId: user.id, profilePicture: profile.profilePicture })
+        })
+        // Update local storage
+        const updatedUser = { ...user, profilePicture: profile.profilePicture }
+        localStorage.setItem('lowkey_user', JSON.stringify(updatedUser))
+      }
+      
       router.push('/profile')
     } catch (err) {
       console.error('Failed to save profile')
@@ -152,6 +207,11 @@ export default function EditProfilePage() {
     } catch (err) {
       console.error('Failed to upload photo')
     }
+  }
+
+  const setAsProfilePicture = (url) => {
+    setProfile(prev => ({ ...prev, profilePicture: url }))
+    setSelectedPhoto(null)
   }
 
   const deletePhoto = async (photoId) => {
@@ -206,6 +266,14 @@ export default function EditProfilePage() {
     }))
   }
 
+  const toggleKink = (kink) => {
+    toggleArrayField('kinks', kink)
+  }
+
+  const toggleHardLimit = (kink) => {
+    toggleArrayField('kinksHard', kink)
+  }
+
   if (loading || !user) {
     return (
       <div className="min-h-screen bg-[#0a0a0f] flex items-center justify-center">
@@ -237,11 +305,48 @@ export default function EditProfilePage() {
       </header>
 
       <div className="p-4 space-y-6">
-        {/* Photos Section */}
+        {/* Profile Picture Section */}
+        <section>
+          <h2 className="text-white font-semibold mb-3 flex items-center gap-2">
+            <User className="w-5 h-5 text-amber-400" /> Profile Picture
+          </h2>
+          <div className="flex items-center gap-4">
+            <div className="relative">
+              {profile.profilePicture ? (
+                <img 
+                  src={profile.profilePicture} 
+                  alt="Profile" 
+                  className="w-24 h-24 rounded-full object-cover border-2 border-amber-500"
+                />
+              ) : (
+                <div className="w-24 h-24 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
+                  <User className="w-12 h-12 text-white" />
+                </div>
+              )}
+              <button 
+                onClick={() => setShowProfilePicUpload(true)}
+                className="absolute bottom-0 right-0 w-8 h-8 rounded-full bg-amber-500 flex items-center justify-center"
+              >
+                <Camera className="w-4 h-4 text-black" />
+              </button>
+            </div>
+            <div className="flex-1">
+              <p className="text-gray-400 text-sm">Upload a profile picture or select one from your gallery</p>
+              <button 
+                onClick={() => setShowProfilePicUpload(true)}
+                className="mt-2 px-4 py-2 rounded-lg bg-white/10 text-white text-sm"
+              >
+                Change Photo
+              </button>
+            </div>
+          </div>
+        </section>
+
+        {/* Gallery Section */}
         <section>
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-white font-semibold flex items-center gap-2">
-              <Camera className="w-5 h-5 text-pink-400" /> Photos
+              <ImageIcon className="w-5 h-5 text-pink-400" /> Photos
             </h2>
             <button 
               onClick={() => setShowUpload(true)}
@@ -564,7 +669,164 @@ export default function EditProfilePage() {
             ))}
           </div>
         </section>
+
+        {/* KINKS SECTION - Extended FabSwingers style */}
+        <section>
+          <h2 className="text-white font-semibold mb-3 flex items-center gap-2">
+            <Flame className="w-5 h-5 text-orange-400" /> Kinks & Preferences
+          </h2>
+          <p className="text-gray-400 text-xs mb-4">
+            Tap to select (green = into it). Tap again to mark as hard limit (red = won't do).
+          </p>
+          
+          {/* Category tabs */}
+          <div className="flex gap-2 overflow-x-auto pb-3 mb-4">
+            {Object.keys(KINK_CATEGORIES).map(cat => (
+              <button
+                key={cat}
+                onClick={() => setActiveKinkCategory(cat)}
+                className={`px-4 py-2 rounded-full text-sm whitespace-nowrap transition-colors ${
+                  activeKinkCategory === cat
+                    ? 'bg-orange-500 text-black font-semibold'
+                    : 'bg-white/10 text-gray-300'
+                }`}
+              >
+                {cat}
+              </button>
+            ))}
+          </div>
+
+          {/* Kink checkboxes */}
+          <div className="grid grid-cols-2 gap-2">
+            {KINK_CATEGORIES[activeKinkCategory]?.map(kink => {
+              const isSelected = profile.kinks?.includes(kink)
+              const isHardLimit = profile.kinksHard?.includes(kink)
+              
+              return (
+                <button
+                  key={kink}
+                  onClick={() => {
+                    if (isHardLimit) {
+                      // Remove from hard limits
+                      toggleHardLimit(kink)
+                    } else if (isSelected) {
+                      // Move to hard limit
+                      toggleKink(kink)
+                      toggleHardLimit(kink)
+                    } else {
+                      // Add to selected
+                      toggleKink(kink)
+                    }
+                  }}
+                  className={`p-3 rounded-xl text-left text-sm transition-all ${
+                    isHardLimit
+                      ? 'bg-red-500/20 border border-red-500/50 text-red-300'
+                      : isSelected
+                      ? 'bg-green-500/20 border border-green-500/50 text-green-300'
+                      : 'bg-white/5 border border-white/10 text-gray-400'
+                  }`}
+                >
+                  <div className="flex items-center gap-2">
+                    <div className={`w-4 h-4 rounded flex items-center justify-center text-xs ${
+                      isHardLimit ? 'bg-red-500 text-white' :
+                      isSelected ? 'bg-green-500 text-white' : 'bg-white/20'
+                    }`}>
+                      {isHardLimit ? '✗' : isSelected ? '✓' : ''}
+                    </div>
+                    <span className="flex-1">{kink}</span>
+                  </div>
+                </button>
+              )
+            })}
+          </div>
+          
+          {/* Legend */}
+          <div className="flex items-center gap-4 mt-4 text-xs">
+            <div className="flex items-center gap-1">
+              <div className="w-3 h-3 rounded bg-green-500" />
+              <span className="text-gray-400">Into it</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <div className="w-3 h-3 rounded bg-red-500" />
+              <span className="text-gray-400">Hard limit</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <div className="w-3 h-3 rounded bg-white/20" />
+              <span className="text-gray-400">No preference</span>
+            </div>
+          </div>
+        </section>
       </div>
+
+      {/* Profile Picture Upload Modal */}
+      {showProfilePicUpload && (
+        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/80 backdrop-blur-sm" onClick={() => setShowProfilePicUpload(false)}>
+          <div className="w-full max-w-lg bg-[#1a1a2e] rounded-t-3xl p-6 max-h-[80vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl text-white font-semibold">Profile Picture</h2>
+              <button onClick={() => setShowProfilePicUpload(false)} className="p-2 rounded-full hover:bg-white/10">
+                <X className="w-5 h-5 text-gray-400" />
+              </button>
+            </div>
+            
+            {/* URL Input */}
+            <div className="mb-4">
+              <label className="text-gray-400 text-sm mb-2 block">Enter image URL</label>
+              <input
+                type="url"
+                value={profilePicUrl}
+                onChange={(e) => setProfilePicUrl(e.target.value)}
+                placeholder="https://example.com/photo.jpg"
+                className="w-full px-4 py-3 rounded-xl bg-black/40 border border-white/10 text-white placeholder-gray-500 focus:outline-none focus:border-amber-500/50"
+              />
+              <button
+                onClick={() => {
+                  if (profilePicUrl) {
+                    setProfile(p => ({ ...p, profilePicture: profilePicUrl }))
+                    setProfilePicUrl('')
+                    setShowProfilePicUpload(false)
+                  }
+                }}
+                disabled={!profilePicUrl}
+                className="w-full mt-3 py-3 rounded-xl bg-amber-500 text-black font-semibold disabled:opacity-50"
+              >
+                Set as Profile Picture
+              </button>
+            </div>
+
+            {/* Or select from gallery */}
+            {gallery.length > 0 && (
+              <>
+                <div className="relative my-4">
+                  <div className="absolute inset-0 flex items-center">
+                    <div className="w-full border-t border-white/10" />
+                  </div>
+                  <div className="relative flex justify-center">
+                    <span className="px-3 bg-[#1a1a2e] text-gray-500 text-sm">Or select from gallery</span>
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-3 gap-2">
+                  {gallery.map(photo => (
+                    <button
+                      key={photo.id}
+                      onClick={() => {
+                        setProfile(p => ({ ...p, profilePicture: photo.url }))
+                        setShowProfilePicUpload(false)
+                      }}
+                      className={`aspect-square rounded-xl overflow-hidden border-2 ${
+                        profile.profilePicture === photo.url ? 'border-amber-500' : 'border-transparent'
+                      }`}
+                    >
+                      <img src={photo.url} alt="" className="w-full h-full object-cover" />
+                    </button>
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Photo Upload Modal */}
       {showUpload && (
@@ -645,6 +907,14 @@ export default function EditProfilePage() {
               />
             </div>
 
+            {/* Set as Profile Picture */}
+            <button
+              onClick={() => setAsProfilePicture(selectedPhoto.url)}
+              className="w-full mb-4 py-3 rounded-xl bg-amber-500 text-black font-semibold flex items-center justify-center gap-2"
+            >
+              <User className="w-5 h-5" /> Set as Profile Picture
+            </button>
+
             {/* Filters */}
             <div className="mb-4">
               <h4 className="text-white text-sm font-semibold mb-2 flex items-center gap-2">
@@ -659,7 +929,7 @@ export default function EditProfilePage() {
                       selectedPhoto.filter === filter.id ? 'opacity-100' : 'opacity-60'
                     }`}
                   >
-                    <div className="w-16 h-16 rounded-lg overflow-hidden border-2 ${selectedPhoto.filter === filter.id ? 'border-amber-500' : 'border-transparent'}">
+                    <div className={`w-16 h-16 rounded-lg overflow-hidden border-2 ${selectedPhoto.filter === filter.id ? 'border-amber-500' : 'border-transparent'}`}>
                       <img 
                         src={selectedPhoto.url} 
                         alt="" 
@@ -668,9 +938,6 @@ export default function EditProfilePage() {
                       />
                     </div>
                     <span className="text-xs text-gray-400">{filter.name}</span>
-                    {selectedPhoto.filter === filter.id && (
-                      <Check className="w-4 h-4 text-amber-400" />
-                    )}
                   </button>
                 ))}
               </div>
