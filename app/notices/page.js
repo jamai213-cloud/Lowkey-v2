@@ -1,31 +1,145 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { ArrowLeft, Bell } from 'lucide-react'
+import { ArrowLeft, Bell, Check, Clock } from 'lucide-react'
 
 export default function NoticesPage() {
   const router = useRouter()
+  const [user, setUser] = useState(null)
+  const [notices, setNotices] = useState([])
+  const [readNotices, setReadNotices] = useState([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const storedUser = localStorage.getItem('lowkey_user')
+    if (!storedUser) {
+      router.push('/')
+      return
+    }
+    const userData = JSON.parse(storedUser)
+    setUser(userData)
+    fetchNotices()
+    fetchReadStatus(userData.id)
+  }, [])
+
+  const fetchNotices = async () => {
+    try {
+      const res = await fetch('/api/notices')
+      if (res.ok) {
+        const data = await res.json()
+        setNotices(data)
+      }
+    } catch (err) {
+      console.error('Failed to fetch notices')
+    }
+    setLoading(false)
+  }
+
+  const fetchReadStatus = async (userId) => {
+    // Get unread count to determine which are read
+    try {
+      const res = await fetch(`/api/notices/unread/${userId}`)
+      if (res.ok) {
+        // We'll track read status locally after marking
+      }
+    } catch (err) {
+      console.error('Failed to fetch read status')
+    }
+  }
+
+  const markAsRead = async (noticeId) => {
+    if (readNotices.includes(noticeId)) return
+    
+    try {
+      await fetch('/api/notices/read', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: user.id, noticeId })
+      })
+      setReadNotices([...readNotices, noticeId])
+    } catch (err) {
+      console.error('Failed to mark as read')
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#0a0a0f] flex items-center justify-center">
+        <div className="animate-pulse text-white">Loading...</div>
+      </div>
+    )
+  }
+
+  const unreadCount = notices.filter(n => !readNotices.includes(n.id)).length
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f] p-4">
-      <header className="flex items-center gap-4 mb-6">
-        <button
-          onClick={() => router.push('/')}
-          className="p-2 rounded-full hover:bg-white/10 transition-colors"
-        >
-          <ArrowLeft className="w-5 h-5 text-white" />
-        </button>
-        <h1 className="text-xl font-bold text-white">Notices</h1>
+    <div className="min-h-screen bg-[#0a0a0f]">
+      {/* Header */}
+      <header className="flex items-center justify-between p-4 border-b border-white/10">
+        <div className="flex items-center gap-3">
+          <button onClick={() => router.push('/')} className="p-2 rounded-full hover:bg-white/10">
+            <ArrowLeft className="w-5 h-5 text-white" />
+          </button>
+          <h1 className="text-xl font-semibold text-white">Notices</h1>
+        </div>
+        {unreadCount > 0 && (
+          <span className="px-2 py-1 rounded-full bg-amber-500 text-black text-xs font-bold">
+            {unreadCount} unread
+          </span>
+        )}
       </header>
 
-      <div className="flex flex-col items-center justify-center py-12">
-        <div className="w-16 h-16 rounded-full bg-amber-500/20 flex items-center justify-center mb-4">
-          <Bell className="w-8 h-8 text-amber-400" />
-        </div>
-        <h2 className="text-white text-lg font-semibold mb-2">Notices</h2>
-        <p className="text-gray-400 text-center max-w-sm">
-          Important announcements and updates from the community.
-        </p>
+      <div className="p-4">
+        {notices.length === 0 ? (
+          <div className="flex flex-col items-center justify-center h-64 text-gray-400">
+            <Bell className="w-16 h-16 mb-4 opacity-50" />
+            <p className="text-lg">No notices yet</p>
+            <p className="text-sm mt-1">Check back later for announcements!</p>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {notices.map(notice => {
+              const isRead = readNotices.includes(notice.id)
+              
+              return (
+                <button
+                  key={notice.id}
+                  onClick={() => markAsRead(notice.id)}
+                  className={`w-full text-left p-4 rounded-xl border transition-colors ${
+                    isRead 
+                      ? 'bg-white/5 border-white/10' 
+                      : 'bg-amber-500/10 border-amber-500/30'
+                  }`}
+                >
+                  <div className="flex items-start gap-3">
+                    <div className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${
+                      isRead ? 'bg-white/10' : 'bg-amber-500/20'
+                    }`}>
+                      {isRead ? (
+                        <Check className="w-5 h-5 text-green-400" />
+                      ) : (
+                        <Bell className="w-5 h-5 text-amber-400" />
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h3 className={`font-semibold ${isRead ? 'text-gray-300' : 'text-white'}`}>
+                        {notice.title}
+                      </h3>
+                      <p className="text-gray-400 text-sm mt-1 line-clamp-2">
+                        {notice.content}
+                      </p>
+                      <div className="flex items-center gap-1 mt-2 text-gray-500 text-xs">
+                        <Clock className="w-3 h-3" />
+                        {new Date(notice.createdAt).toLocaleDateString()}
+                      </div>
+                    </div>
+                  </div>
+                </button>
+              )
+            })}
+          </div>
+        )}
       </div>
     </div>
   )
