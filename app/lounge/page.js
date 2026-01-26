@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
-import { ArrowLeft, Send, Users, Image, DollarSign, Lock, MessageSquare } from 'lucide-react'
+import { ArrowLeft, Send, Users, Image, Lock, MessageSquare, PoundSterling, Star } from 'lucide-react' from 'lucide-react'
 
 export default function LoungePage() {
   const router = useRouter()
