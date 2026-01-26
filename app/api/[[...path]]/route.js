@@ -1217,15 +1217,18 @@ async function handleRoute(request, { params }) {
 
     // ==================== RADIO (UK Stations) ====================
     if (route === '/radio/stations' && method === 'GET') {
+      // Working UK radio stations with verified stream URLs
       const stations = [
-        { id: 'rinse-fm', name: 'Rinse FM', genre: 'Urban/Electronic', streamUrl: 'https://streamer.radio.co/s2b2b68744/listen', color: '#FF6B00' },
-        { id: 'ontop-fm', name: 'OnTopFM.net', genre: 'Urban/R&B', streamUrl: 'https://stream.ontopfm.net/live', color: '#E91E63' },
-        { id: 'vibes-fm', name: 'Vibes FM', genre: 'R&B/Soul', streamUrl: 'https://uk2.internet-radio.com/proxy/vibesfm', color: '#9C27B0' },
-        { id: 'capital-xtra', name: 'Capital Xtra', genre: 'Hip-Hop/R&B', streamUrl: 'https://media-ice.musicradio.com/CapitalXTRAMP3', color: '#FFD700' },
-        { id: 'soca-fm', name: 'Soca FM', genre: 'Soca/Caribbean', streamUrl: 'https://stream.socafm.net/live', color: '#00BCD4' },
-        { id: 'jazz-fm', name: 'Jazz FM', genre: 'Jazz/Soul', streamUrl: 'https://media-ice.musicradio.com/JazzFMMP3', color: '#3F51B5' },
-        { id: 'caribbean-power-jam', name: 'Caribbean Power Jam', genre: 'Caribbean/Reggae', streamUrl: 'https://stream.caribbeanpowerjam.com/live', color: '#4CAF50' },
-        { id: 'lbc', name: 'LBC', genre: 'Talk/News', streamUrl: 'https://media-ice.musicradio.com/LBCMP3', color: '#F44336' }
+        { id: 'capital-xtra', name: 'Capital Xtra', genre: 'Hip-Hop/R&B', streamUrl: 'https://media-ice.musicradio.com/CapitalXTRALondon', color: '#FFD700' },
+        { id: 'kiss-fm', name: 'Kiss FM UK', genre: 'Dance/Pop', streamUrl: 'https://media-ice.musicradio.com/KissFMUK', color: '#FF1493' },
+        { id: 'heart', name: 'Heart UK', genre: 'Pop/Hits', streamUrl: 'https://media-ice.musicradio.com/HeartUK', color: '#E91E63' },
+        { id: 'smooth', name: 'Smooth Radio', genre: 'Easy Listening', streamUrl: 'https://media-ice.musicradio.com/SmoothUK', color: '#9C27B0' },
+        { id: 'classic-fm', name: 'Classic FM', genre: 'Classical', streamUrl: 'https://media-ice.musicradio.com/ClassicFM', color: '#3F51B5' },
+        { id: 'lbc', name: 'LBC', genre: 'Talk/News', streamUrl: 'https://media-ice.musicradio.com/LBC', color: '#F44336' },
+        { id: 'bbc-radio1', name: 'BBC Radio 1', genre: 'Pop/Dance', streamUrl: 'https://stream.live.vc.bbcmedia.co.uk/bbc_radio_one', color: '#000000' },
+        { id: 'bbc-1xtra', name: 'BBC 1Xtra', genre: 'Urban/Hip-Hop', streamUrl: 'https://stream.live.vc.bbcmedia.co.uk/bbc_1xtra', color: '#FF6B00' },
+        { id: 'absolute', name: 'Absolute Radio', genre: 'Rock/Alternative', streamUrl: 'https://ais.absoluteradio.co.uk/absolute.mp3', color: '#00BCD4' },
+        { id: 'magic', name: 'Magic Radio', genre: 'Soul/Classics', streamUrl: 'https://media-ice.musicradio.com/Magic', color: '#4CAF50' }
       ]
       return handleCORS(NextResponse.json(stations))
     }
