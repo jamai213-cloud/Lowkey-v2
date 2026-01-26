@@ -888,14 +888,14 @@ async function handleRoute(request, { params }) {
     // ==================== RADIO (UK Stations) ====================
     if (route === '/radio/stations' && method === 'GET') {
       const stations = [
-        { id: 'rinse-fm', name: 'Rinse FM', genre: 'Urban/Electronic', streamUrl: 'https://streamer.radio.co/s2b2b68744/listen' },
-        { id: 'ontop-fm', name: 'OnTopFM.net', genre: 'Urban/R&B', streamUrl: 'https://stream.ontopfm.net/live' },
-        { id: 'vibes-fm', name: 'Vibes FM', genre: 'R&B/Soul', streamUrl: 'https://uk2.internet-radio.com/proxy/vibesfm' },
-        { id: 'capital-xtra', name: 'Capital Xtra', genre: 'Hip-Hop/R&B', streamUrl: 'https://media-ice.musicradio.com/CapitalXTRAMP3' },
-        { id: 'soca-fm', name: 'Soca FM', genre: 'Soca/Caribbean', streamUrl: 'https://stream.socafm.net/live' },
-        { id: 'jazz-fm', name: 'Jazz FM', genre: 'Jazz/Soul', streamUrl: 'https://media-ice.musicradio.com/JazzFMMP3' },
-        { id: 'caribbean-power-jam', name: 'Caribbean Power Jam Radio', genre: 'Caribbean/Reggae', streamUrl: 'https://stream.caribbeanpowerjam.com/live' },
-        { id: 'lbc', name: 'LBC', genre: 'Talk/News', streamUrl: 'https://media-ice.musicradio.com/LBCMP3' }
+        { id: 'rinse-fm', name: 'Rinse FM', genre: 'Urban/Electronic', streamUrl: 'https://streamer.radio.co/s2b2b68744/listen', color: '#FF6B00' },
+        { id: 'ontop-fm', name: 'OnTopFM.net', genre: 'Urban/R&B', streamUrl: 'https://stream.ontopfm.net/live', color: '#E91E63' },
+        { id: 'vibes-fm', name: 'Vibes FM', genre: 'R&B/Soul', streamUrl: 'https://uk2.internet-radio.com/proxy/vibesfm', color: '#9C27B0' },
+        { id: 'capital-xtra', name: 'Capital Xtra', genre: 'Hip-Hop/R&B', streamUrl: 'https://media-ice.musicradio.com/CapitalXTRAMP3', color: '#FFD700' },
+        { id: 'soca-fm', name: 'Soca FM', genre: 'Soca/Caribbean', streamUrl: 'https://stream.socafm.net/live', color: '#00BCD4' },
+        { id: 'jazz-fm', name: 'Jazz FM', genre: 'Jazz/Soul', streamUrl: 'https://media-ice.musicradio.com/JazzFMMP3', color: '#3F51B5' },
+        { id: 'caribbean-power-jam', name: 'Caribbean Power Jam', genre: 'Caribbean/Reggae', streamUrl: 'https://stream.caribbeanpowerjam.com/live', color: '#4CAF50' },
+        { id: 'lbc', name: 'LBC', genre: 'Talk/News', streamUrl: 'https://media-ice.musicradio.com/LBCMP3', color: '#F44336' }
       ]
       return handleCORS(NextResponse.json(stations))
     }
