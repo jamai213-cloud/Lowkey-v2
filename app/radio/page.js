@@ -52,20 +52,17 @@ export default function RadioPage() {
 
   const playStation = async (station) => {
     if (playing?.id === station.id) {
-      // Stop
       audioRef.current?.pause()
       setPlaying(null)
       return
     }
 
-    // Play new station
     if (audioRef.current) {
       audioRef.current.pause()
     }
 
     setPlaying(station)
 
-    // Save to history
     try {
       await fetch('/api/radio/history', {
         method: 'POST',
@@ -81,7 +78,6 @@ export default function RadioPage() {
       console.error('Failed to save history')
     }
 
-    // Start audio
     setTimeout(() => {
       if (audioRef.current) {
         audioRef.current.src = station.streamUrl
@@ -100,7 +96,6 @@ export default function RadioPage() {
 
   return (
     <div className="min-h-screen bg-[#0a0a0f]">
-      {/* Hidden audio element */}
       <audio ref={audioRef} />
 
       {/* Header */}
@@ -114,10 +109,13 @@ export default function RadioPage() {
       <div className="p-4">
         {/* Now Playing */}
         {playing && (
-          <div className="mb-6 p-4 rounded-2xl bg-gradient-to-r from-purple-500/20 to-pink-500/20 border border-purple-500/30">
+          <div className="mb-6 p-4 rounded-2xl border border-white/20" style={{ background: `linear-gradient(135deg, ${playing.color}40, ${playing.color}20)` }}>
             <div className="flex items-center gap-4">
-              <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-amber-400 to-yellow-500 flex items-center justify-center animate-pulse">
-                <RadioIcon className="w-8 h-8 text-black" />
+              <div 
+                className="w-16 h-16 rounded-xl flex items-center justify-center animate-pulse"
+                style={{ backgroundColor: playing.color }}
+              >
+                <span className="text-white font-bold text-lg">{playing.name.substring(0, 2).toUpperCase()}</span>
               </div>
               <div className="flex-1">
                 <p className="text-gray-400 text-sm">Now Playing</p>
@@ -126,7 +124,7 @@ export default function RadioPage() {
               </div>
               <button 
                 onClick={() => playStation(playing)}
-                className="p-4 rounded-full bg-amber-500 text-black"
+                className="p-4 rounded-full bg-white text-black"
               >
                 <Pause className="w-6 h-6" />
               </button>
@@ -135,7 +133,7 @@ export default function RadioPage() {
         )}
 
         {/* Stations */}
-        <h2 className="text-white font-semibold mb-3">Stations</h2>
+        <h2 className="text-white font-semibold mb-3">UK Stations</h2>
         <div className="space-y-3 mb-6">
           {stations.map((station) => (
             <button
@@ -143,22 +141,35 @@ export default function RadioPage() {
               onClick={() => playStation(station)}
               className={`w-full flex items-center gap-4 p-4 rounded-xl transition-colors ${
                 playing?.id === station.id 
-                  ? 'bg-amber-500/20 border border-amber-500/50' 
+                  ? 'border-2' 
                   : 'bg-white/5 border border-white/10 hover:bg-white/10'
               }`}
+              style={playing?.id === station.id ? { 
+                borderColor: station.color,
+                background: `linear-gradient(135deg, ${station.color}20, transparent)`
+              } : {}}
             >
-              <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
-                playing?.id === station.id ? 'bg-amber-500' : 'bg-white/10'
-              }`}>
-                {playing?.id === station.id ? (
-                  <Pause className="w-6 h-6 text-black" />
-                ) : (
-                  <Play className="w-6 h-6 text-white" />
-                )}
+              <div 
+                className="w-14 h-14 rounded-xl flex items-center justify-center flex-shrink-0"
+                style={{ backgroundColor: station.color }}
+              >
+                <span className="text-white font-bold text-sm text-center leading-tight">
+                  {station.name.split(' ').map(w => w[0]).join('').substring(0, 3)}
+                </span>
               </div>
               <div className="flex-1 text-left">
                 <h3 className="text-white font-medium">{station.name}</h3>
                 <p className="text-gray-400 text-sm">{station.genre}</p>
+              </div>
+              <div 
+                className="w-10 h-10 rounded-full flex items-center justify-center"
+                style={{ backgroundColor: playing?.id === station.id ? station.color : 'rgba(255,255,255,0.1)' }}
+              >
+                {playing?.id === station.id ? (
+                  <Pause className="w-5 h-5 text-white" />
+                ) : (
+                  <Play className="w-5 h-5 text-white" />
+                )}
               </div>
             </button>
           ))}
@@ -171,17 +182,25 @@ export default function RadioPage() {
               <Clock className="w-4 h-4" /> Recently Played
             </h2>
             <div className="space-y-2">
-              {history.map((item) => (
-                <div key={item.id} className="flex items-center gap-3 p-3 rounded-xl bg-white/5">
-                  <RadioIcon className="w-5 h-5 text-gray-400" />
-                  <div className="flex-1">
-                    <p className="text-white text-sm">{item.stationName}</p>
-                    <p className="text-gray-500 text-xs">
-                      {new Date(item.playedAt).toLocaleString()}
-                    </p>
+              {history.map((item) => {
+                const station = stations.find(s => s.id === item.stationId)
+                return (
+                  <div key={item.id} className="flex items-center gap-3 p-3 rounded-xl bg-white/5">
+                    <div 
+                      className="w-8 h-8 rounded-lg flex items-center justify-center"
+                      style={{ backgroundColor: station?.color || '#666' }}
+                    >
+                      <RadioIcon className="w-4 h-4 text-white" />
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-white text-sm">{item.stationName}</p>
+                      <p className="text-gray-500 text-xs">
+                        {new Date(item.playedAt).toLocaleString()}
+                      </p>
+                    </div>
                   </div>
-                </div>
-              ))}
+                )
+              })}
             </div>
           </>
         )}
