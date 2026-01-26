@@ -1310,7 +1310,21 @@ async function handleRoute(request, { params }) {
     if (route === '/search' && method === 'GET') {
       const url = new URL(request.url)
       const q = url.searchParams.get('q')?.toLowerCase() || ''
-      const users = await db.collection('users').find({ displayNameLower: { $regex: q } }).limit(10).toArray()
+      
+      // If no query, show ALL users. Otherwise filter by query
+      let users
+      if (q.trim() === '') {
+        users = await db.collection('users').find({}).sort({ displayName: 1 }).limit(50).toArray()
+      } else {
+        users = await db.collection('users').find({ 
+          $or: [
+            { displayNameLower: { $regex: q, $options: 'i' } },
+            { displayName: { $regex: q, $options: 'i' } },
+            { email: { $regex: q, $options: 'i' } }
+          ]
+        }).limit(50).toArray()
+      }
+      
       const lounges = await db.collection('lounges').find({ name: { $regex: q, $options: 'i' } }).limit(10).toArray()
       const events = await db.collection('events').find({ title: { $regex: q, $options: 'i' } }).limit(10).toArray()
       return handleCORS(NextResponse.json({
