@@ -1,42 +1,220 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { ArrowLeft, Search } from 'lucide-react'
+import { ArrowLeft, Search as SearchIcon, User, Users, Calendar, UserPlus, Check } from 'lucide-react'
 
 export default function SearchPage() {
   const router = useRouter()
+  const [user, setUser] = useState(null)
+  const [query, setQuery] = useState('')
+  const [results, setResults] = useState({ users: [], lounges: [], events: [] })
+  const [loading, setLoading] = useState(false)
+  const [searched, setSearched] = useState(false)
+
+  useEffect(() => {
+    const storedUser = localStorage.getItem('lowkey_user')
+    if (!storedUser) {
+      router.push('/')
+      return
+    }
+    setUser(JSON.parse(storedUser))
+  }, [])
+
+  const search = async (e) => {
+    e?.preventDefault()
+    if (!query.trim()) return
+
+    setLoading(true)
+    try {
+      const res = await fetch(`/api/search?q=${encodeURIComponent(query)}`)
+      if (res.ok) {
+        const data = await res.json()
+        setResults(data)
+        setSearched(true)
+      }
+    } catch (err) {
+      console.error('Search failed')
+    }
+    setLoading(false)
+  }
+
+  const addFriend = async (friendId) => {
+    try {
+      await fetch('/api/friends/add', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: user.id, friendId })
+      })
+      // Update local user
+      const updatedUser = { ...user, friends: [...(user.friends || []), friendId] }
+      setUser(updatedUser)
+      localStorage.setItem('lowkey_user', JSON.stringify(updatedUser))
+    } catch (err) {
+      console.error('Failed to add friend')
+    }
+  }
+
+  const joinLounge = async (loungeId) => {
+    try {
+      await fetch(`/api/lounges/${loungeId}/join`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: user.id })
+      })
+      router.push('/lounge')
+    } catch (err) {
+      console.error('Failed to join lounge')
+    }
+  }
+
+  const rsvpEvent = async (eventId) => {
+    try {
+      await fetch(`/api/events/${eventId}/rsvp`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: user.id, status: 'yes' })
+      })
+      search() // Refresh results
+    } catch (err) {
+      console.error('Failed to RSVP')
+    }
+  }
+
+  const isFriend = (userId) => user?.friends?.includes(userId)
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f] p-4">
-      <header className="flex items-center gap-4 mb-6">
-        <button
-          onClick={() => router.push('/')}
-          className="p-2 rounded-full hover:bg-white/10 transition-colors"
-        >
+    <div className="min-h-screen bg-[#0a0a0f]">
+      {/* Header */}
+      <header className="flex items-center gap-3 p-4 border-b border-white/10">
+        <button onClick={() => router.push('/')} className="p-2 rounded-full hover:bg-white/10">
           <ArrowLeft className="w-5 h-5 text-white" />
         </button>
-        <h1 className="text-xl font-bold text-white">Search</h1>
+        <h1 className="text-xl font-semibold text-white">Search</h1>
       </header>
 
-      <div className="mb-6">
-        <div className="relative">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-          <input
-            type="text"
-            placeholder="Search people, communities..."
-            className="w-full pl-12 pr-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500/50 transition-colors"
-          />
-        </div>
-      </div>
+      <div className="p-4">
+        {/* Search Input */}
+        <form onSubmit={search} className="mb-6">
+          <div className="relative">
+            <SearchIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+            <input
+              type="text"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Search users, lounges, events..."
+              className="w-full pl-12 pr-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-gray-400 focus:outline-none focus:border-amber-500/50"
+            />
+          </div>
+        </form>
 
-      <div className="flex flex-col items-center justify-center py-12">
-        <div className="w-16 h-16 rounded-full bg-green-500/20 flex items-center justify-center mb-4">
-          <Search className="w-8 h-8 text-green-400" />
-        </div>
-        <h2 className="text-white text-lg font-semibold mb-2">Discover</h2>
-        <p className="text-gray-400 text-center max-w-sm">
-          Find people, communities, and content that interests you.
-        </p>
+        {loading && (
+          <div className="text-center text-gray-400">Searching...</div>
+        )}
+
+        {searched && !loading && (
+          <div className="space-y-6">
+            {/* Users */}
+            {results.users.length > 0 && (
+              <div>
+                <h2 className="text-white font-semibold mb-3 flex items-center gap-2">
+                  <User className="w-4 h-4" /> Users
+                </h2>
+                <div className="space-y-2">
+                  {results.users.filter(u => u.id !== user?.id).map(u => (
+                    <div key={u.id} className="flex items-center gap-3 p-3 rounded-xl bg-white/5">
+                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
+                        <User className="w-5 h-5 text-white" />
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-white font-medium">{u.displayName}</p>
+                      </div>
+                      {isFriend(u.id) ? (
+                        <span className="text-green-400 text-sm flex items-center gap-1">
+                          <Check className="w-4 h-4" /> Friend
+                        </span>
+                      ) : (
+                        <button 
+                          onClick={() => addFriend(u.id)}
+                          className="px-3 py-1.5 rounded-lg bg-amber-500/20 text-amber-400 text-sm flex items-center gap-1"
+                        >
+                          <UserPlus className="w-4 h-4" /> Add
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Lounges */}
+            {results.lounges.length > 0 && (
+              <div>
+                <h2 className="text-white font-semibold mb-3 flex items-center gap-2">
+                  <Users className="w-4 h-4" /> Lounges
+                </h2>
+                <div className="space-y-2">
+                  {results.lounges.map(lounge => (
+                    <div key={lounge.id} className="flex items-center justify-between p-3 rounded-xl bg-white/5">
+                      <div>
+                        <p className="text-white font-medium">{lounge.name}</p>
+                        <p className="text-gray-400 text-sm">{lounge.members?.length || 0} members</p>
+                      </div>
+                      <button 
+                        onClick={() => joinLounge(lounge.id)}
+                        className="px-3 py-1.5 rounded-lg bg-purple-500/20 text-purple-400 text-sm"
+                      >
+                        Join
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Events */}
+            {results.events.length > 0 && (
+              <div>
+                <h2 className="text-white font-semibold mb-3 flex items-center gap-2">
+                  <Calendar className="w-4 h-4" /> Events
+                </h2>
+                <div className="space-y-2">
+                  {results.events.map(event => (
+                    <div key={event.id} className="flex items-center justify-between p-3 rounded-xl bg-white/5">
+                      <div>
+                        <p className="text-white font-medium">{event.title}</p>
+                        <p className="text-gray-400 text-sm">
+                          {new Date(event.date).toLocaleDateString()}
+                        </p>
+                      </div>
+                      <button 
+                        onClick={() => rsvpEvent(event.id)}
+                        className="px-3 py-1.5 rounded-lg bg-green-500/20 text-green-400 text-sm"
+                      >
+                        RSVP
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* No Results */}
+            {results.users.length === 0 && results.lounges.length === 0 && results.events.length === 0 && (
+              <div className="text-center text-gray-400 py-8">
+                <SearchIcon className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                <p>No results found for "{query}"</p>
+              </div>
+            )}
+          </div>
+        )}
+
+        {!searched && (
+          <div className="text-center text-gray-400 py-8">
+            <SearchIcon className="w-12 h-12 mx-auto mb-4 opacity-50" />
+            <p>Search for users, lounges, or events</p>
+          </div>
+        )}
       </div>
     </div>
   )
