@@ -459,14 +459,15 @@ async function handleRoute(request, { params }) {
       return handleCORS(NextResponse.json(suggestions.map(cleanMongoDoc)))
     }
 
-    // ==================== RADIO ====================
+    // ==================== RADIO (UK Stations) ====================
     if (route === '/radio/stations' && method === 'GET') {
       const stations = [
-        { id: 'lowkey-rnb', name: 'Lowkey R&B', genre: 'R&B', streamUrl: 'https://streams.ilovemusic.de/iloveradio-relaxing.mp3' },
-        { id: 'lowkey-afro', name: 'Lowkey Afrobeats', genre: 'Afrobeats', streamUrl: 'https://streams.ilovemusic.de/iloveradio-afrobeats.mp3' },
-        { id: 'lowkey-hiphop', name: 'Lowkey Hip-Hop', genre: 'Hip-Hop', streamUrl: 'https://streams.ilovemusic.de/iloveradio-hiphop.mp3' },
-        { id: 'lofi-chill', name: 'Lo-Fi Chill', genre: 'Lo-Fi', streamUrl: 'https://streams.ilovemusic.de/iloveradio-chillhop.mp3' },
-        { id: 'dancehall', name: 'Dancehall', genre: 'Dancehall', streamUrl: 'https://streams.ilovemusic.de/iloveradio-dance.mp3' }
+        { id: 'bbc-radio1', name: 'BBC Radio 1', genre: 'Pop/Chart', streamUrl: 'http://stream.live.vc.bbcmedia.co.uk/bbc_radio_one' },
+        { id: 'bbc-1xtra', name: 'BBC 1Xtra', genre: 'Urban/R&B', streamUrl: 'http://stream.live.vc.bbcmedia.co.uk/bbc_1xtra' },
+        { id: 'capital-uk', name: 'Capital FM', genre: 'Pop/Dance', streamUrl: 'https://media-ice.musicradio.com/CapitalMP3' },
+        { id: 'kiss-uk', name: 'Kiss FM UK', genre: 'Dance/Urban', streamUrl: 'https://media-ice.musicradio.com/KissMP3' },
+        { id: 'heart-uk', name: 'Heart UK', genre: 'Easy Listening', streamUrl: 'https://media-ice.musicradio.com/HeartMP3' },
+        { id: 'kisstory', name: 'Kisstory', genre: 'Old School', streamUrl: 'https://media-ice.musicradio.com/KisstoryMP3' }
       ]
       return handleCORS(NextResponse.json(stations))
     }
