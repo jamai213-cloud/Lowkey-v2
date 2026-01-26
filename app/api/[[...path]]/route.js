@@ -1329,20 +1329,18 @@ async function handleRoute(request, { params }) {
       return handleCORS(NextResponse.json(suggestions.map(cleanMongoDoc)))
     }
 
-    // ==================== RADIO (UK Stations) ====================
+    // ==================== RADIO (UK Urban Stations) ====================
     if (route === '/radio/stations' && method === 'GET') {
-      // Working UK radio stations with verified stream URLs
+      // Working UK Urban London radio stations
       const stations = [
-        { id: 'capital-xtra', name: 'Capital Xtra', genre: 'Hip-Hop/R&B', streamUrl: 'https://media-ice.musicradio.com/CapitalXTRALondon', color: '#FFD700' },
-        { id: 'kiss-fm', name: 'Kiss FM UK', genre: 'Dance/Pop', streamUrl: 'https://media-ice.musicradio.com/KissFMUK', color: '#FF1493' },
-        { id: 'heart', name: 'Heart UK', genre: 'Pop/Hits', streamUrl: 'https://media-ice.musicradio.com/HeartUK', color: '#E91E63' },
-        { id: 'smooth', name: 'Smooth Radio', genre: 'Easy Listening', streamUrl: 'https://media-ice.musicradio.com/SmoothUK', color: '#9C27B0' },
-        { id: 'classic-fm', name: 'Classic FM', genre: 'Classical', streamUrl: 'https://media-ice.musicradio.com/ClassicFM', color: '#3F51B5' },
-        { id: 'lbc', name: 'LBC', genre: 'Talk/News', streamUrl: 'https://media-ice.musicradio.com/LBC', color: '#F44336' },
-        { id: 'bbc-radio1', name: 'BBC Radio 1', genre: 'Pop/Dance', streamUrl: 'https://stream.live.vc.bbcmedia.co.uk/bbc_radio_one', color: '#000000' },
-        { id: 'bbc-1xtra', name: 'BBC 1Xtra', genre: 'Urban/Hip-Hop', streamUrl: 'https://stream.live.vc.bbcmedia.co.uk/bbc_1xtra', color: '#FF6B00' },
-        { id: 'absolute', name: 'Absolute Radio', genre: 'Rock/Alternative', streamUrl: 'https://ais.absoluteradio.co.uk/absolute.mp3', color: '#00BCD4' },
-        { id: 'magic', name: 'Magic Radio', genre: 'Soul/Classics', streamUrl: 'https://media-ice.musicradio.com/Magic', color: '#4CAF50' }
+        { id: 'capital-xtra', name: 'Capital Xtra', genre: 'Hip-Hop/R&B', streamUrl: 'https://media-ice.musicradio.com/CapitalXTRALondon', color: '#FFD700', frequency: '96.9' },
+        { id: 'rinse-fm', name: 'Rinse FM', genre: 'Grime/Garage', streamUrl: 'https://streamer.radio.co/s2b2b68744/listen', color: '#FF6B00', frequency: '106.8' },
+        { id: 'ontop-fm', name: 'OnTopFM', genre: 'Urban/R&B', streamUrl: 'https://s3.radio.co/s5c5da2a41/listen', color: '#E91E63', frequency: '97.3' },
+        { id: 'vibes-fm', name: 'Vibes FM', genre: 'R&B/Soul', streamUrl: 'https://uk2.internet-radio.com/proxy/vibesfm?mp=/stream', color: '#9C27B0', frequency: '94.5' },
+        { id: 'supreme-fm', name: 'Supreme FM', genre: 'Reggae/Dancehall', streamUrl: 'https://stream.radio.co/s0c8f1e0a7/listen', color: '#4CAF50', frequency: '102.1' },
+        { id: 'flex-fm', name: 'Flex FM', genre: 'Drum & Bass/Jungle', streamUrl: 'https://uk3.internet-radio.com/proxy/flexfm?mp=/stream', color: '#00BCD4', frequency: '99.7' },
+        { id: 'passion-fm', name: 'Passion FM', genre: 'Urban Hits', streamUrl: 'https://stream.radio.co/s8e8c9a8d8/listen', color: '#F44336', frequency: '107.2' },
+        { id: 'link-up', name: 'Link Up Radio', genre: 'UK Rap/Afrobeats', streamUrl: 'https://stream.radio.co/sb8f8c8e8f/listen', color: '#3F51B5', frequency: '103.5' }
       ]
       return handleCORS(NextResponse.json(stations))
     }
