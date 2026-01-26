@@ -206,6 +206,9 @@ export default function ProfilePage() {
           <h1 className="text-xl font-semibold text-white">Profile</h1>
         </div>
         <div className="flex items-center gap-2">
+          <button onClick={() => router.push('/profile/edit')} className="p-2 rounded-full hover:bg-white/10">
+            <Edit className="w-5 h-5 text-blue-400" />
+          </button>
           <button onClick={() => setShowSkins(true)} className="p-2 rounded-full hover:bg-white/10">
             <Palette className="w-5 h-5 text-purple-400" />
           </button>
