@@ -1327,17 +1327,21 @@ async function handleRoute(request, { params }) {
     }
 
     if (route === '/debug/fix-login' && (method === 'GET' || method === 'POST')) {
-      // Create/Reset ADMIN account: kinglowkey@hotmail.com
+      // Create/Reset FOUNDER account: kinglowkey@hotmail.com
       const email = 'kinglowkey@hotmail.com'
       const pwd = hashPassword('LowKey2026')
-      const adminData = {
+      const founderData = {
         id: uuidv4(),
         email,
         displayName: 'KINGLOWKEY',
         displayNameLower: 'kinglowkey',
         password: pwd,
         verified: true,
+        verificationTier: 'inner-circle',
         role: 'admin',
+        isFounder: true,
+        isCreator: true,
+        subscriptionPrice: 0,
         permissions: {
           manageUsers: true,
           verifyUsers: true,
@@ -1346,11 +1350,16 @@ async function handleRoute(request, { params }) {
           manageContent: true,
           manageEvents: true,
           manageNotices: true,
-          manageLounges: true
+          manageLounges: true,
+          manageCreators: true,
+          viewAnalytics: true,
+          fullControl: true
         },
         quietMode: false,
         ageVerified: true,
         friends: [],
+        ownedSkins: ['default', 'midnight', 'ocean', 'sunset', 'forest', 'rose', 'neon', 'gold'],
+        currentSkin: 'gold',
         createdAt: new Date(),
         token: generateToken()
       }
@@ -1361,18 +1370,25 @@ async function handleRoute(request, { params }) {
           { email: existing.email },
           { $set: { 
             password: pwd, 
-            verified: true, 
+            verified: true,
+            verificationTier: 'inner-circle',
             role: 'admin',
-            permissions: adminData.permissions,
-            ageVerified: true
+            isFounder: true,
+            isCreator: true,
+            permissions: founderData.permissions,
+            ageVerified: true,
+            ownedSkins: founderData.ownedSkins,
+            currentSkin: 'gold'
           }}
         )
         return handleCORS(NextResponse.json({ 
-          status: 'ADMIN_RESET', 
+          status: 'FOUNDER_RESET', 
           email: existing.email, 
           password: 'LowKey2026',
           role: 'admin',
-          message: 'Admin account reset with full privileges. You can now login.'
+          isFounder: true,
+          verificationTier: 'inner-circle',
+          message: 'FOUNDER account reset with FULL control. You are the owner of LowKey.'
         }))
       } else {
         await db.collection('users').insertOne(adminData)
