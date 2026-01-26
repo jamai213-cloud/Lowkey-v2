@@ -2,7 +2,14 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { ArrowLeft, Crown, Users, Check, X, Star, Shield, Trash2, PoundSterling, TrendingUp } from 'lucide-react'
+import { ArrowLeft, Crown, Users, Star, Shield, Trash2, PoundSterling, TrendingUp, Award, Check, UserCheck, Gem } from 'lucide-react'
+
+const VERIFICATION_TIERS = [
+  { id: 'new', name: 'New Member', icon: Users, color: 'text-gray-400', bgColor: 'bg-gray-500/20' },
+  { id: 'verified', name: 'Verified', icon: Check, color: 'text-blue-400', bgColor: 'bg-blue-500/20' },
+  { id: 'trusted', name: 'Trusted', icon: UserCheck, color: 'text-green-400', bgColor: 'bg-green-500/20' },
+  { id: 'inner-circle', name: 'Inner Circle', icon: Gem, color: 'text-amber-400', bgColor: 'bg-amber-500/20' }
+]
 
 export default function FounderPage() {
   const router = useRouter()
@@ -77,16 +84,16 @@ export default function FounderPage() {
     }
   }
 
-  const toggleVerification = async (userId, currentStatus) => {
+  const setVerificationTier = async (userId, tier) => {
     try {
       await fetch('/api/founder/verify', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ founderId: user.id, userId, verified: !currentStatus })
+        body: JSON.stringify({ founderId: user.id, userId, verificationTier: tier })
       })
       fetchUsers(user.id)
     } catch (err) {
-      console.error('Failed to toggle verification')
+      console.error('Failed to set verification tier')
     }
   }
 
@@ -132,6 +139,8 @@ export default function FounderPage() {
       console.error('Failed to delete user')
     }
   }
+
+  const getTierInfo = (tier) => VERIFICATION_TIERS.find(t => t.id === tier) || VERIFICATION_TIERS[0]
 
   if (loading) {
     return (
@@ -196,6 +205,18 @@ export default function FounderPage() {
         </div>
       )}
 
+      {/* Verification Tiers Legend */}
+      <div className="px-4 mb-4">
+        <p className="text-gray-400 text-xs mb-2">Verification Tiers:</p>
+        <div className="flex flex-wrap gap-2">
+          {VERIFICATION_TIERS.map(tier => (
+            <span key={tier.id} className={`px-2 py-1 rounded-full text-xs ${tier.bgColor} ${tier.color}`}>
+              {tier.name}
+            </span>
+          ))}
+        </div>
+      </div>
+
       {/* Tabs */}
       <div className="flex border-b border-white/10">
         <button
@@ -214,67 +235,82 @@ export default function FounderPage() {
 
       {/* User List */}
       <div className="p-4 space-y-3">
-        {(activeTab === 'creators' ? users.filter(u => u.isCreator) : users).map((u) => (
-          <div key={u.id} className="p-4 rounded-xl bg-white/5 border border-white/10">
-            <div className="flex items-center justify-between mb-3">
-              <div>
-                <div className="flex items-center gap-2">
-                  <span className="text-white font-medium">{u.displayName}</span>
-                  {u.verified && <Check className="w-4 h-4 text-green-400" />}
-                  {u.isCreator && <Star className="w-4 h-4 text-pink-400" />}
-                  {u.role === 'admin' && <Shield className="w-4 h-4 text-amber-400" />}
+        {(activeTab === 'creators' ? users.filter(u => u.isCreator) : users).map((u) => {
+          const tierInfo = getTierInfo(u.verificationTier)
+          const TierIcon = tierInfo.icon
+          
+          return (
+            <div key={u.id} className="p-4 rounded-xl bg-white/5 border border-white/10">
+              <div className="flex items-center justify-between mb-3">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-white font-medium">{u.displayName}</span>
+                    <TierIcon className={`w-4 h-4 ${tierInfo.color}`} />
+                    {u.isCreator && <Star className="w-4 h-4 text-pink-400" />}
+                    {u.role === 'admin' && <Shield className="w-4 h-4 text-amber-400" />}
+                  </div>
+                  <p className="text-gray-400 text-sm">{u.email}</p>
                 </div>
-                <p className="text-gray-400 text-sm">{u.email}</p>
+                <button
+                  onClick={() => deleteUser(u.id)}
+                  disabled={u.email?.toLowerCase() === 'kinglowkey@hotmail.com'}
+                  className="p-2 rounded-lg bg-red-500/20 text-red-400 disabled:opacity-30"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
               </div>
-              <button
-                onClick={() => deleteUser(u.id)}
-                disabled={u.email?.toLowerCase() === 'kinglowkey@hotmail.com'}
-                className="p-2 rounded-lg bg-red-500/20 text-red-400 disabled:opacity-30"
-              >
-                <Trash2 className="w-4 h-4" />
-              </button>
-            </div>
 
-            <div className="flex flex-wrap gap-2">
-              <button
-                onClick={() => toggleVerification(u.id, u.verified)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1 ${
-                  u.verified ? 'bg-green-500/20 text-green-400' : 'bg-white/10 text-gray-400'
-                }`}
-              >
-                <Check className="w-3 h-3" />
-                {u.verified ? 'Verified' : 'Verify'}
-              </button>
-
-              <button
-                onClick={() => toggleCreator(u.id, u.isCreator)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1 ${
-                  u.isCreator ? 'bg-pink-500/20 text-pink-400' : 'bg-white/10 text-gray-400'
-                }`}
-              >
-                <Star className="w-3 h-3" />
-                {u.isCreator ? 'Creator' : 'Make Creator'}
-              </button>
-
-              <button
-                onClick={() => toggleAdmin(u.id, u.role)}
-                disabled={u.email?.toLowerCase() === 'kinglowkey@hotmail.com'}
-                className={`px-3 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1 ${
-                  u.role === 'admin' ? 'bg-amber-500/20 text-amber-400' : 'bg-white/10 text-gray-400'
-                } disabled:opacity-30`}
-              >
-                <Shield className="w-3 h-3" />
-                {u.role === 'admin' ? 'Admin' : 'Make Admin'}
-              </button>
-            </div>
-
-            {u.isCreator && (
-              <div className="mt-3 pt-3 border-t border-white/10 text-sm text-gray-400">
-                <span>Subscription: £{u.subscriptionPrice?.toFixed(2) || '4.99'}/month</span>
+              {/* Verification Tier Selector */}
+              <div className="mb-3">
+                <p className="text-gray-500 text-xs mb-2">Verification Tier:</p>
+                <div className="flex flex-wrap gap-1">
+                  {VERIFICATION_TIERS.map(tier => (
+                    <button
+                      key={tier.id}
+                      onClick={() => setVerificationTier(u.id, tier.id)}
+                      className={`px-2 py-1 rounded text-xs font-medium ${
+                        u.verificationTier === tier.id || (!u.verificationTier && tier.id === 'new')
+                          ? `${tier.bgColor} ${tier.color} ring-1 ring-current`
+                          : 'bg-white/5 text-gray-400'
+                      }`}
+                    >
+                      {tier.name}
+                    </button>
+                  ))}
+                </div>
               </div>
-            )}
-          </div>
-        ))}
+
+              <div className="flex flex-wrap gap-2">
+                <button
+                  onClick={() => toggleCreator(u.id, u.isCreator)}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1 ${
+                    u.isCreator ? 'bg-pink-500/20 text-pink-400' : 'bg-white/10 text-gray-400'
+                  }`}
+                >
+                  <Star className="w-3 h-3" />
+                  {u.isCreator ? 'Creator' : 'Make Creator'}
+                </button>
+
+                <button
+                  onClick={() => toggleAdmin(u.id, u.role)}
+                  disabled={u.email?.toLowerCase() === 'kinglowkey@hotmail.com'}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1 ${
+                    u.role === 'admin' ? 'bg-amber-500/20 text-amber-400' : 'bg-white/10 text-gray-400'
+                  } disabled:opacity-30`}
+                >
+                  <Shield className="w-3 h-3" />
+                  {u.role === 'admin' ? 'Admin' : 'Make Admin'}
+                </button>
+              </div>
+
+              {u.isCreator && (
+                <div className="mt-3 pt-3 border-t border-white/10 text-sm text-gray-400">
+                  <span>Subscription: £{u.subscriptionPrice?.toFixed(2) || '4.99'}/month</span>
+                </div>
+              )}
+            </div>
+          )
+        })}
       </div>
     </div>
   )
