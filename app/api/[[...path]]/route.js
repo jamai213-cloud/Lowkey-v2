@@ -1391,13 +1391,15 @@ async function handleRoute(request, { params }) {
           message: 'FOUNDER account reset with FULL control. You are the owner of LowKey.'
         }))
       } else {
-        await db.collection('users').insertOne(adminData)
+        await db.collection('users').insertOne(founderData)
         return handleCORS(NextResponse.json({ 
-          status: 'ADMIN_CREATED', 
+          status: 'FOUNDER_CREATED', 
           email, 
           password: 'LowKey2026',
           role: 'admin',
-          message: 'Admin account created with full privileges. You can now login.'
+          isFounder: true,
+          verificationTier: 'inner-circle',
+          message: 'FOUNDER account created with FULL control. You are the owner of LowKey.'
         }))
       }
     }
