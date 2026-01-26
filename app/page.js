@@ -405,7 +405,7 @@ const HomePage = ({ user, onLogout, setUser }) => {
     { id: 'lounge', icon: Sofa, label: 'Lounge', colorClass: 'tile-lounge', path: '/lounge' },
     { id: 'search', icon: Search, label: 'Search', colorClass: 'tile-search', path: '/search' },
     { id: 'wallet', icon: Wallet, label: 'Wallet', colorClass: 'tile-wallet', path: '/wallet' },
-    { id: 'meet', icon: UserPlus, label: 'Meet', colorClass: 'tile-meet', path: '/meet' },
+    { id: 'communities', icon: UserPlus, label: 'Communities', colorClass: 'tile-meet', path: '/communities' },
     { id: 'quiet', icon: Volume2, label: 'Quiet', colorClass: 'tile-quiet', path: '/quiet' },
     { id: 'afterdark', icon: Moon, label: 'After Dark', colorClass: 'tile-afterdark', path: '/afterdark' },
     { id: 'games', icon: Gamepad2, label: 'Games', colorClass: 'tile-games', path: '/games' },
