@@ -314,7 +314,7 @@ async function handleRoute(request, { params }) {
       const eventId = path[1]
       const body = await safeParseJson(request)
       const { userId, status } = body
-      await db.collection('events').updateOne({ id: eventId }, { $pull: { rsvps: { odbc.userId: userId } } })
+      await db.collection('events').updateOne({ id: eventId }, { $pull: { rsvps: { userId: userId } } })
       if (status !== 'none') {
         await db.collection('events').updateOne({ id: eventId }, { $push: { rsvps: { userId, status } } })
       }
@@ -337,7 +337,7 @@ async function handleRoute(request, { params }) {
     if (route === '/notices/read' && method === 'POST') {
       const body = await safeParseJson(request)
       await db.collection('notice_reads').updateOne(
-        { odbc.userId: body.userId, noticeId: body.noticeId },
+        { userId: body.userId, noticeId: body.noticeId },
         { $set: { userId: body.userId, noticeId: body.noticeId, readAt: new Date() } },
         { upsert: true }
       )
