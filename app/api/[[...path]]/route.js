@@ -487,6 +487,17 @@ async function handleRoute(request, { params }) {
     }
 
     // ==================== PROFILE COMMENTS ====================
+    // Profile Picture update
+    if (route === '/profile/picture' && method === 'PUT') {
+      const body = await safeParseJson(request)
+      const { userId, profilePicture } = body
+      await db.collection('users').updateOne(
+        { id: userId },
+        { $set: { profilePicture, updatedAt: new Date() } }
+      )
+      return handleCORS(NextResponse.json({ success: true }))
+    }
+
     if (route === '/profile/comments' && method === 'GET') {
       const url = new URL(request.url)
       const profileId = url.searchParams.get('profileId')
