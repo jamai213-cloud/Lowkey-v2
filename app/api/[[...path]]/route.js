@@ -550,16 +550,17 @@ async function handleRoute(request, { params }) {
     }
 
     if (route === '/debug/fix-login' && (method === 'GET' || method === 'POST')) {
-      const email = 'lowkey2026@hotmail.com'
+      // Fix KINGLOWKEY1@HOTMAIL.COM account
+      const email = 'kinglowkey1@hotmail.com'
       const pwd = hashPassword('LowKey2026!')
-      const existing = await db.collection('users').findOne({ email })
+      const existing = await db.collection('users').findOne({ email: { $regex: new RegExp(`^${email}$`, 'i') } })
       if (existing) {
-        await db.collection('users').updateOne({ email }, { $set: { password: pwd, verified: true } })
-        return handleCORS(NextResponse.json({ status: 'FIXED', email, password: 'LowKey2026!' }))
+        await db.collection('users').updateOne({ email: existing.email }, { $set: { password: pwd, verified: true } })
+        return handleCORS(NextResponse.json({ status: 'PASSWORD_RESET', email: existing.email, password: 'LowKey2026!', message: 'Your password has been reset. You can now login.' }))
       } else {
-        const user = { id: uuidv4(), email, displayName: 'LOWKEY', displayNameLower: 'lowkey', password: pwd, verified: true, quietMode: false, ageVerified: false, friends: [], createdAt: new Date(), token: generateToken() }
+        const user = { id: uuidv4(), email, displayName: 'KINGLOWKEY1', displayNameLower: 'kinglowkey1', password: pwd, verified: true, quietMode: false, ageVerified: false, friends: [], createdAt: new Date(), token: generateToken() }
         await db.collection('users').insertOne(user)
-        return handleCORS(NextResponse.json({ status: 'CREATED', email, password: 'LowKey2026!' }))
+        return handleCORS(NextResponse.json({ status: 'ACCOUNT_CREATED', email, password: 'LowKey2026!', message: 'Account created. You can now login.' }))
       }
     }
 
