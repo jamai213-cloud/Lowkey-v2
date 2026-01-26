@@ -477,28 +477,63 @@ const HomePage = ({ user, onLogout, setUser }) => {
 
       {/* Main Content */}
       <main className="relative z-10 p-4 pb-24">
-        {/* Tiles Grid - 3 columns like screenshot */}
+        {/* Tiles Grid - 3 columns with consistent styling */}
         <div className="grid grid-cols-3 gap-3 mb-6">
-          {tiles.map((tile) => (
-            <Tile
-              key={tile.id}
-              icon={tile.icon}
-              label={tile.label}
-              colorClass={tile.colorClass}
-              isLocked={lockedFeatures.includes(tile.id) && !user.verified}
-              onClick={() => handleTileClick(tile.id, tile.path)}
-            />
-          ))}          
+          {tiles.map((tile) => {
+            const IconComponent = tile.icon
+            const isLocked = lockedFeatures.includes(tile.id) && !user.verified
+            return (
+              <button
+                key={tile.id}
+                onClick={() => handleTileClick(tile.id, tile.path)}
+                className="relative aspect-[4/3] rounded-2xl overflow-hidden transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]"
+                style={{
+                  background: `linear-gradient(135deg, ${tile.color}15, ${tile.color}05)`,
+                  border: `1px solid ${tile.color}40`,
+                  boxShadow: `0 4px 20px ${tile.color}10`
+                }}
+              >
+                <div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
+                  <div 
+                    className="w-10 h-10 rounded-xl flex items-center justify-center"
+                    style={{ backgroundColor: `${tile.color}25` }}
+                  >
+                    <IconComponent className="w-5 h-5" style={{ color: tile.color }} />
+                  </div>
+                  <span className="text-white text-xs font-medium">{tile.label}</span>
+                </div>
+                {isLocked && (
+                  <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
+                    <Lock className="w-5 h-5 text-gray-400" />
+                  </div>
+                )}
+                {tile.id === 'notices' && unreadCount > 0 && (
+                  <div className="absolute top-2 right-2 w-5 h-5 rounded-full bg-red-500 flex items-center justify-center">
+                    <span className="text-white text-xs font-bold">{unreadCount}</span>
+                  </div>
+                )}
+              </button>
+            )
+          })}          
         </div>
 
-        {/* Notices Tile - Same horizontal style */}
+        {/* Communities Quick Access */}
         <div className="mb-6">
           <button
-            onClick={() => router.push('/notices')}
-            className="tile tile-notices h-14 w-40 rounded-xl flex items-center gap-3 px-4"
+            onClick={() => router.push('/communities')}
+            className="w-full h-14 rounded-xl flex items-center justify-between px-4 transition-all hover:scale-[1.01]"
+            style={{
+              background: 'linear-gradient(135deg, #F59E0B15, #F59E0B05)',
+              border: '1px solid #F59E0B40'
+            }}
           >
-            <Bell className="w-5 h-5 text-white/90" />
-            <span className="text-white/90 font-medium text-sm">Notices</span>
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ backgroundColor: '#F59E0B25' }}>
+                <UserPlus className="w-4 h-4 text-amber-400" />
+              </div>
+              <span className="text-white font-medium text-sm">Communities</span>
+            </div>
+            <ChevronRight className="w-5 h-5 text-amber-400" />
           </button>
         </div>
 
