@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { ArrowLeft, Crown, Users, Star, Shield, Trash2, PoundSterling, TrendingUp, Award, Check, UserCheck, Gem } from 'lucide-react'
+import { ArrowLeft, Crown, Users, Star, Shield, Trash2, PoundSterling, TrendingUp, Award, Check, UserCheck, Gem, Key, LogOut, RotateCcw } from 'lucide-react'
 
 const VERIFICATION_TIERS = [
   { id: 'new', name: 'New Member', icon: Users, color: 'text-gray-400', bgColor: 'bg-gray-500/20' },
@@ -19,6 +19,8 @@ export default function FounderPage() {
   const [stats, setStats] = useState(null)
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState('users')
+  const [showResetPassword, setShowResetPassword] = useState(null)
+  const [newPassword, setNewPassword] = useState('')
 
   useEffect(() => {
     const storedUser = localStorage.getItem('lowkey_user')
@@ -124,11 +126,11 @@ export default function FounderPage() {
     }
   }
 
-  const deleteUser = async (userId) => {
-    if (!confirm('Are you sure you want to delete this user? This cannot be undone.')) return
+  const removeUser = async (userId) => {
+    if (!confirm('Are you sure you want to PERMANENTLY DELETE this user and all their data? This cannot be undone.')) return
     
     try {
-      await fetch('/api/founder/delete-user', {
+      await fetch('/api/founder/remove-user', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ founderId: user.id, userId })
@@ -136,7 +138,40 @@ export default function FounderPage() {
       fetchUsers(user.id)
       fetchStats(user.id)
     } catch (err) {
-      console.error('Failed to delete user')
+      console.error('Failed to remove user')
+    }
+  }
+
+  const resetUserPassword = async (userId) => {
+    const password = newPassword || 'LowKey123'
+    if (!confirm(`Reset password for this user to "${password}"?`)) return
+    
+    try {
+      await fetch('/api/founder/reset-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ founderId: user.id, userId, newPassword: password })
+      })
+      setShowResetPassword(null)
+      setNewPassword('')
+      alert(`Password reset to: ${password}`)
+    } catch (err) {
+      console.error('Failed to reset password')
+    }
+  }
+
+  const forceLogoutUser = async (userId) => {
+    if (!confirm('Force logout this user? They will need to sign in again.')) return
+    
+    try {
+      await fetch('/api/founder/force-logout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ founderId: user.id, userId })
+      })
+      alert('User has been logged out')
+    } catch (err) {
+      console.error('Failed to force logout')
     }
   }
 
@@ -166,7 +201,7 @@ export default function FounderPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f]">
+    <div className="min-h-screen bg-[#0a0a0f] pb-8">
       {/* Header */}
       <header className="flex items-center gap-3 p-4 border-b border-amber-500/30 bg-gradient-to-r from-amber-500/10 to-yellow-500/10">
         <button onClick={() => router.push('/')} className="p-2 rounded-full hover:bg-white/10">
@@ -238,6 +273,7 @@ export default function FounderPage() {
         {(activeTab === 'creators' ? users.filter(u => u.isCreator) : users).map((u) => {
           const tierInfo = getTierInfo(u.verificationTier)
           const TierIcon = tierInfo.icon
+          const isOwner = u.email?.toLowerCase() === 'kinglowkey@hotmail.com'
           
           return (
             <div key={u.id} className="p-4 rounded-xl bg-white/5 border border-white/10">
@@ -248,16 +284,10 @@ export default function FounderPage() {
                     <TierIcon className={`w-4 h-4 ${tierInfo.color}`} />
                     {u.isCreator && <Star className="w-4 h-4 text-pink-400" />}
                     {u.role === 'admin' && <Shield className="w-4 h-4 text-amber-400" />}
+                    {isOwner && <Crown className="w-4 h-4 text-amber-400" />}
                   </div>
                   <p className="text-gray-400 text-sm">{u.email}</p>
                 </div>
-                <button
-                  onClick={() => deleteUser(u.id)}
-                  disabled={u.email?.toLowerCase() === 'kinglowkey@hotmail.com'}
-                  className="p-2 rounded-lg bg-red-500/20 text-red-400 disabled:opacity-30"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </button>
               </div>
 
               {/* Verification Tier Selector */}
@@ -280,7 +310,8 @@ export default function FounderPage() {
                 </div>
               </div>
 
-              <div className="flex flex-wrap gap-2">
+              {/* Role Controls */}
+              <div className="flex flex-wrap gap-2 mb-3">
                 <button
                   onClick={() => toggleCreator(u.id, u.isCreator)}
                   className={`px-3 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1 ${
@@ -293,7 +324,7 @@ export default function FounderPage() {
 
                 <button
                   onClick={() => toggleAdmin(u.id, u.role)}
-                  disabled={u.email?.toLowerCase() === 'kinglowkey@hotmail.com'}
+                  disabled={isOwner}
                   className={`px-3 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1 ${
                     u.role === 'admin' ? 'bg-amber-500/20 text-amber-400' : 'bg-white/10 text-gray-400'
                   } disabled:opacity-30`}
@@ -302,6 +333,30 @@ export default function FounderPage() {
                   {u.role === 'admin' ? 'Admin' : 'Make Admin'}
                 </button>
               </div>
+
+              {/* User Management Actions */}
+              {!isOwner && (
+                <div className="flex flex-wrap gap-2 pt-3 border-t border-white/10">
+                  <button
+                    onClick={() => setShowResetPassword(u.id)}
+                    className="px-3 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1 bg-blue-500/20 text-blue-400"
+                  >
+                    <Key className="w-3 h-3" /> Reset Password
+                  </button>
+                  <button
+                    onClick={() => forceLogoutUser(u.id)}
+                    className="px-3 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1 bg-orange-500/20 text-orange-400"
+                  >
+                    <LogOut className="w-3 h-3" /> Force Logout
+                  </button>
+                  <button
+                    onClick={() => removeUser(u.id)}
+                    className="px-3 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1 bg-red-500/20 text-red-400"
+                  >
+                    <Trash2 className="w-3 h-3" /> Remove User
+                  </button>
+                </div>
+              )}
 
               {u.isCreator && (
                 <div className="mt-3 pt-3 border-t border-white/10 text-sm text-gray-400">
@@ -312,6 +367,34 @@ export default function FounderPage() {
           )
         })}
       </div>
+
+      {/* Reset Password Modal */}
+      {showResetPassword && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm" onClick={() => setShowResetPassword(null)}>
+          <div className="bg-[#1a1a2e] rounded-2xl p-6 max-w-sm mx-4 w-full" onClick={e => e.stopPropagation()}>
+            <h2 className="text-xl text-white font-semibold mb-4 flex items-center gap-2">
+              <Key className="w-5 h-5 text-blue-400" /> Reset Password
+            </h2>
+            <div className="space-y-4">
+              <div>
+                <label className="text-gray-400 text-sm mb-2 block">New Password</label>
+                <input
+                  type="text"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  placeholder="LowKey123 (default)"
+                  className="w-full px-4 py-3 rounded-xl bg-black/40 border border-white/10 text-white placeholder-gray-500 focus:outline-none focus:border-blue-500/50"
+                />
+              </div>
+              <p className="text-gray-500 text-xs">Leave empty to use default password: LowKey123</p>
+              <div className="flex gap-3">
+                <button onClick={() => setShowResetPassword(null)} className="flex-1 py-3 rounded-xl bg-white/10 text-white">Cancel</button>
+                <button onClick={() => resetUserPassword(showResetPassword)} className="flex-1 py-3 rounded-xl bg-blue-500 text-white font-semibold">Reset</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
