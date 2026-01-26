@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
-import { ArrowLeft, Plus, Users, Send, Copy, Check, MessageSquare, Settings } from 'lucide-react'
+import { ArrowLeft, Plus, Users, Send, Copy, Check, MessageSquare, RefreshCw, Clock, AlertCircle } from 'lucide-react'
 
 export default function CommunitiesPage() {
   const router = useRouter()
@@ -15,8 +15,10 @@ export default function CommunitiesPage() {
   const [showCreate, setShowCreate] = useState(false)
   const [showJoin, setShowJoin] = useState(false)
   const [joinCode, setJoinCode] = useState('')
+  const [joinError, setJoinError] = useState('')
   const [newCommunity, setNewCommunity] = useState({ name: '', description: '' })
   const [copiedCode, setCopiedCode] = useState(false)
+  const [regenerating, setRegenerating] = useState(false)
   const messagesEndRef = useRef(null)
   const pollRef = useRef(null)
 
@@ -67,8 +69,7 @@ export default function CommunitiesPage() {
         setNewCommunity({ name: '', description: '' })
         setShowCreate(false)
         fetchCommunities(user.id)
-        // Show the invite code
-        alert(`Community created! Share this code with members: ${data.inviteCode}`)
+        alert(`Community created!\n\nShare this code: ${data.inviteCode}\n\n⚠️ Code expires in 24 hours`)
       }
     } catch (err) {
       console.error('Failed to create community')
@@ -78,6 +79,7 @@ export default function CommunitiesPage() {
   const joinCommunity = async (e) => {
     e.preventDefault()
     if (!joinCode.trim()) return
+    setJoinError('')
 
     try {
       const res = await fetch('/api/communities/join', {
@@ -88,17 +90,42 @@ export default function CommunitiesPage() {
           inviteCode: joinCode.trim()
         })
       })
+      const data = await res.json()
       if (res.ok) {
         setJoinCode('')
         setShowJoin(false)
         fetchCommunities(user.id)
       } else {
-        const data = await res.json()
-        alert(data.error || 'Invalid invite code')
+        setJoinError(data.error || 'Invalid invite code')
       }
     } catch (err) {
-      console.error('Failed to join community')
+      setJoinError('Failed to join community')
     }
+  }
+
+  const regenerateCode = async () => {
+    if (!selectedCommunity || regenerating) return
+    setRegenerating(true)
+
+    try {
+      const res = await fetch('/api/communities/regenerate-code', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          communityId: selectedCommunity.id,
+          userId: user.id
+        })
+      })
+      if (res.ok) {
+        const data = await res.json()
+        setSelectedCommunity({ ...selectedCommunity, inviteCode: data.inviteCode, codeExpired: false })
+        fetchCommunities(user.id)
+        alert(`New code: ${data.inviteCode}\n\n⚠️ Expires in 24 hours`)
+      }
+    } catch (err) {
+      console.error('Failed to regenerate code')
+    }
+    setRegenerating(false)
   }
 
   const loadCommunity = async (community) => {
@@ -177,7 +204,7 @@ export default function CommunitiesPage() {
           </button>
           <div>
             <h1 className="text-xl font-semibold text-white">
-              {selectedCommunity ? selectedCommunity.name : 'Communities'}
+              {selectedCommunity ? selectedCommunity.name : 'Groups'}
             </h1>
             {selectedCommunity && (
               <p className="text-gray-400 text-xs">{selectedCommunity.members?.length || 0} members</p>
@@ -185,10 +212,23 @@ export default function CommunitiesPage() {
           </div>
         </div>
         {selectedCommunity && isAdmin && (
-          <button onClick={copyInviteCode} className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-amber-500/20 text-amber-400 text-sm">
-            {copiedCode ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-            {copiedCode ? 'Copied!' : selectedCommunity.inviteCode}
-          </button>
+          <div className="flex items-center gap-2">
+            {selectedCommunity.codeExpired ? (
+              <button 
+                onClick={regenerateCode}
+                disabled={regenerating}
+                className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-red-500/20 text-red-400 text-sm"
+              >
+                <RefreshCw className={`w-4 h-4 ${regenerating ? 'animate-spin' : ''}`} />
+                {regenerating ? 'Generating...' : 'New Code'}
+              </button>
+            ) : (
+              <button onClick={copyInviteCode} className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-amber-500/20 text-amber-400 text-sm">
+                {copiedCode ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                {copiedCode ? 'Copied!' : selectedCommunity.inviteCode}
+              </button>
+            )}
+          </div>
         )}
       </header>
 
@@ -206,15 +246,23 @@ export default function CommunitiesPage() {
               onClick={() => setShowJoin(true)}
               className="flex-1 py-3 rounded-xl bg-white/10 text-white font-semibold flex items-center justify-center gap-2"
             >
-              <Users className="w-5 h-5" /> Join with Code
+              <Users className="w-5 h-5" /> Join
             </button>
+          </div>
+
+          {/* Info about 24-hour codes */}
+          <div className="mb-4 p-3 rounded-xl bg-amber-500/10 border border-amber-500/20">
+            <div className="flex items-start gap-2">
+              <Clock className="w-4 h-4 text-amber-400 mt-0.5 flex-shrink-0" />
+              <p className="text-amber-200 text-xs">Invite codes expire after 24 hours for security. Admins can generate new codes anytime.</p>
+            </div>
           </div>
 
           {communities.length === 0 ? (
             <div className="text-center text-gray-400 mt-8">
               <Users className="w-12 h-12 mx-auto mb-4 opacity-50" />
-              <p>No communities yet</p>
-              <p className="text-sm">Create one or join with an invite code!</p>
+              <p>No groups yet</p>
+              <p className="text-sm">Create one or join with code!</p>
             </div>
           ) : (
             <div className="space-y-3">
@@ -225,17 +273,20 @@ export default function CommunitiesPage() {
                   className="w-full p-4 rounded-xl bg-white/5 border border-white/10 text-left hover:bg-white/10 transition-colors"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center">
+                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center flex-shrink-0">
                       <Users className="w-6 h-6 text-white" />
                     </div>
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2">
-                        <h3 className="text-white font-medium">{community.name}</h3>
-                        {community.adminId === user.id && (
-                          <span className="text-xs px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-400">Admin</span>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <h3 className="text-white font-medium truncate">{community.name}</h3>
+                        {community.isAdmin && (
+                          <span className="text-xs px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-400 flex-shrink-0">Admin</span>
+                        )}
+                        {community.codeExpired && community.isAdmin && (
+                          <span className="text-xs px-2 py-0.5 rounded-full bg-red-500/20 text-red-400 flex-shrink-0">Code Expired</span>
                         )}
                       </div>
-                      <p className="text-gray-400 text-sm">{community.description || 'No description'}</p>
+                      <p className="text-gray-400 text-sm truncate">{community.description || 'No description'}</p>
                     </div>
                   </div>
                 </button>
@@ -269,7 +320,7 @@ export default function CommunitiesPage() {
                     {msg.senderId !== user.id && (
                       <p className="text-xs font-medium opacity-70 mb-1">{msg.senderName}</p>
                     )}
-                    <p>{msg.content}</p>
+                    <p className="break-words">{msg.content}</p>
                     <p className={`text-xs mt-1 ${msg.senderId === user.id ? 'text-black/60' : 'text-gray-400'}`}>
                       {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                     </p>
@@ -306,13 +357,13 @@ export default function CommunitiesPage() {
       {showCreate && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm" onClick={() => setShowCreate(false)}>
           <div className="bg-[#1a1a2e] rounded-2xl p-6 max-w-sm mx-4 w-full" onClick={e => e.stopPropagation()}>
-            <h2 className="text-xl text-white font-semibold mb-4">Create Community</h2>
+            <h2 className="text-xl text-white font-semibold mb-4">Create Group</h2>
             <form onSubmit={createCommunity} className="space-y-4">
               <input
                 type="text"
                 value={newCommunity.name}
                 onChange={(e) => setNewCommunity({ ...newCommunity, name: e.target.value })}
-                placeholder="Community name"
+                placeholder="Group name"
                 className="w-full px-4 py-3 rounded-xl bg-black/40 border border-white/10 text-white placeholder-gray-500 focus:outline-none focus:border-amber-500/50"
                 required
               />
@@ -322,7 +373,12 @@ export default function CommunitiesPage() {
                 placeholder="Description (optional)"
                 className="w-full px-4 py-3 rounded-xl bg-black/40 border border-white/10 text-white placeholder-gray-500 focus:outline-none focus:border-amber-500/50 resize-none h-24"
               />
-              <p className="text-gray-400 text-xs">An invite code will be generated for you to share with members.</p>
+              <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20">
+                <div className="flex items-start gap-2">
+                  <Clock className="w-4 h-4 text-amber-400 mt-0.5 flex-shrink-0" />
+                  <p className="text-amber-200 text-xs">An invite code will be generated. It expires in 24 hours - you can regenerate anytime.</p>
+                </div>
+              </div>
               <div className="flex gap-3">
                 <button type="button" onClick={() => setShowCreate(false)} className="flex-1 py-3 rounded-xl bg-white/10 text-white">Cancel</button>
                 <button type="submit" className="flex-1 py-3 rounded-xl bg-gradient-to-r from-amber-400 to-yellow-500 text-black font-semibold">Create</button>
@@ -334,22 +390,30 @@ export default function CommunitiesPage() {
 
       {/* Join Community Modal */}
       {showJoin && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm" onClick={() => setShowJoin(false)}>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm" onClick={() => { setShowJoin(false); setJoinError('') }}>
           <div className="bg-[#1a1a2e] rounded-2xl p-6 max-w-sm mx-4 w-full" onClick={e => e.stopPropagation()}>
-            <h2 className="text-xl text-white font-semibold mb-4">Join Community</h2>
+            <h2 className="text-xl text-white font-semibold mb-4">Join Group</h2>
             <form onSubmit={joinCommunity} className="space-y-4">
               <input
                 type="text"
                 value={joinCode}
-                onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
+                onChange={(e) => { setJoinCode(e.target.value.toUpperCase()); setJoinError('') }}
                 placeholder="Enter invite code"
                 className="w-full px-4 py-3 rounded-xl bg-black/40 border border-white/10 text-white placeholder-gray-500 focus:outline-none focus:border-amber-500/50 text-center text-xl tracking-widest"
                 maxLength={6}
                 required
               />
-              <p className="text-gray-400 text-xs text-center">Ask the community admin for the invite code</p>
+              {joinError && (
+                <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/20">
+                  <div className="flex items-start gap-2">
+                    <AlertCircle className="w-4 h-4 text-red-400 mt-0.5 flex-shrink-0" />
+                    <p className="text-red-200 text-sm">{joinError}</p>
+                  </div>
+                </div>
+              )}
+              <p className="text-gray-400 text-xs text-center">Ask the group admin for the invite code</p>
               <div className="flex gap-3">
-                <button type="button" onClick={() => setShowJoin(false)} className="flex-1 py-3 rounded-xl bg-white/10 text-white">Cancel</button>
+                <button type="button" onClick={() => { setShowJoin(false); setJoinError('') }} className="flex-1 py-3 rounded-xl bg-white/10 text-white">Cancel</button>
                 <button type="submit" className="flex-1 py-3 rounded-xl bg-gradient-to-r from-amber-400 to-yellow-500 text-black font-semibold">Join</button>
               </div>
             </form>
