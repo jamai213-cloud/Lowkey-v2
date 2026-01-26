@@ -262,15 +262,280 @@ async function handleRoute(request, { params }) {
       return handleCORS(NextResponse.json(users.map(u => ({ ...cleanMongoDoc(u), password: undefined }))))
     }
 
-    // Toggle verification (Founder only)
+    // Toggle verification tier (Founder only) - New Member, Verified, Trusted, Inner Circle
     if (route === '/founder/verify' && method === 'POST') {
       const body = await safeParseJson(request)
-      const { founderId, userId, verified } = body
+      const { founderId, userId, verificationTier } = body
       const requester = await db.collection('users').findOne({ id: founderId })
       if (requester?.email?.toLowerCase() !== FOUNDER_EMAIL.toLowerCase()) {
         return handleCORS(NextResponse.json({ error: 'Founder access required' }, { status: 403 }))
       }
-      await db.collection('users').updateOne({ id: userId }, { $set: { verified } })
+      // verificationTier: 'new', 'verified', 'trusted', 'inner-circle'
+      await db.collection('users').updateOne({ id: userId }, { 
+        $set: { 
+          verificationTier: verificationTier || 'new',
+          verified: verificationTier !== 'new'
+        } 
+      })
+      return handleCORS(NextResponse.json({ success: true }))
+    }
+
+    // ==================== PROFILE GALLERY ====================
+    if (route === '/gallery' && method === 'GET') {
+      const url = new URL(request.url)
+      const userId = url.searchParams.get('userId')
+      const viewerId = url.searchParams.get('viewerId')
+      
+      const owner = await db.collection('users').findOne({ id: userId })
+      const viewer = await db.collection('users').findOne({ id: viewerId })
+      
+      // Check privacy settings
+      const isFriend = owner?.friends?.includes(viewerId)
+      const isOwner = userId === viewerId
+      
+      let query = { userId }
+      if (!isOwner) {
+        if (owner?.galleryPrivacy === 'friends' && !isFriend) {
+          return handleCORS(NextResponse.json({ items: [], restricted: true, message: 'Gallery is friends only' }))
+        }
+      }
+      
+      const items = await db.collection('gallery').find(query).sort({ createdAt: -1 }).toArray()
+      return handleCORS(NextResponse.json({ items: items.map(cleanMongoDoc), restricted: false }))
+    }
+
+    if (route === '/gallery' && method === 'POST') {
+      const body = await safeParseJson(request)
+      const item = {
+        id: uuidv4(),
+        userId: body.userId,
+        type: body.type, // 'photo' or 'video'
+        url: body.url,
+        thumbnail: body.thumbnail,
+        caption: body.caption,
+        createdAt: new Date()
+      }
+      await db.collection('gallery').insertOne(item)
+      return handleCORS(NextResponse.json(cleanMongoDoc(item)))
+    }
+
+    if (route.match(/^\/gallery\/[^/]+$/) && method === 'DELETE') {
+      const itemId = path[1]
+      await db.collection('gallery').deleteOne({ id: itemId })
+      return handleCORS(NextResponse.json({ success: true }))
+    }
+
+    if (route === '/gallery/privacy' && method === 'PUT') {
+      const body = await safeParseJson(request)
+      await db.collection('users').updateOne(
+        { id: body.userId },
+        { $set: { galleryPrivacy: body.privacy } } // 'public' or 'friends'
+      )
+      return handleCORS(NextResponse.json({ success: true }))
+    }
+
+    // ==================== STORIES / STATUS (24hr) ====================
+    if (route === '/stories' && method === 'GET') {
+      const url = new URL(request.url)
+      const viewerId = url.searchParams.get('viewerId')
+      const viewer = await db.collection('users').findOne({ id: viewerId })
+      
+      // Get stories from last 24 hours
+      const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000)
+      const allStories = await db.collection('stories').find({ 
+        createdAt: { $gte: oneDayAgo } 
+      }).sort({ createdAt: -1 }).toArray()
+      
+      // Filter by privacy
+      const visibleStories = allStories.filter(story => {
+        if (story.userId === viewerId) return true
+        if (story.privacy === 'everyone') return true
+        if (story.privacy === 'friends') {
+          const owner = viewer?.friends?.includes(story.userId)
+          return owner
+        }
+        return false
+      })
+      
+      // Group by user
+      const grouped = {}
+      for (const story of visibleStories) {
+        if (!grouped[story.userId]) {
+          const user = await db.collection('users').findOne({ id: story.userId })
+          grouped[story.userId] = {
+            userId: story.userId,
+            displayName: user?.displayName || 'Unknown',
+            verificationTier: user?.verificationTier || 'new',
+            stories: []
+          }
+        }
+        grouped[story.userId].stories.push(cleanMongoDoc(story))
+      }
+      
+      return handleCORS(NextResponse.json(Object.values(grouped)))
+    }
+
+    if (route === '/stories' && method === 'POST') {
+      const body = await safeParseJson(request)
+      const story = {
+        id: uuidv4(),
+        userId: body.userId,
+        type: body.type, // 'photo', 'video', 'text'
+        content: body.content, // URL for media, text for status
+        backgroundColor: body.backgroundColor,
+        privacy: body.privacy || 'everyone', // 'everyone' or 'friends'
+        views: [],
+        createdAt: new Date(),
+        expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000)
+      }
+      await db.collection('stories').insertOne(story)
+      return handleCORS(NextResponse.json(cleanMongoDoc(story)))
+    }
+
+    if (route.match(/^\/stories\/[^/]+\/view$/) && method === 'POST') {
+      const storyId = path[1]
+      const body = await safeParseJson(request)
+      await db.collection('stories').updateOne(
+        { id: storyId },
+        { $addToSet: { views: body.viewerId } }
+      )
+      return handleCORS(NextResponse.json({ success: true }))
+    }
+
+    if (route.match(/^\/stories\/[^/]+$/) && method === 'DELETE') {
+      const storyId = path[1]
+      await db.collection('stories').deleteOne({ id: storyId })
+      return handleCORS(NextResponse.json({ success: true }))
+    }
+
+    // ==================== MUSIC SEARCH & PROFILE SONGS ====================
+    if (route === '/music/search' && method === 'GET') {
+      const url = new URL(request.url)
+      const query = url.searchParams.get('q')?.toLowerCase() || ''
+      
+      // Search in our music database
+      const tracks = await db.collection('music_library').find({
+        $or: [
+          { title: { $regex: query, $options: 'i' } },
+          { artist: { $regex: query, $options: 'i' } },
+          { album: { $regex: query, $options: 'i' } }
+        ]
+      }).limit(20).toArray()
+      
+      return handleCORS(NextResponse.json(tracks.map(cleanMongoDoc)))
+    }
+
+    if (route === '/music/library' && method === 'POST') {
+      // Add a track to the music library (admin only)
+      const body = await safeParseJson(request)
+      const track = {
+        id: uuidv4(),
+        title: body.title,
+        artist: body.artist,
+        album: body.album,
+        duration: body.duration,
+        previewUrl: body.previewUrl,
+        coverUrl: body.coverUrl,
+        createdAt: new Date()
+      }
+      await db.collection('music_library').insertOne(track)
+      return handleCORS(NextResponse.json(cleanMongoDoc(track)))
+    }
+
+    if (route === '/profile/song' && method === 'PUT') {
+      const body = await safeParseJson(request)
+      await db.collection('users').updateOne(
+        { id: body.userId },
+        { $set: { profileSong: body.song } } // { trackId, title, artist, previewUrl }
+      )
+      return handleCORS(NextResponse.json({ success: true }))
+    }
+
+    if (route === '/profile/song' && method === 'DELETE') {
+      const body = await safeParseJson(request)
+      await db.collection('users').updateOne(
+        { id: body.userId },
+        { $unset: { profileSong: '' } }
+      )
+      return handleCORS(NextResponse.json({ success: true }))
+    }
+
+    // ==================== PROFILE SKINS (Premium £1) ====================
+    const PROFILE_SKINS = [
+      { id: 'default', name: 'Default', colors: ['#1a1a2e', '#16213e'], price: 0 },
+      { id: 'midnight', name: 'Midnight Purple', colors: ['#2d1b4e', '#1a1a2e'], price: 1 },
+      { id: 'ocean', name: 'Ocean Blue', colors: ['#0c2340', '#1a365d'], price: 1 },
+      { id: 'sunset', name: 'Sunset Orange', colors: ['#3d1c02', '#5c2c06'], price: 1 },
+      { id: 'forest', name: 'Forest Green', colors: ['#0d2818', '#1a4d2e'], price: 1 },
+      { id: 'rose', name: 'Rose Gold', colors: ['#3d2b2b', '#4a3333'], price: 1 },
+      { id: 'neon', name: 'Neon Glow', colors: ['#1a0a2e', '#2d1b4e'], price: 1 },
+      { id: 'gold', name: 'Royal Gold', colors: ['#2d2006', '#3d2b08'], price: 1 }
+    ]
+
+    if (route === '/skins' && method === 'GET') {
+      const url = new URL(request.url)
+      const userId = url.searchParams.get('userId')
+      const user = await db.collection('users').findOne({ id: userId })
+      const owned = user?.ownedSkins || ['default']
+      
+      const skinsWithOwnership = PROFILE_SKINS.map(skin => ({
+        ...skin,
+        owned: owned.includes(skin.id)
+      }))
+      
+      return handleCORS(NextResponse.json({ 
+        skins: skinsWithOwnership,
+        currentSkin: user?.currentSkin || 'default'
+      }))
+    }
+
+    if (route === '/skins/purchase' && method === 'POST') {
+      const body = await safeParseJson(request)
+      const { userId, skinId } = body
+      
+      const skin = PROFILE_SKINS.find(s => s.id === skinId)
+      if (!skin) return handleCORS(NextResponse.json({ error: 'Skin not found' }, { status: 404 }))
+      
+      const user = await db.collection('users').findOne({ id: userId })
+      if (user?.ownedSkins?.includes(skinId)) {
+        return handleCORS(NextResponse.json({ error: 'Already owned' }, { status: 400 }))
+      }
+      
+      // Record transaction
+      const transaction = {
+        id: uuidv4(),
+        type: 'skin_purchase',
+        userId,
+        skinId,
+        amount: skin.price,
+        currency: 'GBP',
+        createdAt: new Date()
+      }
+      await db.collection('transactions').insertOne(transaction)
+      
+      // Add skin to user
+      await db.collection('users').updateOne(
+        { id: userId },
+        { $addToSet: { ownedSkins: skinId } }
+      )
+      
+      return handleCORS(NextResponse.json({ success: true, transaction: cleanMongoDoc(transaction) }))
+    }
+
+    if (route === '/skins/equip' && method === 'POST') {
+      const body = await safeParseJson(request)
+      const { userId, skinId } = body
+      
+      const user = await db.collection('users').findOne({ id: userId })
+      if (!user?.ownedSkins?.includes(skinId) && skinId !== 'default') {
+        return handleCORS(NextResponse.json({ error: 'Skin not owned' }, { status: 403 }))
+      }
+      
+      await db.collection('users').updateOne(
+        { id: userId },
+        { $set: { currentSkin: skinId } }
+      )
+      
       return handleCORS(NextResponse.json({ success: true }))
     }
 
