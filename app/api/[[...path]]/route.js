@@ -1192,6 +1192,120 @@ async function handleRoute(request, { params }) {
       return handleCORS(NextResponse.json({ count: unread }))
     }
 
+    // ==================== ITUNES MUSIC SEARCH (Real Music API) ====================
+    if (route === '/itunes/search' && method === 'GET') {
+      const url = new URL(request.url)
+      const term = url.searchParams.get('term') || ''
+      const type = url.searchParams.get('type') || 'all' // all, artist, song, album
+      
+      if (!term.trim()) {
+        return handleCORS(NextResponse.json({ results: [] }))
+      }
+      
+      try {
+        let entity = 'musicTrack'
+        let attribute = ''
+        
+        if (type === 'artist') {
+          entity = 'musicArtist'
+          attribute = '&attribute=artistTerm'
+        } else if (type === 'song') {
+          entity = 'song'
+          attribute = '&attribute=songTerm'
+        } else if (type === 'album') {
+          entity = 'album'
+          attribute = '&attribute=albumTerm'
+        }
+        
+        const itunesUrl = `https://itunes.apple.com/search?term=${encodeURIComponent(term)}&entity=${entity}${attribute}&limit=25&country=GB`
+        const response = await fetch(itunesUrl)
+        const data = await response.json()
+        
+        // Format the results
+        const results = data.results?.map(item => ({
+          id: item.trackId || item.artistId || item.collectionId,
+          type: item.wrapperType,
+          name: item.trackName || item.artistName || item.collectionName,
+          artist: item.artistName,
+          album: item.collectionName,
+          artwork: item.artworkUrl100?.replace('100x100', '300x300') || item.artworkUrl60?.replace('60x60', '300x300'),
+          artworkSmall: item.artworkUrl60,
+          previewUrl: item.previewUrl,
+          duration: item.trackTimeMillis ? Math.round(item.trackTimeMillis / 1000) : null,
+          genre: item.primaryGenreName,
+          releaseDate: item.releaseDate,
+          trackNumber: item.trackNumber,
+          trackCount: item.trackCount,
+          price: item.trackPrice || item.collectionPrice,
+          currency: item.currency,
+          explicit: item.trackExplicitness === 'explicit'
+        })) || []
+        
+        return handleCORS(NextResponse.json({ results, resultCount: data.resultCount }))
+      } catch (error) {
+        console.error('iTunes API error:', error)
+        return handleCORS(NextResponse.json({ results: [], error: 'Search failed' }, { status: 500 }))
+      }
+    }
+
+    // Save track to user's profile (24hr song status)
+    if (route === '/profile/music-status' && method === 'POST') {
+      const body = await safeParseJson(request)
+      const { userId, track } = body
+      
+      const status = {
+        id: uuidv4(),
+        userId,
+        trackId: track.id,
+        trackName: track.name,
+        artistName: track.artist,
+        artwork: track.artwork,
+        previewUrl: track.previewUrl,
+        createdAt: new Date(),
+        expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000) // 24 hours
+      }
+      
+      // Remove existing music status for this user
+      await db.collection('music_statuses').deleteMany({ userId })
+      await db.collection('music_statuses').insertOne(status)
+      
+      return handleCORS(NextResponse.json(cleanMongoDoc(status)))
+    }
+
+    // Get user's music status
+    if (route.match(/^\/profile\/music-status\/[^/]+$/) && method === 'GET') {
+      const userId = path[2]
+      const status = await db.collection('music_statuses').findOne({
+        userId,
+        expiresAt: { $gt: new Date() }
+      })
+      return handleCORS(NextResponse.json(status ? cleanMongoDoc(status) : null))
+    }
+
+    // Get all friends' music statuses
+    if (route === '/music-statuses' && method === 'GET') {
+      const url = new URL(request.url)
+      const userId = url.searchParams.get('userId')
+      const user = await db.collection('users').findOne({ id: userId })
+      const friendIds = user?.friends || []
+      
+      const statuses = await db.collection('music_statuses').find({
+        userId: { $in: [...friendIds, userId] },
+        expiresAt: { $gt: new Date() }
+      }).sort({ createdAt: -1 }).toArray()
+      
+      // Enrich with user info
+      const enriched = await Promise.all(statuses.map(async (s) => {
+        const owner = await db.collection('users').findOne({ id: s.userId })
+        return {
+          ...cleanMongoDoc(s),
+          displayName: owner?.displayName || 'Unknown'
+        }
+      }))
+      
+      return handleCORS(NextResponse.json(enriched))
+    }
+
     // ==================== WAVES (Meet) ====================
     if (route === '/waves' && method === 'POST') {
       const body = await safeParseJson(request)
