@@ -2,23 +2,19 @@
 
 import { useState, useEffect, useRef, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { ArrowLeft, Send, User, MessageSquare, Plus, Search, X, Check, Bell } from 'lucide-react'
+import { ArrowLeft, Send, User, MessageSquare, Check, CheckCheck } from 'lucide-react'
 
 function InboxContent() {
+  const router = useRouter()
+  const searchParams = useSearchParams()
   const [user, setUser] = useState(null)
   const [conversations, setConversations] = useState([])
-  const [selectedConversation, setSelectedConversation] = useState(null)
+  const [selectedConvo, setSelectedConvo] = useState(null)
   const [messages, setMessages] = useState([])
   const [newMessage, setNewMessage] = useState('')
   const [loading, setLoading] = useState(true)
-  const [sending, setSending] = useState(false)
-  const [showNewChat, setShowNewChat] = useState(false)
-  const [allUsers, setAllUsers] = useState([])
-  const [searchQuery, setSearchQuery] = useState('')
-  const [pendingRequests, setPendingRequests] = useState([])
   const messagesEndRef = useRef(null)
-  const router = useRouter()
-  const searchParams = useSearchParams()
+  const pollRef = useRef(null)
 
   useEffect(() => {
     const storedUser = localStorage.getItem('lowkey_user')
@@ -26,409 +22,206 @@ function InboxContent() {
       router.push('/')
       return
     }
-    setUser(JSON.parse(storedUser))
+    const userData = JSON.parse(storedUser)
+    setUser(userData)
+    fetchConversations(userData.id)
+
+    // Check if conversation ID is in URL
+    const convoId = searchParams.get('conversation')
+    if (convoId) {
+      loadConversation(convoId, userData.id)
+    }
+
+    return () => {
+      if (pollRef.current) clearInterval(pollRef.current)
+    }
   }, [])
 
-  useEffect(() => {
-    if (user) {
-      fetchConversations()
-    }
-  }, [user])
-
-  useEffect(() => {
-    // Check for conversation param from notification click
-    const conversationId = searchParams.get('conversation')
-    if (conversationId && conversations.length > 0) {
-      const conv = conversations.find(c => c.id === conversationId)
-      if (conv) {
-        setSelectedConversation(conv)
-      }
-    }
-  }, [searchParams, conversations])
-
-  useEffect(() => {
-    if (selectedConversation) {
-      fetchMessages(selectedConversation.id)
-      markMessagesAsRead(selectedConversation.id)
-    }
-  }, [selectedConversation])
-
-  useEffect(() => {
-    scrollToBottom()
-  }, [messages])
-
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }
-
-  const fetchConversations = async () => {
+  const fetchConversations = async (userId) => {
     try {
-      const res = await fetch(`/api/conversations/${user.id}`)
-      const data = await res.json()
-      
-      // Separate pending (from non-friends) and accepted conversations
-      const accepted = data.filter(c => c.accepted !== false)
-      const pending = data.filter(c => c.accepted === false && c.isFromNonFriend)
-      
-      setConversations(accepted)
-      setPendingRequests(pending)
+      const res = await fetch(`/api/conversations/${userId}`)
+      if (res.ok) {
+        const data = await res.json()
+        setConversations(data)
+      }
     } catch (err) {
-      console.error('Failed to fetch conversations:', err)
+      console.error('Failed to fetch conversations')
     }
     setLoading(false)
   }
 
-  const fetchMessages = async (conversationId) => {
+  const loadConversation = async (convoId, userId) => {
+    setSelectedConvo(convoId)
     try {
-      const res = await fetch(`/api/messages/${conversationId}`)
-      const data = await res.json()
-      setMessages(data)
+      const res = await fetch(`/api/messages/${convoId}`)
+      if (res.ok) {
+        const data = await res.json()
+        setMessages(data)
+        // Mark as read
+        await fetch(`/api/messages/${convoId}/read`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ userId })
+        })
+        fetchConversations(userId)
+      }
     } catch (err) {
-      console.error('Failed to fetch messages:', err)
+      console.error('Failed to load messages')
     }
+
+    // Poll for new messages
+    if (pollRef.current) clearInterval(pollRef.current)
+    pollRef.current = setInterval(async () => {
+      const res = await fetch(`/api/messages/${convoId}`)
+      if (res.ok) {
+        const data = await res.json()
+        setMessages(data)
+      }
+    }, 3000)
   }
 
-  const markMessagesAsRead = async (conversationId) => {
-    try {
-      await fetch(`/api/messages/${conversationId}/read`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId: user.id })
-      })
-    } catch (err) {
-      console.error('Failed to mark as read:', err)
-    }
-  }
-
-  const fetchAllUsers = async () => {
-    try {
-      const res = await fetch('/api/users')
-      const data = await res.json()
-      setAllUsers(data.filter(u => u.id !== user.id))
-    } catch (err) {
-      console.error('Failed to fetch users:', err)
-    }
-  }
-
-  const handleSendMessage = async (e) => {
+  const sendMessage = async (e) => {
     e.preventDefault()
-    if (!newMessage.trim() || !selectedConversation) return
+    if (!newMessage.trim() || !selectedConvo) return
 
-    setSending(true)
     try {
       const res = await fetch('/api/messages', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          conversationId: selectedConversation.id,
+          conversationId: selectedConvo,
           senderId: user.id,
           content: newMessage.trim()
         })
       })
-
       if (res.ok) {
-        const message = await res.json()
-        setMessages([...messages, message])
+        const msg = await res.json()
+        setMessages([...messages, msg])
         setNewMessage('')
-        fetchConversations()
+        fetchConversations(user.id)
       }
     } catch (err) {
-      console.error('Failed to send message:', err)
-    }
-    setSending(false)
-  }
-
-  const startNewConversation = async (otherUser) => {
-    try {
-      // Check if they're friends
-      const isFriend = user.friends?.includes(otherUser.id)
-      
-      const res = await fetch('/api/conversations', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          participants: [user.id, otherUser.id],
-          isFromNonFriend: !isFriend
-        })
-      })
-
-      if (res.ok) {
-        const conversation = await res.json()
-        conversation.otherUser = otherUser
-        setConversations([conversation, ...conversations.filter(c => c.id !== conversation.id)])
-        setSelectedConversation(conversation)
-        setShowNewChat(false)
-        setSearchQuery('')
-      }
-    } catch (err) {
-      console.error('Failed to create conversation:', err)
+      console.error('Failed to send message')
     }
   }
 
-  const acceptConversation = async (conversation) => {
-    try {
-      await fetch(`/api/conversations/${conversation.id}/accept`, {
-        method: 'PUT'
-      })
-      
-      // Move from pending to conversations
-      setPendingRequests(pendingRequests.filter(c => c.id !== conversation.id))
-      setConversations([{ ...conversation, accepted: true }, ...conversations])
-    } catch (err) {
-      console.error('Failed to accept conversation:', err)
-    }
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }, [messages])
+
+  const selectedConversation = conversations.find(c => c.id === selectedConvo)
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#0a0a0f] flex items-center justify-center">
+        <div className="animate-pulse text-white">Loading...</div>
+      </div>
+    )
   }
-
-  const filteredUsers = allUsers.filter(u => 
-    u.displayName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    u.email.toLowerCase().includes(searchQuery.toLowerCase())
-  )
-
-  if (!user) return null
 
   return (
     <div className="min-h-screen bg-[#0a0a0f] flex flex-col">
       {/* Header */}
-      <header className="flex items-center gap-4 p-4 border-b border-white/5">
-        <button
-          onClick={() => selectedConversation ? setSelectedConversation(null) : router.push('/')}
-          className="p-2 rounded-full hover:bg-white/10 transition-colors"
-        >
+      <header className="flex items-center gap-3 p-4 border-b border-white/10">
+        <button onClick={() => selectedConvo ? setSelectedConvo(null) : router.push('/')} className="p-2 rounded-full hover:bg-white/10">
           <ArrowLeft className="w-5 h-5 text-white" />
         </button>
-        <h1 className="text-xl font-bold text-white flex-1">
-          {selectedConversation ? selectedConversation.otherUser?.displayName || 'Chat' : 'Inbox'}
+        <h1 className="text-xl font-semibold text-white">
+          {selectedConvo && selectedConversation?.otherUser ? selectedConversation.otherUser.displayName : 'Inbox'}
         </h1>
-        {!selectedConversation && (
-          <button
-            onClick={() => {
-              setShowNewChat(true)
-              fetchAllUsers()
-            }}
-            className="p-2 rounded-full hover:bg-white/10 transition-colors"
-          >
-            <Plus className="w-5 h-5 text-white" />
-          </button>
-        )}
       </header>
 
-      {/* Main Content */}
-      {selectedConversation ? (
+      {!selectedConvo ? (
+        // Conversations List
+        <div className="flex-1 overflow-y-auto">
+          {conversations.length === 0 ? (
+            <div className="flex flex-col items-center justify-center h-64 text-gray-400">
+              <MessageSquare className="w-12 h-12 mb-4 opacity-50" />
+              <p>No conversations yet</p>
+              <p className="text-sm">Start chatting with friends!</p>
+            </div>
+          ) : (
+            conversations.map((convo) => (
+              <button
+                key={convo.id}
+                onClick={() => loadConversation(convo.id, user.id)}
+                className="w-full flex items-center gap-3 p-4 border-b border-white/5 hover:bg-white/5 transition-colors"
+              >
+                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
+                  <User className="w-6 h-6 text-white" />
+                </div>
+                <div className="flex-1 text-left">
+                  <div className="flex justify-between items-center">
+                    <span className="text-white font-medium">{convo.otherUser?.displayName || 'Unknown'}</span>
+                    {convo.unreadCount > 0 && (
+                      <span className="bg-amber-500 text-black text-xs font-bold px-2 py-0.5 rounded-full">
+                        {convo.unreadCount}
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-gray-400 text-sm truncate">
+                    {convo.lastMessage?.content || 'No messages yet'}
+                  </p>
+                </div>
+              </button>
+            ))
+          )}
+        </div>
+      ) : (
         // Chat View
-        <div className="flex-1 flex flex-col">
+        <>
           <div className="flex-1 overflow-y-auto p-4 space-y-3">
-            {messages.length === 0 ? (
-              <div className="text-center text-gray-400 py-8">
-                No messages yet. Start the conversation!
-              </div>
-            ) : (
-              messages.map((msg) => (
+            {messages.map((msg) => (
+              <div
+                key={msg.id}
+                className={`flex ${msg.senderId === user.id ? 'justify-end' : 'justify-start'}`}
+              >
                 <div
-                  key={msg.id}
-                  className={`flex ${msg.senderId === user.id ? 'justify-end' : 'justify-start'}`}
+                  className={`max-w-[75%] px-4 py-2 rounded-2xl ${
+                    msg.senderId === user.id
+                      ? 'bg-amber-500 text-black'
+                      : 'bg-white/10 text-white'
+                  }`}
                 >
-                  <div
-                    className={`max-w-[75%] rounded-2xl px-4 py-2 ${
-                      msg.senderId === user.id
-                        ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white'
-                        : 'glass-card text-white'
-                    }`}
-                  >
-                    <p className="text-sm">{msg.content}</p>
-                    <p className="text-[10px] mt-1 opacity-60">
-                      {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                    </p>
+                  <p>{msg.content}</p>
+                  <div className={`flex items-center gap-1 mt-1 text-xs ${msg.senderId === user.id ? 'text-black/60' : 'text-gray-400'}`}>
+                    <span>{new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                    {msg.senderId === user.id && (msg.read ? <CheckCheck className="w-3 h-3" /> : <Check className="w-3 h-3" />)}
                   </div>
                 </div>
-              ))
-            )}
+              </div>
+            ))}
             <div ref={messagesEndRef} />
           </div>
 
           {/* Message Input */}
-          <form onSubmit={handleSendMessage} className="p-4 border-t border-white/5">
+          <form onSubmit={sendMessage} className="p-4 border-t border-white/10">
             <div className="flex gap-2">
               <input
                 type="text"
                 value={newMessage}
                 onChange={(e) => setNewMessage(e.target.value)}
                 placeholder="Type a message..."
-                className="flex-1 px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500/50 transition-colors"
+                className="flex-1 px-4 py-3 rounded-full bg-white/10 border border-white/10 text-white placeholder-gray-400 focus:outline-none focus:border-amber-500/50"
               />
               <button
                 type="submit"
-                disabled={!newMessage.trim() || sending}
-                className="px-4 py-3 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 text-white disabled:opacity-50 hover:opacity-90 transition-opacity"
+                disabled={!newMessage.trim()}
+                className="p-3 rounded-full bg-amber-500 text-black disabled:opacity-50"
               >
                 <Send className="w-5 h-5" />
               </button>
             </div>
           </form>
-        </div>
-      ) : (
-        // Conversations List
-        <div className="flex-1 overflow-y-auto">
-          {/* Pending Message Requests */}
-          {pendingRequests.length > 0 && (
-            <div className="p-4 border-b border-white/5">
-              <div className="flex items-center gap-2 mb-3">
-                <Bell className="w-4 h-4 text-amber-400" />
-                <span className="text-amber-400 text-sm font-medium">Message Requests</span>
-                <span className="px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-400 text-xs">{pendingRequests.length}</span>
-              </div>
-              <div className="space-y-2">
-                {pendingRequests.map((conv) => (
-                  <div
-                    key={conv.id}
-                    className="glass-card rounded-xl p-4 flex items-center gap-3"
-                  >
-                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center">
-                      <span className="text-white font-bold">
-                        {conv.otherUser?.displayName?.charAt(0).toUpperCase() || '?'}
-                      </span>
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="text-white font-medium">
-                        {conv.otherUser?.displayName || 'Unknown'}
-                      </div>
-                      <div className="text-gray-400 text-sm">Wants to message you</div>
-                    </div>
-                    <button
-                      onClick={() => acceptConversation(conv)}
-                      className="px-3 py-1.5 rounded-lg bg-green-500/20 border border-green-500/30 text-green-400 text-sm hover:bg-green-500/30 transition-colors"
-                    >
-                      <Check className="w-4 h-4" />
-                    </button>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Regular Conversations */}
-          <div className="p-4">
-            {loading ? (
-              <div className="text-center text-gray-400 py-8">Loading conversations...</div>
-            ) : conversations.length === 0 ? (
-              <div className="text-center py-12">
-                <MessageSquare className="w-12 h-12 text-gray-600 mx-auto mb-4" />
-                <p className="text-gray-400">No conversations yet</p>
-                <button
-                  onClick={() => {
-                    setShowNewChat(true)
-                    fetchAllUsers()
-                  }}
-                  className="mt-4 px-4 py-2 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 text-white text-sm hover:opacity-90 transition-opacity"
-                >
-                  Start a conversation
-                </button>
-              </div>
-            ) : (
-              <div className="space-y-2">
-                {conversations.map((conv) => (
-                  <button
-                    key={conv.id}
-                    onClick={() => setSelectedConversation(conv)}
-                    className="w-full glass-card rounded-xl p-4 flex items-center gap-3 hover:bg-white/5 transition-colors text-left"
-                  >
-                    <div className="relative">
-                      <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
-                        <span className="text-white font-bold">
-                          {conv.otherUser?.displayName?.charAt(0).toUpperCase() || '?'}
-                        </span>
-                      </div>
-                      {conv.unreadCount > 0 && (
-                        <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-red-500 text-white text-xs flex items-center justify-center font-semibold">
-                          {conv.unreadCount > 9 ? '9+' : conv.unreadCount}
-                        </span>
-                      )}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="text-white font-medium">
-                        {conv.otherUser?.displayName || 'Unknown User'}
-                      </div>
-                      <div className={`text-sm truncate ${conv.unreadCount > 0 ? 'text-white font-medium' : 'text-gray-400'}`}>
-                        {conv.lastMessage?.content || 'No messages yet'}
-                      </div>
-                    </div>
-                    {conv.lastMessage && (
-                      <div className="text-gray-500 text-xs">
-                        {new Date(conv.lastMessage.createdAt).toLocaleDateString()}
-                      </div>
-                    )}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* New Chat Modal */}
-      {showNewChat && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm" onClick={() => setShowNewChat(false)}>
-          <div className="glass-card rounded-2xl p-6 w-full max-w-md mx-4 max-h-[80vh] flex flex-col" onClick={e => e.stopPropagation()}>
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-xl font-semibold text-white">New Conversation</h3>
-              <button onClick={() => setShowNewChat(false)} className="text-gray-400 hover:text-white transition-colors">
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-            
-            <div className="relative mb-4">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search users..."
-                className="w-full pl-10 pr-4 py-3 rounded-xl bg-black/40 border border-white/10 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500/50 transition-colors"
-              />
-            </div>
-
-            <div className="flex-1 overflow-y-auto space-y-2">
-              {filteredUsers.length === 0 ? (
-                <div className="text-center text-gray-400 py-4">
-                  {searchQuery ? 'No users found' : 'No other users yet'}
-                </div>
-              ) : (
-                filteredUsers.map((otherUser) => (
-                  <button
-                    key={otherUser.id}
-                    onClick={() => startNewConversation(otherUser)}
-                    className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-white/5 transition-colors text-left"
-                  >
-                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
-                      <span className="text-white font-bold">
-                        {otherUser.displayName?.charAt(0).toUpperCase() || '?'}
-                      </span>
-                    </div>
-                    <div>
-                      <div className="text-white font-medium">{otherUser.displayName}</div>
-                      <div className="text-gray-400 text-sm">{otherUser.email}</div>
-                    </div>
-                    {user.friends?.includes(otherUser.id) && (
-                      <span className="ml-auto text-xs text-green-400">Friend</span>
-                    )}
-                  </button>
-                ))
-              )}
-            </div>
-          </div>
-        </div>
+        </>
       )}
     </div>
   )
 }
 
-// Wrap in Suspense for useSearchParams
 export default function InboxPage() {
   return (
-    <Suspense fallback={
-      <div className="min-h-screen bg-[#0a0a0f] flex items-center justify-center">
-        <div className="text-white">Loading...</div>
-      </div>
-    }>
+    <Suspense fallback={<div className="min-h-screen bg-[#0a0a0f] flex items-center justify-center"><div className="text-white">Loading...</div></div>}>
       <InboxContent />
     </Suspense>
   )
