@@ -498,7 +498,7 @@ async function handleRoute(request, { params }) {
       }
       const mark = session.players[0] === userId ? 'X' : 'O'
       session.board[position] = mark
-      const move = { id: uuidv4(), sessionId, odbc: userId, position, mark, createdAt: new Date() }
+      const move = { id: uuidv4(), sessionId, userId: userId, position, mark, createdAt: new Date() }
       await db.collection('game_moves').insertOne(move)
       // Check winner
       const wins = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]]
