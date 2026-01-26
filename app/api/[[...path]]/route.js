@@ -280,6 +280,269 @@ async function handleRoute(request, { params }) {
       return handleCORS(NextResponse.json({ success: true }))
     }
 
+    // Remove user (Founder only) - Deletes user completely
+    if (route === '/founder/remove-user' && method === 'POST') {
+      const body = await safeParseJson(request)
+      const { founderId, userId } = body
+      const requester = await db.collection('users').findOne({ id: founderId })
+      if (requester?.email?.toLowerCase() !== FOUNDER_EMAIL.toLowerCase()) {
+        return handleCORS(NextResponse.json({ error: 'Founder access required' }, { status: 403 }))
+      }
+      
+      // Don't allow removing founder
+      const targetUser = await db.collection('users').findOne({ id: userId })
+      if (targetUser?.email?.toLowerCase() === FOUNDER_EMAIL.toLowerCase()) {
+        return handleCORS(NextResponse.json({ error: 'Cannot remove founder account' }, { status: 400 }))
+      }
+      
+      // Remove user and all their data
+      await db.collection('users').deleteOne({ id: userId })
+      await db.collection('gallery').deleteMany({ userId })
+      await db.collection('stories').deleteMany({ userId })
+      await db.collection('messages').deleteMany({ $or: [{ senderId: userId }, { receiverId: userId }] })
+      await db.collection('community_members').deleteMany({ userId })
+      
+      return handleCORS(NextResponse.json({ success: true, message: 'User removed' }))
+    }
+
+    // Reset user password (Founder only)
+    if (route === '/founder/reset-password' && method === 'POST') {
+      const body = await safeParseJson(request)
+      const { founderId, userId, newPassword } = body
+      const requester = await db.collection('users').findOne({ id: founderId })
+      if (requester?.email?.toLowerCase() !== FOUNDER_EMAIL.toLowerCase()) {
+        return handleCORS(NextResponse.json({ error: 'Founder access required' }, { status: 403 }))
+      }
+      
+      const bcrypt = await import('bcryptjs')
+      const hashedPassword = await bcrypt.hash(newPassword || 'LowKey123', 10)
+      await db.collection('users').updateOne(
+        { id: userId },
+        { $set: { password: hashedPassword, passwordResetAt: new Date() } }
+      )
+      
+      return handleCORS(NextResponse.json({ success: true, message: 'Password reset' }))
+    }
+
+    // Force logout user (Founder only) - Invalidates their session
+    if (route === '/founder/force-logout' && method === 'POST') {
+      const body = await safeParseJson(request)
+      const { founderId, userId } = body
+      const requester = await db.collection('users').findOne({ id: founderId })
+      if (requester?.email?.toLowerCase() !== FOUNDER_EMAIL.toLowerCase()) {
+        return handleCORS(NextResponse.json({ error: 'Founder access required' }, { status: 403 }))
+      }
+      
+      // Invalidate user sessions by setting a new session invalidation timestamp
+      await db.collection('users').updateOne(
+        { id: userId },
+        { $set: { sessionInvalidatedAt: new Date() } }
+      )
+      
+      return handleCORS(NextResponse.json({ success: true, message: 'User logged out' }))
+    }
+
+    // ==================== MESSAGE REQUESTS (Non-friend messages) ====================
+    // Send message request to non-friend (goes to bell/notifications)
+    if (route === '/message-requests' && method === 'POST') {
+      const body = await safeParseJson(request)
+      const { senderId, receiverId, content } = body
+      
+      // Check if they're already friends
+      const sender = await db.collection('users').findOne({ id: senderId })
+      const receiver = await db.collection('users').findOne({ id: receiverId })
+      
+      if (sender?.friends?.includes(receiverId)) {
+        // They're friends, send directly to inbox
+        const message = {
+          id: uuidv4(),
+          senderId,
+          senderName: sender.displayName,
+          receiverId,
+          content,
+          type: 'direct',
+          read: false,
+          createdAt: new Date()
+        }
+        await db.collection('messages').insertOne(message)
+        return handleCORS(NextResponse.json({ ...cleanMongoDoc(message), sentToInbox: true }))
+      }
+      
+      // Not friends - create message request (goes to bell)
+      const request_doc = {
+        id: uuidv4(),
+        senderId,
+        senderName: sender?.displayName,
+        receiverId,
+        content,
+        status: 'pending', // pending, accepted, declined
+        createdAt: new Date()
+      }
+      await db.collection('message_requests').insertOne(request_doc)
+      
+      // Create notification
+      await db.collection('notifications').insertOne({
+        id: uuidv4(),
+        userId: receiverId,
+        type: 'message_request',
+        title: 'New Message Request',
+        content: `${sender?.displayName} wants to message you`,
+        data: { requestId: request_doc.id, senderId },
+        read: false,
+        createdAt: new Date()
+      })
+      
+      return handleCORS(NextResponse.json({ ...cleanMongoDoc(request_doc), sentToInbox: false }))
+    }
+
+    // Get message requests (bell notifications)
+    if (route === '/message-requests' && method === 'GET') {
+      const url = new URL(request.url)
+      const userId = url.searchParams.get('userId')
+      const requests = await db.collection('message_requests')
+        .find({ receiverId: userId, status: 'pending' })
+        .sort({ createdAt: -1 })
+        .toArray()
+      return handleCORS(NextResponse.json(requests.map(cleanMongoDoc)))
+    }
+
+    // Accept/Decline message request
+    if (route === '/message-requests/respond' && method === 'POST') {
+      const body = await safeParseJson(request)
+      const { requestId, userId, action } = body // action: 'accept' or 'decline'
+      
+      const request_doc = await db.collection('message_requests').findOne({ id: requestId })
+      if (!request_doc || request_doc.receiverId !== userId) {
+        return handleCORS(NextResponse.json({ error: 'Request not found' }, { status: 404 }))
+      }
+      
+      if (action === 'accept') {
+        // Move message to inbox as a real conversation
+        const message = {
+          id: uuidv4(),
+          senderId: request_doc.senderId,
+          senderName: request_doc.senderName,
+          receiverId: request_doc.receiverId,
+          content: request_doc.content,
+          type: 'direct',
+          read: false,
+          createdAt: request_doc.createdAt
+        }
+        await db.collection('messages').insertOne(message)
+        
+        // Update request status
+        await db.collection('message_requests').updateOne(
+          { id: requestId },
+          { $set: { status: 'accepted' } }
+        )
+        
+        return handleCORS(NextResponse.json({ success: true, message: cleanMongoDoc(message) }))
+      } else {
+        // Decline - just update status
+        await db.collection('message_requests').updateOne(
+          { id: requestId },
+          { $set: { status: 'declined' } }
+        )
+        return handleCORS(NextResponse.json({ success: true }))
+      }
+    }
+
+    // ==================== NOTIFICATIONS ====================
+    if (route.match(/^\/notifications\/[^/]+$/) && method === 'GET') {
+      const userId = path[1]
+      const notifications = await db.collection('notifications')
+        .find({ userId })
+        .sort({ createdAt: -1 })
+        .limit(50)
+        .toArray()
+      return handleCORS(NextResponse.json(notifications.map(cleanMongoDoc)))
+    }
+
+    if (route === '/notifications/mark-read' && method === 'POST') {
+      const body = await safeParseJson(request)
+      const { userId, notificationId } = body
+      if (notificationId) {
+        await db.collection('notifications').updateOne({ id: notificationId }, { $set: { read: true } })
+      } else {
+        await db.collection('notifications').updateMany({ userId }, { $set: { read: true } })
+      }
+      return handleCORS(NextResponse.json({ success: true }))
+    }
+
+    // Create notification (internal use)
+    if (route === '/notifications' && method === 'POST') {
+      const body = await safeParseJson(request)
+      const notification = {
+        id: uuidv4(),
+        userId: body.userId,
+        type: body.type, // message, friend_request, game_invite, notice, alert
+        title: body.title,
+        content: body.content,
+        data: body.data || {},
+        read: false,
+        createdAt: new Date()
+      }
+      await db.collection('notifications').insertOne(notification)
+      return handleCORS(NextResponse.json(cleanMongoDoc(notification)))
+    }
+
+    // ==================== PROFILE COMMENTS ====================
+    if (route === '/profile/comments' && method === 'GET') {
+      const url = new URL(request.url)
+      const profileId = url.searchParams.get('profileId')
+      const comments = await db.collection('profile_comments')
+        .find({ profileId })
+        .sort({ createdAt: -1 })
+        .toArray()
+      return handleCORS(NextResponse.json(comments.map(cleanMongoDoc)))
+    }
+
+    if (route === '/profile/comments' && method === 'POST') {
+      const body = await safeParseJson(request)
+      const { profileId, userId, content, anonymous } = body
+      
+      const commenter = await db.collection('users').findOne({ id: userId })
+      const comment = {
+        id: uuidv4(),
+        profileId,
+        userId: anonymous ? null : userId,
+        displayName: anonymous ? 'Anonymous' : commenter?.displayName,
+        content,
+        anonymous: !!anonymous,
+        createdAt: new Date()
+      }
+      await db.collection('profile_comments').insertOne(comment)
+      
+      // Notify profile owner
+      if (profileId !== userId) {
+        await db.collection('notifications').insertOne({
+          id: uuidv4(),
+          userId: profileId,
+          type: 'comment',
+          title: 'New Comment',
+          content: anonymous ? 'Someone commented on your profile' : `${commenter?.displayName} commented on your profile`,
+          data: { commentId: comment.id },
+          read: false,
+          createdAt: new Date()
+        })
+      }
+      
+      return handleCORS(NextResponse.json(cleanMongoDoc(comment)))
+    }
+
+    if (route.match(/^\/profile\/comments\/[^/]+$/) && method === 'DELETE') {
+      const commentId = path[2]
+      const body = await safeParseJson(request)
+      const comment = await db.collection('profile_comments').findOne({ id: commentId })
+      
+      // Allow deletion by comment owner or profile owner
+      if (comment && (comment.userId === body.userId || comment.profileId === body.userId)) {
+        await db.collection('profile_comments').deleteOne({ id: commentId })
+        return handleCORS(NextResponse.json({ success: true }))
+      }
+      return handleCORS(NextResponse.json({ error: 'Not authorized' }, { status: 403 }))
+    }
+
     // ==================== PROFILE GALLERY ====================
     if (route === '/gallery' && method === 'GET') {
       const url = new URL(request.url)
