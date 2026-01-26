@@ -333,18 +333,18 @@ export default function LoungePage() {
                 className="w-full px-4 py-3 rounded-xl bg-black/40 border border-white/10 text-white placeholder-gray-500 focus:outline-none focus:border-pink-500/50 resize-none h-20"
               />
               <div className="relative">
-                <DollarSign className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <PoundSterling className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                 <input
                   type="number"
                   step="0.01"
                   min="0"
                   value={newPost.price}
                   onChange={(e) => setNewPost({ ...newPost, price: e.target.value })}
-                  placeholder="Set your price"
+                  placeholder="Set your price (£)"
                   className="w-full pl-12 pr-4 py-3 rounded-xl bg-black/40 border border-white/10 text-white placeholder-gray-500 focus:outline-none focus:border-pink-500/50"
                 />
               </div>
-              <p className="text-gray-400 text-xs">Your image will be blurred with the LowKey logo. Users can unlock by purchasing.</p>
+              <p className="text-gray-400 text-xs">Your image will be blurred with the LowKey logo. Subscribers can view full content. LowKey takes 20%.</p>
               <div className="flex gap-3">
                 <button type="button" onClick={() => setShowPostForm(false)} className="flex-1 py-3 rounded-xl bg-white/10 text-white">Cancel</button>
                 <button type="submit" className="flex-1 py-3 rounded-xl bg-gradient-to-r from-pink-500 to-purple-500 text-white font-semibold">Post</button>
