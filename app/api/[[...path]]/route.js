@@ -240,6 +240,259 @@ async function handleRoute(request, { params }) {
       return handleCORS(NextResponse.json({ success: true, user: cleanMongoDoc(user) }))
     }
 
+    // ==================== FOUNDER ENDPOINTS (kinglowkey@hotmail.com ONLY) ====================
+    const FOUNDER_EMAIL = 'kinglowkey@hotmail.com'
+    
+    // Check if user is founder
+    if (route === '/founder/check' && method === 'POST') {
+      const body = await safeParseJson(request)
+      const user = await db.collection('users').findOne({ id: body.userId })
+      const isFounder = user?.email?.toLowerCase() === FOUNDER_EMAIL.toLowerCase()
+      return handleCORS(NextResponse.json({ isFounder, user: user ? cleanMongoDoc(user) : null }))
+    }
+
+    // Get all users (Founder only)
+    if (route === '/founder/users' && method === 'POST') {
+      const body = await safeParseJson(request)
+      const requester = await db.collection('users').findOne({ id: body.founderId })
+      if (requester?.email?.toLowerCase() !== FOUNDER_EMAIL.toLowerCase()) {
+        return handleCORS(NextResponse.json({ error: 'Founder access required' }, { status: 403 }))
+      }
+      const users = await db.collection('users').find({}).sort({ createdAt: -1 }).toArray()
+      return handleCORS(NextResponse.json(users.map(u => ({ ...cleanMongoDoc(u), password: undefined }))))
+    }
+
+    // Toggle verification (Founder only)
+    if (route === '/founder/verify' && method === 'POST') {
+      const body = await safeParseJson(request)
+      const { founderId, userId, verified } = body
+      const requester = await db.collection('users').findOne({ id: founderId })
+      if (requester?.email?.toLowerCase() !== FOUNDER_EMAIL.toLowerCase()) {
+        return handleCORS(NextResponse.json({ error: 'Founder access required' }, { status: 403 }))
+      }
+      await db.collection('users').updateOne({ id: userId }, { $set: { verified } })
+      return handleCORS(NextResponse.json({ success: true }))
+    }
+
+    // Grant/Revoke Creator Status (Founder only)
+    if (route === '/founder/creator-status' && method === 'POST') {
+      const body = await safeParseJson(request)
+      const { founderId, userId, isCreator } = body
+      const requester = await db.collection('users').findOne({ id: founderId })
+      if (requester?.email?.toLowerCase() !== FOUNDER_EMAIL.toLowerCase()) {
+        return handleCORS(NextResponse.json({ error: 'Founder access required' }, { status: 403 }))
+      }
+      await db.collection('users').updateOne(
+        { id: userId }, 
+        { $set: { 
+          isCreator, 
+          creatorSince: isCreator ? new Date() : null,
+          subscriptionPrice: isCreator ? 4.99 : null // Default £4.99
+        }}
+      )
+      return handleCORS(NextResponse.json({ success: true }))
+    }
+
+    // Grant/Revoke Admin Status (Founder only)
+    if (route === '/founder/admin-status' && method === 'POST') {
+      const body = await safeParseJson(request)
+      const { founderId, userId, isAdmin } = body
+      const requester = await db.collection('users').findOne({ id: founderId })
+      if (requester?.email?.toLowerCase() !== FOUNDER_EMAIL.toLowerCase()) {
+        return handleCORS(NextResponse.json({ error: 'Founder access required' }, { status: 403 }))
+      }
+      await db.collection('users').updateOne(
+        { id: userId }, 
+        { $set: { role: isAdmin ? 'admin' : 'user' }}
+      )
+      return handleCORS(NextResponse.json({ success: true }))
+    }
+
+    // Delete user (Founder only)
+    if (route === '/founder/delete-user' && method === 'POST') {
+      const body = await safeParseJson(request)
+      const { founderId, userId } = body
+      const requester = await db.collection('users').findOne({ id: founderId })
+      if (requester?.email?.toLowerCase() !== FOUNDER_EMAIL.toLowerCase()) {
+        return handleCORS(NextResponse.json({ error: 'Founder access required' }, { status: 403 }))
+      }
+      await db.collection('users').deleteOne({ id: userId })
+      // Clean up related data
+      await db.collection('messages').deleteMany({ senderId: userId })
+      await db.collection('subscriptions').deleteMany({ $or: [{ subscriberId: userId }, { creatorId: userId }] })
+      return handleCORS(NextResponse.json({ success: true }))
+    }
+
+    // ==================== CREATOR PROFILE & SUBSCRIPTIONS ====================
+    const LOWKEY_CUT = 0.20 // LowKey takes 20% of all transactions
+
+    // Get creator profile
+    if (route.match(/^\/creator\/[^/]+$/) && method === 'GET') {
+      const creatorId = path[1]
+      const creator = await db.collection('users').findOne({ id: creatorId, isCreator: true })
+      if (!creator) return handleCORS(NextResponse.json({ error: 'Creator not found' }, { status: 404 }))
+      
+      const subscriberCount = await db.collection('subscriptions').countDocuments({ creatorId, status: 'active' })
+      const posts = await db.collection('creator_posts').find({ creatorId }).sort({ createdAt: -1 }).toArray()
+      
+      return handleCORS(NextResponse.json({
+        id: creator.id,
+        displayName: creator.displayName,
+        bio: creator.bio,
+        subscriptionPrice: creator.subscriptionPrice || 4.99,
+        subscriberCount,
+        posts: posts.map(cleanMongoDoc),
+        creatorSince: creator.creatorSince
+      }))
+    }
+
+    // Update creator profile settings
+    if (route === '/creator/settings' && method === 'PUT') {
+      const body = await safeParseJson(request)
+      const { userId, subscriptionPrice, bio } = body
+      const user = await db.collection('users').findOne({ id: userId, isCreator: true })
+      if (!user) return handleCORS(NextResponse.json({ error: 'Not a creator' }, { status: 403 }))
+      
+      await db.collection('users').updateOne(
+        { id: userId },
+        { $set: { subscriptionPrice: parseFloat(subscriptionPrice) || 4.99, bio } }
+      )
+      return handleCORS(NextResponse.json({ success: true }))
+    }
+
+    // Subscribe to a creator
+    if (route === '/creator/subscribe' && method === 'POST') {
+      const body = await safeParseJson(request)
+      const { subscriberId, creatorId } = body
+      
+      const creator = await db.collection('users').findOne({ id: creatorId, isCreator: true })
+      if (!creator) return handleCORS(NextResponse.json({ error: 'Creator not found' }, { status: 404 }))
+      
+      // Check if already subscribed
+      const existing = await db.collection('subscriptions').findOne({ 
+        subscriberId, creatorId, status: 'active' 
+      })
+      if (existing) return handleCORS(NextResponse.json({ error: 'Already subscribed' }, { status: 400 }))
+      
+      const price = creator.subscriptionPrice || 4.99
+      const lowkeyCut = price * LOWKEY_CUT
+      const creatorEarnings = price - lowkeyCut
+      
+      const subscription = {
+        id: uuidv4(),
+        subscriberId,
+        creatorId,
+        price,
+        lowkeyCut,
+        creatorEarnings,
+        currency: 'GBP',
+        status: 'active',
+        startedAt: new Date(),
+        expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) // 30 days
+      }
+      await db.collection('subscriptions').insertOne(subscription)
+      
+      // Record transaction
+      const transaction = {
+        id: uuidv4(),
+        type: 'subscription',
+        fromUserId: subscriberId,
+        toUserId: creatorId,
+        amount: price,
+        lowkeyCut,
+        creatorEarnings,
+        currency: 'GBP',
+        createdAt: new Date()
+      }
+      await db.collection('transactions').insertOne(transaction)
+      
+      return handleCORS(NextResponse.json({ success: true, subscription: cleanMongoDoc(subscription) }))
+    }
+
+    // Check subscription status
+    if (route === '/creator/subscription-check' && method === 'POST') {
+      const body = await safeParseJson(request)
+      const { subscriberId, creatorId } = body
+      const sub = await db.collection('subscriptions').findOne({ 
+        subscriberId, creatorId, status: 'active',
+        expiresAt: { $gt: new Date() }
+      })
+      return handleCORS(NextResponse.json({ isSubscribed: !!sub, subscription: sub ? cleanMongoDoc(sub) : null }))
+    }
+
+    // Get user's subscriptions
+    if (route.match(/^\/creator\/subscriptions\/[^/]+$/) && method === 'GET') {
+      const userId = path[2]
+      const subscriptions = await db.collection('subscriptions').find({ 
+        subscriberId: userId, status: 'active' 
+      }).toArray()
+      
+      const enriched = await Promise.all(subscriptions.map(async (sub) => {
+        const creator = await db.collection('users').findOne({ id: sub.creatorId })
+        return { ...cleanMongoDoc(sub), creator: creator ? { displayName: creator.displayName, id: creator.id } : null }
+      }))
+      return handleCORS(NextResponse.json(enriched))
+    }
+
+    // Get creator earnings
+    if (route === '/creator/earnings' && method === 'POST') {
+      const body = await safeParseJson(request)
+      const { creatorId } = body
+      
+      const transactions = await db.collection('transactions').find({ toUserId: creatorId }).toArray()
+      const totalEarnings = transactions.reduce((sum, t) => sum + (t.creatorEarnings || 0), 0)
+      const subscriberCount = await db.collection('subscriptions').countDocuments({ creatorId, status: 'active' })
+      
+      return handleCORS(NextResponse.json({
+        totalEarnings,
+        subscriberCount,
+        transactions: transactions.map(cleanMongoDoc),
+        currency: 'GBP'
+      }))
+    }
+
+    // Get all creators
+    if (route === '/creators' && method === 'GET') {
+      const creators = await db.collection('users').find({ isCreator: true }).toArray()
+      const enriched = await Promise.all(creators.map(async (c) => {
+        const subCount = await db.collection('subscriptions').countDocuments({ creatorId: c.id, status: 'active' })
+        return {
+          id: c.id,
+          displayName: c.displayName,
+          bio: c.bio,
+          subscriptionPrice: c.subscriptionPrice || 4.99,
+          subscriberCount: subCount,
+          verified: c.verified
+        }
+      }))
+      return handleCORS(NextResponse.json(enriched))
+    }
+
+    // LowKey platform stats (Founder only)
+    if (route === '/founder/stats' && method === 'POST') {
+      const body = await safeParseJson(request)
+      const requester = await db.collection('users').findOne({ id: body.founderId })
+      if (requester?.email?.toLowerCase() !== FOUNDER_EMAIL.toLowerCase()) {
+        return handleCORS(NextResponse.json({ error: 'Founder access required' }, { status: 403 }))
+      }
+      
+      const totalUsers = await db.collection('users').countDocuments()
+      const totalCreators = await db.collection('users').countDocuments({ isCreator: true })
+      const totalSubscriptions = await db.collection('subscriptions').countDocuments({ status: 'active' })
+      const transactions = await db.collection('transactions').find({}).toArray()
+      const totalRevenue = transactions.reduce((sum, t) => sum + (t.amount || 0), 0)
+      const lowkeyEarnings = transactions.reduce((sum, t) => sum + (t.lowkeyCut || 0), 0)
+      
+      return handleCORS(NextResponse.json({
+        totalUsers,
+        totalCreators,
+        totalSubscriptions,
+        totalRevenue,
+        lowkeyEarnings,
+        currency: 'GBP'
+      }))
+    }
+
     if (route === '/profile/quiet-mode' && method === 'PUT') {
       const body = await safeParseJson(request)
       const { userId, quietMode } = body
