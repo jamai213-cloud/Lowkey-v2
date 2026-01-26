@@ -157,6 +157,89 @@ async function handleRoute(request, { params }) {
       return handleCORS(NextResponse.json(cleanMongoDoc(user)))
     }
 
+    // ==================== ADMIN ENDPOINTS ====================
+    // Delete/Remove a user (Admin only)
+    if (route.match(/^\/admin\/users\/[^/]+\/delete$/) && method === 'DELETE') {
+      const userId = path[2]
+      const body = await safeParseJson(request)
+      const adminId = body.adminId
+      
+      // Verify requester is admin
+      const admin = await db.collection('users').findOne({ id: adminId, role: 'admin' })
+      if (!admin) {
+        return handleCORS(NextResponse.json({ error: 'Unauthorized - Admin access required' }, { status: 403 }))
+      }
+      
+      // Delete the user
+      const result = await db.collection('users').deleteOne({ id: userId })
+      if (result.deletedCount === 0) {
+        return handleCORS(NextResponse.json({ error: 'User not found' }, { status: 404 }))
+      }
+      
+      // Also clean up related data
+      await db.collection('messages').deleteMany({ senderId: userId })
+      await db.collection('conversations').updateMany({}, { $pull: { members: userId } })
+      await db.collection('friends').deleteMany({ $or: [{ userId }, { friendId: userId }] })
+      
+      return handleCORS(NextResponse.json({ success: true, message: 'User deleted successfully' }))
+    }
+
+    // Get all users with full details (Admin only)
+    if (route === '/admin/users' && method === 'POST') {
+      const body = await safeParseJson(request)
+      const adminId = body.adminId
+      
+      // Verify requester is admin
+      const admin = await db.collection('users').findOne({ id: adminId, role: 'admin' })
+      if (!admin) {
+        return handleCORS(NextResponse.json({ error: 'Unauthorized - Admin access required' }, { status: 403 }))
+      }
+      
+      const users = await db.collection('users').find({}).toArray()
+      return handleCORS(NextResponse.json(users.map(u => ({
+        ...cleanMongoDoc(u),
+        password: undefined // Hide passwords
+      }))))
+    }
+
+    // Bulk verify/unverify users (Admin only)
+    if (route === '/admin/users/bulk-verify' && method === 'POST') {
+      const body = await safeParseJson(request)
+      const { adminId, userIds, verified } = body
+      
+      // Verify requester is admin
+      const admin = await db.collection('users').findOne({ id: adminId, role: 'admin' })
+      if (!admin) {
+        return handleCORS(NextResponse.json({ error: 'Unauthorized - Admin access required' }, { status: 403 }))
+      }
+      
+      await db.collection('users').updateMany(
+        { id: { $in: userIds } },
+        { $set: { verified } }
+      )
+      return handleCORS(NextResponse.json({ success: true, message: `${userIds.length} users updated` }))
+    }
+
+    // Ban/Suspend a user (Admin only)
+    if (route.match(/^\/admin\/users\/[^/]+\/ban$/) && method === 'PUT') {
+      const userId = path[2]
+      const body = await safeParseJson(request)
+      const { adminId, banned, reason } = body
+      
+      // Verify requester is admin
+      const admin = await db.collection('users').findOne({ id: adminId, role: 'admin' })
+      if (!admin) {
+        return handleCORS(NextResponse.json({ error: 'Unauthorized - Admin access required' }, { status: 403 }))
+      }
+      
+      await db.collection('users').updateOne(
+        { id: userId },
+        { $set: { banned, banReason: reason, bannedAt: banned ? new Date() : null, bannedBy: banned ? adminId : null } }
+      )
+      const user = await db.collection('users').findOne({ id: userId })
+      return handleCORS(NextResponse.json({ success: true, user: cleanMongoDoc(user) }))
+    }
+
     if (route === '/profile/quiet-mode' && method === 'PUT') {
       const body = await safeParseJson(request)
       const { userId, quietMode } = body
