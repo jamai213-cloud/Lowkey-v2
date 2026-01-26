@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { ArrowLeft, Bell, Check, Clock } from 'lucide-react'
+import { ArrowLeft, Bell, Check, Clock, Crown } from 'lucide-react'
 
 export default function NoticesPage() {
   const router = useRouter()
@@ -91,11 +91,19 @@ export default function NoticesPage() {
       </header>
 
       <div className="p-4">
+        {/* Info Banner */}
+        <div className="mb-4 p-3 rounded-xl bg-purple-500/10 border border-purple-500/20">
+          <div className="flex items-start gap-2">
+            <Crown className="w-4 h-4 text-amber-400 mt-0.5 flex-shrink-0" />
+            <p className="text-purple-200 text-xs">Updates and announcements from the Founder. Stay informed about LowKey news and features.</p>
+          </div>
+        </div>
+
         {notices.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-64 text-gray-400">
             <Bell className="w-16 h-16 mb-4 opacity-50" />
             <p className="text-lg">No notices yet</p>
-            <p className="text-sm mt-1">Check back later for announcements!</p>
+            <p className="text-sm mt-1">Check back for updates!</p>
           </div>
         ) : (
           <div className="space-y-3">
@@ -126,12 +134,19 @@ export default function NoticesPage() {
                       <h3 className={`font-semibold ${isRead ? 'text-gray-300' : 'text-white'}`}>
                         {notice.title}
                       </h3>
-                      <p className="text-gray-400 text-sm mt-1 line-clamp-2">
+                      <p className="text-gray-400 text-sm mt-1 break-words">
                         {notice.content}
                       </p>
-                      <div className="flex items-center gap-1 mt-2 text-gray-500 text-xs">
-                        <Clock className="w-3 h-3" />
-                        {new Date(notice.createdAt).toLocaleDateString()}
+                      <div className="flex items-center gap-2 mt-2 flex-wrap">
+                        <div className="flex items-center gap-1 text-amber-400 text-xs">
+                          <Crown className="w-3 h-3" />
+                          <span>{notice.postedBy || 'Founder'}</span>
+                        </div>
+                        <span className="text-gray-600">•</span>
+                        <div className="flex items-center gap-1 text-gray-500 text-xs">
+                          <Clock className="w-3 h-3" />
+                          {new Date(notice.createdAt).toLocaleDateString()}
+                        </div>
                       </div>
                     </div>
                   </div>
