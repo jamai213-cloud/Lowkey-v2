@@ -400,18 +400,18 @@ const HomePage = ({ user, onLogout, setUser }) => {
   const unreadCount = notifications.filter(n => !n.read).length
 
   const tiles = [
-    { id: 'friends', icon: Users, label: 'Friends', colorClass: 'tile-friends', path: '/friends' },
-    { id: 'inbox', icon: MessageSquare, label: 'Inbox', colorClass: 'tile-inbox', path: '/inbox' },
-    { id: 'lounge', icon: Sofa, label: 'Lounge', colorClass: 'tile-lounge', path: '/lounge' },
-    { id: 'search', icon: Search, label: 'Search', colorClass: 'tile-search', path: '/search' },
-    { id: 'wallet', icon: Wallet, label: 'Wallet', colorClass: 'tile-wallet', path: '/wallet' },
-    { id: 'communities', icon: UserPlus, label: 'Communities', colorClass: 'tile-meet', path: '/communities' },
-    { id: 'quiet', icon: Volume2, label: 'Quiet', colorClass: 'tile-quiet', path: '/quiet' },
-    { id: 'afterdark', icon: Moon, label: 'After Dark', colorClass: 'tile-afterdark', path: '/afterdark' },
-    { id: 'games', icon: Gamepad2, label: 'Games', colorClass: 'tile-games', path: '/games' },
-    { id: 'radio', icon: Radio, label: 'Radio', colorClass: 'tile-radio', path: '/radio' },
-    { id: 'music', icon: Music, label: 'Music', colorClass: 'tile-music', path: '/music' },
-    { id: 'events', icon: Calendar, label: 'Events', colorClass: 'tile-events', path: '/events' },
+    { id: 'friends', icon: Users, label: 'Friends', color: '#EC4899', path: '/friends' },
+    { id: 'inbox', icon: MessageSquare, label: 'Inbox', color: '#F59E0B', path: '/inbox' },
+    { id: 'lounge', icon: Sofa, label: 'Lounge', color: '#8B5CF6', path: '/lounge' },
+    { id: 'search', icon: Search, label: 'Search', color: '#3B82F6', path: '/search' },
+    { id: 'wallet', icon: Wallet, label: 'Wallet', color: '#10B981', path: '/wallet' },
+    { id: 'notices', icon: Bell, label: 'Notices', color: '#EF4444', path: '/notices' },
+    { id: 'quiet', icon: Volume2, label: 'Quiet', color: '#6366F1', path: '/quiet' },
+    { id: 'afterdark', icon: Moon, label: 'After Dark', color: '#A855F7', path: '/afterdark' },
+    { id: 'games', icon: Gamepad2, label: 'Games', color: '#22C55E', path: '/games' },
+    { id: 'radio', icon: Radio, label: 'Radio', color: '#F97316', path: '/radio' },
+    { id: 'music', icon: Music, label: 'Music', color: '#EC4899', path: '/music' },
+    { id: 'events', icon: Calendar, label: 'Events', color: '#14B8A6', path: '/events' },
   ]
 
   return (
