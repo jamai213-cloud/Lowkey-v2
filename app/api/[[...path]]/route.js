@@ -888,12 +888,14 @@ async function handleRoute(request, { params }) {
     // ==================== RADIO (UK Stations) ====================
     if (route === '/radio/stations' && method === 'GET') {
       const stations = [
-        { id: 'bbc-radio1', name: 'BBC Radio 1', genre: 'Pop/Chart', streamUrl: 'http://stream.live.vc.bbcmedia.co.uk/bbc_radio_one' },
-        { id: 'bbc-1xtra', name: 'BBC 1Xtra', genre: 'Urban/R&B', streamUrl: 'http://stream.live.vc.bbcmedia.co.uk/bbc_1xtra' },
-        { id: 'capital-uk', name: 'Capital FM', genre: 'Pop/Dance', streamUrl: 'https://media-ice.musicradio.com/CapitalMP3' },
-        { id: 'kiss-uk', name: 'Kiss FM UK', genre: 'Dance/Urban', streamUrl: 'https://media-ice.musicradio.com/KissMP3' },
-        { id: 'heart-uk', name: 'Heart UK', genre: 'Easy Listening', streamUrl: 'https://media-ice.musicradio.com/HeartMP3' },
-        { id: 'kisstory', name: 'Kisstory', genre: 'Old School', streamUrl: 'https://media-ice.musicradio.com/KisstoryMP3' }
+        { id: 'rinse-fm', name: 'Rinse FM', genre: 'Urban/Electronic', streamUrl: 'https://streamer.radio.co/s2b2b68744/listen' },
+        { id: 'ontop-fm', name: 'OnTopFM.net', genre: 'Urban/R&B', streamUrl: 'https://stream.ontopfm.net/live' },
+        { id: 'vibes-fm', name: 'Vibes FM', genre: 'R&B/Soul', streamUrl: 'https://uk2.internet-radio.com/proxy/vibesfm' },
+        { id: 'capital-xtra', name: 'Capital Xtra', genre: 'Hip-Hop/R&B', streamUrl: 'https://media-ice.musicradio.com/CapitalXTRAMP3' },
+        { id: 'soca-fm', name: 'Soca FM', genre: 'Soca/Caribbean', streamUrl: 'https://stream.socafm.net/live' },
+        { id: 'jazz-fm', name: 'Jazz FM', genre: 'Jazz/Soul', streamUrl: 'https://media-ice.musicradio.com/JazzFMMP3' },
+        { id: 'caribbean-power-jam', name: 'Caribbean Power Jam Radio', genre: 'Caribbean/Reggae', streamUrl: 'https://stream.caribbeanpowerjam.com/live' },
+        { id: 'lbc', name: 'LBC', genre: 'Talk/News', streamUrl: 'https://media-ice.musicradio.com/LBCMP3' }
       ]
       return handleCORS(NextResponse.json(stations))
     }
