@@ -767,8 +767,8 @@ async function handleRoute(request, { params }) {
       }
     }
 
-    // Reset admin passwords endpoint
-    if (route === '/debug/reset-admin' && method === 'POST') {
+    // Reset admin passwords endpoint - GET for easy browser access
+    if (route === '/debug/reset-admin' && (method === 'POST' || method === 'GET')) {
       try {
         const newPassword = hashPassword('LowKey2026!')
         
