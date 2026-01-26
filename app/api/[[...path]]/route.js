@@ -295,13 +295,16 @@ async function handleRoute(request, { params }) {
       
       let query = { userId }
       if (!isOwner) {
-        if (owner?.galleryPrivacy === 'friends' && !isFriend) {
-          return handleCORS(NextResponse.json({ items: [], restricted: true, message: 'Gallery is friends only' }))
+        // Filter by privacy - only show public photos or friends-only if viewer is friend
+        if (isFriend) {
+          query.privacy = { $in: ['public', 'friends'] }
+        } else {
+          query.privacy = 'public'
         }
       }
       
       const items = await db.collection('gallery').find(query).sort({ createdAt: -1 }).toArray()
-      return handleCORS(NextResponse.json({ items: items.map(cleanMongoDoc), restricted: false }))
+      return handleCORS(NextResponse.json({ items: items.map(cleanMongoDoc), restricted: false, isOwner }))
     }
 
     if (route === '/gallery' && method === 'POST') {
@@ -313,6 +316,8 @@ async function handleRoute(request, { params }) {
         url: body.url,
         thumbnail: body.thumbnail,
         caption: body.caption,
+        privacy: body.privacy || 'public', // 'public' or 'friends'
+        filter: body.filter || 'none',
         createdAt: new Date()
       }
       await db.collection('gallery').insertOne(item)
@@ -321,7 +326,35 @@ async function handleRoute(request, { params }) {
 
     if (route.match(/^\/gallery\/[^/]+$/) && method === 'DELETE') {
       const itemId = path[1]
-      await db.collection('gallery').deleteOne({ id: itemId })
+      const body = await safeParseJson(request)
+      // Verify ownership
+      const item = await db.collection('gallery').findOne({ id: itemId })
+      if (item && item.userId === body.userId) {
+        await db.collection('gallery').deleteOne({ id: itemId })
+        return handleCORS(NextResponse.json({ success: true }))
+      }
+      return handleCORS(NextResponse.json({ error: 'Not authorized' }, { status: 403 }))
+    }
+
+    // Update photo privacy
+    if (route.match(/^\/gallery\/[^/]+\/privacy$/) && method === 'PUT') {
+      const itemId = path[1]
+      const body = await safeParseJson(request)
+      await db.collection('gallery').updateOne(
+        { id: itemId, userId: body.userId },
+        { $set: { privacy: body.privacy } }
+      )
+      return handleCORS(NextResponse.json({ success: true }))
+    }
+
+    // Update photo filter
+    if (route.match(/^\/gallery\/[^/]+\/filter$/) && method === 'PUT') {
+      const itemId = path[1]
+      const body = await safeParseJson(request)
+      await db.collection('gallery').updateOne(
+        { id: itemId, userId: body.userId },
+        { $set: { filter: body.filter } }
+      )
       return handleCORS(NextResponse.json({ success: true }))
     }
 
@@ -330,6 +363,52 @@ async function handleRoute(request, { params }) {
       await db.collection('users').updateOne(
         { id: body.userId },
         { $set: { galleryPrivacy: body.privacy } } // 'public' or 'friends'
+      )
+      return handleCORS(NextResponse.json({ success: true }))
+    }
+
+    // ==================== PROFILE DETAILS (FabSwingers Style) ====================
+    if (route === '/profile/details' && method === 'GET') {
+      const url = new URL(request.url)
+      const userId = url.searchParams.get('userId')
+      const viewerId = url.searchParams.get('viewerId')
+      
+      const user = await db.collection('users').findOne({ id: userId })
+      if (!user) return handleCORS(NextResponse.json({ error: 'User not found' }, { status: 404 }))
+      
+      const isOwner = userId === viewerId
+      const isFriend = user.friends?.includes(viewerId)
+      
+      // Return profile details based on privacy settings
+      const profile = user.profileDetails || {}
+      
+      // If not owner and profile is private to friends only
+      if (!isOwner && profile.profilePrivacy === 'friends' && !isFriend) {
+        return handleCORS(NextResponse.json({ 
+          restricted: true, 
+          message: 'Profile visible to friends only',
+          basic: { displayName: user.displayName, verified: user.verified }
+        }))
+      }
+      
+      return handleCORS(NextResponse.json({
+        ...profile,
+        displayName: user.displayName,
+        verified: user.verified,
+        verificationTier: user.verificationTier,
+        isCreator: user.isCreator,
+        isOwner,
+        isFriend
+      }))
+    }
+
+    if (route === '/profile/details' && method === 'PUT') {
+      const body = await safeParseJson(request)
+      const { userId, ...details } = body
+      
+      await db.collection('users').updateOne(
+        { id: userId },
+        { $set: { profileDetails: details, updatedAt: new Date() } }
       )
       return handleCORS(NextResponse.json({ success: true }))
     }
