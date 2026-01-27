@@ -554,6 +554,89 @@ async function handleRoute(request, { params }) {
       return handleCORS(NextResponse.json({ error: 'Not authorized' }, { status: 403 }))
     }
 
+    // ==================== DONATIONS / TIPS ====================
+    if (route === '/tips' && method === 'POST') {
+      const body = await safeParseJson(request)
+      const { senderId, receiverId, amount, message } = body
+      
+      if (!amount || amount < 1) {
+        return handleCORS(NextResponse.json({ error: 'Minimum tip is £1' }, { status: 400 }))
+      }
+      
+      const sender = await db.collection('users').findOne({ id: senderId })
+      const receiver = await db.collection('users').findOne({ id: receiverId })
+      
+      if (!receiver) {
+        return handleCORS(NextResponse.json({ error: 'User not found' }, { status: 404 }))
+      }
+      
+      // Calculate platform fee (20%)
+      const platformFee = amount * 0.20
+      const creatorAmount = amount - platformFee
+      
+      const tip = {
+        id: uuidv4(),
+        senderId,
+        senderName: sender?.displayName || 'Anonymous',
+        receiverId,
+        receiverName: receiver.displayName,
+        amount: parseFloat(amount),
+        platformFee,
+        creatorAmount,
+        message: message || '',
+        currency: 'GBP',
+        createdAt: new Date()
+      }
+      
+      await db.collection('tips').insertOne(tip)
+      
+      // Update receiver's total earnings
+      await db.collection('users').updateOne(
+        { id: receiverId },
+        { $inc: { totalEarnings: creatorAmount, totalTips: 1 } }
+      )
+      
+      // Create notification for receiver
+      await db.collection('notifications').insertOne({
+        id: uuidv4(),
+        userId: receiverId,
+        type: 'tip',
+        title: '💰 You received a tip!',
+        content: `${sender?.displayName || 'Someone'} sent you £${amount.toFixed(2)}${message ? `: "${message}"` : ''}`,
+        data: { tipId: tip.id, amount },
+        read: false,
+        createdAt: new Date()
+      })
+      
+      return handleCORS(NextResponse.json({ 
+        success: true, 
+        tip: cleanMongoDoc(tip),
+        message: `Tip of £${amount.toFixed(2)} sent successfully!`
+      }))
+    }
+
+    // Get tips received by user
+    if (route.match(/^\/tips\/received\/[^/]+$/) && method === 'GET') {
+      const userId = path[2]
+      const tips = await db.collection('tips')
+        .find({ receiverId: userId })
+        .sort({ createdAt: -1 })
+        .limit(50)
+        .toArray()
+      return handleCORS(NextResponse.json(tips.map(cleanMongoDoc)))
+    }
+
+    // Get tips sent by user
+    if (route.match(/^\/tips\/sent\/[^/]+$/) && method === 'GET') {
+      const userId = path[2]
+      const tips = await db.collection('tips')
+        .find({ senderId: userId })
+        .sort({ createdAt: -1 })
+        .limit(50)
+        .toArray()
+      return handleCORS(NextResponse.json(tips.map(cleanMongoDoc)))
+    }
+
     // ==================== PROFILE GALLERY (Direct Upload) ====================
     if (route === '/gallery' && method === 'GET') {
       const url = new URL(request.url)
