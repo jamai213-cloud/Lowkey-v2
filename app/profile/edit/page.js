@@ -1,11 +1,11 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { 
-  ArrowLeft, Save, User, MapPin, Calendar, Heart, Users, Ruler, 
+  ArrowLeft, Save, User, MapPin, Heart, Users, Ruler, 
   Eye, Cigarette, Wine, MessageSquare, Lock, Globe, X, Trash2,
-  Camera, Sliders, Check, Upload, Image as ImageIcon, Flame
+  Camera, Sliders, Check, Image as ImageIcon, Flame, Upload
 } from 'lucide-react'
 
 // Photo filter options
@@ -61,50 +61,37 @@ export default function EditProfilePage() {
   const [selectedPhoto, setSelectedPhoto] = useState(null)
   const [showUpload, setShowUpload] = useState(false)
   const [showProfilePicUpload, setShowProfilePicUpload] = useState(false)
-  const [uploadData, setUploadData] = useState({ url: '', caption: '', privacy: 'public' })
-  const [profilePicUrl, setProfilePicUrl] = useState('')
+  const [uploadCaption, setUploadCaption] = useState('')
+  const [uploadPrivacy, setUploadPrivacy] = useState('public')
+  const [uploading, setUploading] = useState(false)
+  const [previewImage, setPreviewImage] = useState(null)
   const [activeKinkCategory, setActiveKinkCategory] = useState('Basics')
+  const fileInputRef = useRef(null)
+  const profilePicInputRef = useRef(null)
 
-  // Profile form fields (FabSwingers style)
+  // Profile form fields
   const [profile, setProfile] = useState({
-    // Profile Picture
     profilePicture: '',
-    
-    // Basic Info
     aboutMe: '',
     lookingFor: '',
-    
-    // Personal Details
     age: '',
     gender: '',
     sexuality: '',
     relationshipStatus: '',
-    
-    // Physical
     height: '',
     bodyType: '',
     eyeColor: '',
     hairColor: '',
     ethnicity: '',
-    
-    // Lifestyle
     smoking: '',
     drinking: '',
-    
-    // Location
     location: '',
     willingToTravel: '',
-    
-    // Preferences
     interestedIn: [],
     openTo: [],
-    
-    // Kinks (expanded)
     kinks: [],
-    kinksHard: [], // Hard limits (things they won't do)
-    
-    // Privacy
-    profilePrivacy: 'public', // 'public' or 'friends'
+    kinksHard: [],
+    profilePrivacy: 'public',
   })
 
   const genderOptions = ['Man', 'Woman', 'Non-binary', 'Trans Man', 'Trans Woman', 'Couple (MF)', 'Couple (MM)', 'Couple (FF)', 'Other', 'Prefer not to say']
@@ -168,14 +155,12 @@ export default function EditProfilePage() {
         body: JSON.stringify({ userId: user.id, ...profile })
       })
       
-      // Update user's profile picture in users collection
       if (profile.profilePicture) {
         await fetch('/api/profile/picture', {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ userId: user.id, profilePicture: profile.profilePicture })
         })
-        // Update local storage
         const updatedUser = { ...user, profilePicture: profile.profilePicture }
         localStorage.setItem('lowkey_user', JSON.stringify(updatedUser))
       }
@@ -187,30 +172,73 @@ export default function EditProfilePage() {
     setSaving(false)
   }
 
-  const uploadPhoto = async () => {
-    if (!uploadData.url) return
-    try {
-      await fetch('/api/gallery', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          userId: user.id, 
-          type: 'photo',
-          url: uploadData.url,
-          caption: uploadData.caption,
-          privacy: uploadData.privacy
-        })
-      })
-      setShowUpload(false)
-      setUploadData({ url: '', caption: '', privacy: 'public' })
-      fetchGallery(user.id)
-    } catch (err) {
-      console.error('Failed to upload photo')
+  // Handle file selection from phone
+  const handleFileSelect = (e, isProfilePic = false) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    // Check file type
+    if (!file.type.startsWith('image/')) {
+      alert('Please select an image file')
+      return
     }
+
+    // Check file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      alert('Image too large. Max 5MB allowed.')
+      return
+    }
+
+    // Convert to base64
+    const reader = new FileReader()
+    reader.onloadend = () => {
+      const base64 = reader.result
+      if (isProfilePic) {
+        setProfile(prev => ({ ...prev, profilePicture: base64 }))
+        setShowProfilePicUpload(false)
+      } else {
+        setPreviewImage(base64)
+        setShowUpload(true)
+      }
+    }
+    reader.readAsDataURL(file)
   }
 
-  const setAsProfilePicture = (url) => {
-    setProfile(prev => ({ ...prev, profilePicture: url }))
+  // Upload photo to gallery
+  const uploadPhoto = async () => {
+    if (!previewImage) return
+    setUploading(true)
+
+    try {
+      const res = await fetch('/api/gallery/upload', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: user.id,
+          imageData: previewImage,
+          caption: uploadCaption,
+          privacy: uploadPrivacy
+        })
+      })
+      
+      if (res.ok) {
+        setShowUpload(false)
+        setPreviewImage(null)
+        setUploadCaption('')
+        setUploadPrivacy('public')
+        fetchGallery(user.id)
+      } else {
+        alert('Upload failed. Please try again.')
+      }
+    } catch (err) {
+      console.error('Failed to upload photo')
+      alert('Upload failed. Please try again.')
+    }
+    setUploading(false)
+  }
+
+  const setAsProfilePicture = (imageData) => {
+    setProfile(prev => ({ ...prev, profilePicture: imageData }))
     setSelectedPhoto(null)
   }
 
@@ -266,13 +294,11 @@ export default function EditProfilePage() {
     }))
   }
 
-  const toggleKink = (kink) => {
-    toggleArrayField('kinks', kink)
-  }
+  const toggleKink = (kink) => toggleArrayField('kinks', kink)
+  const toggleHardLimit = (kink) => toggleArrayField('kinksHard', kink)
 
-  const toggleHardLimit = (kink) => {
-    toggleArrayField('kinksHard', kink)
-  }
+  // Get image source (supports both base64 and URL)
+  const getImageSrc = (photo) => photo.imageData || photo.url
 
   if (loading || !user) {
     return (
@@ -284,6 +310,24 @@ export default function EditProfilePage() {
 
   return (
     <div className="min-h-screen bg-[#0a0a0f] pb-24">
+      {/* Hidden file inputs */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        capture="environment"
+        onChange={(e) => handleFileSelect(e, false)}
+        className="hidden"
+      />
+      <input
+        ref={profilePicInputRef}
+        type="file"
+        accept="image/*"
+        capture="environment"
+        onChange={(e) => handleFileSelect(e, true)}
+        className="hidden"
+      />
+
       {/* Header */}
       <header className="sticky top-0 z-20 bg-[#0a0a0f]/95 backdrop-blur-lg border-b border-white/10">
         <div className="flex items-center justify-between p-4">
@@ -324,19 +368,19 @@ export default function EditProfilePage() {
                 </div>
               )}
               <button 
-                onClick={() => setShowProfilePicUpload(true)}
+                onClick={() => profilePicInputRef.current?.click()}
                 className="absolute bottom-0 right-0 w-8 h-8 rounded-full bg-amber-500 flex items-center justify-center"
               >
                 <Camera className="w-4 h-4 text-black" />
               </button>
             </div>
             <div className="flex-1">
-              <p className="text-gray-400 text-sm">Upload a profile picture or select one from your gallery</p>
+              <p className="text-gray-400 text-sm mb-2">Tap to upload from your phone</p>
               <button 
                 onClick={() => setShowProfilePicUpload(true)}
-                className="mt-2 px-4 py-2 rounded-lg bg-white/10 text-white text-sm"
+                className="px-4 py-2 rounded-lg bg-white/10 text-white text-sm flex items-center gap-2"
               >
-                Change Photo
+                <Upload className="w-4 h-4" /> Change Photo
               </button>
             </div>
           </div>
@@ -349,10 +393,10 @@ export default function EditProfilePage() {
               <ImageIcon className="w-5 h-5 text-pink-400" /> Photos
             </h2>
             <button 
-              onClick={() => setShowUpload(true)}
-              className="px-3 py-1.5 rounded-lg bg-pink-500/20 text-pink-400 text-sm"
+              onClick={() => fileInputRef.current?.click()}
+              className="px-3 py-1.5 rounded-lg bg-pink-500/20 text-pink-400 text-sm flex items-center gap-2"
             >
-              + Add Photo
+              <Upload className="w-4 h-4" /> Upload
             </button>
           </div>
           
@@ -366,7 +410,7 @@ export default function EditProfilePage() {
                   className="relative aspect-square rounded-lg overflow-hidden bg-white/10"
                 >
                   <img 
-                    src={photo.url} 
+                    src={getImageSrc(photo)} 
                     alt="" 
                     className="w-full h-full object-cover"
                     style={{ filter: filter.css }}
@@ -380,10 +424,13 @@ export default function EditProfilePage() {
               )
             })}
             {gallery.length === 0 && (
-              <div className="col-span-4 py-8 text-center text-gray-400">
-                <Camera className="w-12 h-12 mx-auto mb-2 opacity-50" />
-                <p>No photos yet</p>
-              </div>
+              <button 
+                onClick={() => fileInputRef.current?.click()}
+                className="col-span-4 py-12 rounded-xl border-2 border-dashed border-white/20 text-center"
+              >
+                <Camera className="w-12 h-12 mx-auto mb-2 text-gray-500" />
+                <p className="text-gray-400">Tap to upload photos</p>
+              </button>
             )}
           </div>
         </section>
@@ -670,7 +717,7 @@ export default function EditProfilePage() {
           </div>
         </section>
 
-        {/* KINKS SECTION - Extended FabSwingers style */}
+        {/* KINKS SECTION */}
         <section>
           <h2 className="text-white font-semibold mb-3 flex items-center gap-2">
             <Flame className="w-5 h-5 text-orange-400" /> Kinks & Preferences
@@ -707,14 +754,11 @@ export default function EditProfilePage() {
                   key={kink}
                   onClick={() => {
                     if (isHardLimit) {
-                      // Remove from hard limits
                       toggleHardLimit(kink)
                     } else if (isSelected) {
-                      // Move to hard limit
                       toggleKink(kink)
                       toggleHardLimit(kink)
                     } else {
-                      // Add to selected
                       toggleKink(kink)
                     }
                   }}
@@ -761,7 +805,7 @@ export default function EditProfilePage() {
       {/* Profile Picture Upload Modal */}
       {showProfilePicUpload && (
         <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/80 backdrop-blur-sm" onClick={() => setShowProfilePicUpload(false)}>
-          <div className="w-full max-w-lg bg-[#1a1a2e] rounded-t-3xl p-6 max-h-[80vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+          <div className="w-full max-w-lg bg-[#1a1a2e] rounded-t-3xl p-6" onClick={e => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-xl text-white font-semibold">Profile Picture</h2>
               <button onClick={() => setShowProfilePicUpload(false)} className="p-2 rounded-full hover:bg-white/10">
@@ -769,32 +813,17 @@ export default function EditProfilePage() {
               </button>
             </div>
             
-            {/* URL Input */}
-            <div className="mb-4">
-              <label className="text-gray-400 text-sm mb-2 block">Enter image URL</label>
-              <input
-                type="url"
-                value={profilePicUrl}
-                onChange={(e) => setProfilePicUrl(e.target.value)}
-                placeholder="https://example.com/photo.jpg"
-                className="w-full px-4 py-3 rounded-xl bg-black/40 border border-white/10 text-white placeholder-gray-500 focus:outline-none focus:border-amber-500/50"
-              />
-              <button
-                onClick={() => {
-                  if (profilePicUrl) {
-                    setProfile(p => ({ ...p, profilePicture: profilePicUrl }))
-                    setProfilePicUrl('')
-                    setShowProfilePicUpload(false)
-                  }
-                }}
-                disabled={!profilePicUrl}
-                className="w-full mt-3 py-3 rounded-xl bg-amber-500 text-black font-semibold disabled:opacity-50"
-              >
-                Set as Profile Picture
-              </button>
-            </div>
+            {/* Upload from phone */}
+            <button
+              onClick={() => {
+                profilePicInputRef.current?.click()
+              }}
+              className="w-full py-4 rounded-xl bg-gradient-to-r from-amber-400 to-yellow-500 text-black font-semibold flex items-center justify-center gap-2 mb-4"
+            >
+              <Camera className="w-5 h-5" /> Take Photo or Choose from Gallery
+            </button>
 
-            {/* Or select from gallery */}
+            {/* Or select from existing gallery */}
             {gallery.length > 0 && (
               <>
                 <div className="relative my-4">
@@ -806,19 +835,19 @@ export default function EditProfilePage() {
                   </div>
                 </div>
                 
-                <div className="grid grid-cols-3 gap-2">
+                <div className="grid grid-cols-3 gap-2 max-h-48 overflow-y-auto">
                   {gallery.map(photo => (
                     <button
                       key={photo.id}
                       onClick={() => {
-                        setProfile(p => ({ ...p, profilePicture: photo.url }))
+                        setProfile(p => ({ ...p, profilePicture: getImageSrc(photo) }))
                         setShowProfilePicUpload(false)
                       }}
                       className={`aspect-square rounded-xl overflow-hidden border-2 ${
-                        profile.profilePicture === photo.url ? 'border-amber-500' : 'border-transparent'
+                        profile.profilePicture === getImageSrc(photo) ? 'border-amber-500' : 'border-transparent'
                       }`}
                     >
-                      <img src={photo.url} alt="" className="w-full h-full object-cover" />
+                      <img src={getImageSrc(photo)} alt="" className="w-full h-full object-cover" />
                     </button>
                   ))}
                 </div>
@@ -829,59 +858,73 @@ export default function EditProfilePage() {
       )}
 
       {/* Photo Upload Modal */}
-      {showUpload && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm" onClick={() => setShowUpload(false)}>
-          <div className="bg-[#1a1a2e] rounded-2xl p-6 max-w-sm mx-4 w-full" onClick={e => e.stopPropagation()}>
+      {showUpload && previewImage && (
+        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/90" onClick={() => { setShowUpload(false); setPreviewImage(null) }}>
+          <div className="w-full max-w-lg bg-[#1a1a2e] rounded-t-3xl p-6 max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl text-white font-semibold">Add Photo</h2>
-              <button onClick={() => setShowUpload(false)} className="p-2 rounded-full hover:bg-white/10">
+              <h2 className="text-xl text-white font-semibold">Upload Photo</h2>
+              <button onClick={() => { setShowUpload(false); setPreviewImage(null) }} className="p-2 rounded-full hover:bg-white/10">
                 <X className="w-5 h-5 text-gray-400" />
               </button>
             </div>
-            <div className="space-y-4">
-              <input
-                type="url"
-                value={uploadData.url}
-                onChange={(e) => setUploadData(d => ({ ...d, url: e.target.value }))}
-                placeholder="Image URL"
-                className="w-full px-4 py-3 rounded-xl bg-black/40 border border-white/10 text-white placeholder-gray-500 focus:outline-none focus:border-amber-500/50"
-              />
+            
+            {/* Preview */}
+            <div className="aspect-square rounded-xl overflow-hidden mb-4 bg-black">
+              <img src={previewImage} alt="Preview" className="w-full h-full object-contain" />
+            </div>
+
+            {/* Caption */}
+            <div className="mb-4">
+              <label className="text-gray-400 text-sm mb-2 block">Caption (optional)</label>
               <input
                 type="text"
-                value={uploadData.caption}
-                onChange={(e) => setUploadData(d => ({ ...d, caption: e.target.value }))}
-                placeholder="Caption (optional)"
+                value={uploadCaption}
+                onChange={(e) => setUploadCaption(e.target.value)}
+                placeholder="Add a caption..."
                 className="w-full px-4 py-3 rounded-xl bg-black/40 border border-white/10 text-white placeholder-gray-500 focus:outline-none focus:border-amber-500/50"
               />
-              <div>
-                <label className="text-gray-400 text-xs mb-2 block">Who can see this?</label>
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => setUploadData(d => ({ ...d, privacy: 'public' }))}
-                    className={`flex-1 py-2 rounded-lg text-sm flex items-center justify-center gap-1 ${
-                      uploadData.privacy === 'public' ? 'bg-green-500 text-black' : 'bg-white/10 text-gray-400'
-                    }`}
-                  >
-                    <Globe className="w-4 h-4" /> Public
-                  </button>
-                  <button
-                    onClick={() => setUploadData(d => ({ ...d, privacy: 'friends' }))}
-                    className={`flex-1 py-2 rounded-lg text-sm flex items-center justify-center gap-1 ${
-                      uploadData.privacy === 'friends' ? 'bg-amber-500 text-black' : 'bg-white/10 text-gray-400'
-                    }`}
-                  >
-                    <Lock className="w-4 h-4" /> Friends
-                  </button>
-                </div>
-              </div>
-              <button
-                onClick={uploadPhoto}
-                disabled={!uploadData.url}
-                className="w-full py-3 rounded-xl bg-gradient-to-r from-amber-400 to-yellow-500 text-black font-semibold disabled:opacity-50"
-              >
-                Upload Photo
-              </button>
             </div>
+
+            {/* Privacy */}
+            <div className="mb-4">
+              <label className="text-gray-400 text-sm mb-2 block">Who can see this?</label>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setUploadPrivacy('public')}
+                  className={`flex-1 py-2 rounded-lg text-sm flex items-center justify-center gap-1 ${
+                    uploadPrivacy === 'public' ? 'bg-green-500 text-black' : 'bg-white/10 text-gray-400'
+                  }`}
+                >
+                  <Globe className="w-4 h-4" /> Public
+                </button>
+                <button
+                  onClick={() => setUploadPrivacy('friends')}
+                  className={`flex-1 py-2 rounded-lg text-sm flex items-center justify-center gap-1 ${
+                    uploadPrivacy === 'friends' ? 'bg-amber-500 text-black' : 'bg-white/10 text-gray-400'
+                  }`}
+                >
+                  <Lock className="w-4 h-4" /> Friends Only
+                </button>
+              </div>
+            </div>
+
+            {/* Upload Button */}
+            <button
+              onClick={uploadPhoto}
+              disabled={uploading}
+              className="w-full py-3 rounded-xl bg-gradient-to-r from-pink-500 to-purple-500 text-white font-semibold disabled:opacity-50 flex items-center justify-center gap-2"
+            >
+              {uploading ? (
+                <>
+                  <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  Uploading...
+                </>
+              ) : (
+                <>
+                  <Upload className="w-5 h-5" /> Upload Photo
+                </>
+              )}
+            </button>
           </div>
         </div>
       )}
@@ -900,7 +943,7 @@ export default function EditProfilePage() {
             {/* Photo Preview */}
             <div className="relative aspect-square rounded-xl overflow-hidden mb-4">
               <img 
-                src={selectedPhoto.url} 
+                src={getImageSrc(selectedPhoto)} 
                 alt="" 
                 className="w-full h-full object-cover"
                 style={{ filter: FILTERS.find(f => f.id === selectedPhoto.filter)?.css || '' }}
@@ -909,7 +952,7 @@ export default function EditProfilePage() {
 
             {/* Set as Profile Picture */}
             <button
-              onClick={() => setAsProfilePicture(selectedPhoto.url)}
+              onClick={() => setAsProfilePicture(getImageSrc(selectedPhoto))}
               className="w-full mb-4 py-3 rounded-xl bg-amber-500 text-black font-semibold flex items-center justify-center gap-2"
             >
               <User className="w-5 h-5" /> Set as Profile Picture
@@ -931,7 +974,7 @@ export default function EditProfilePage() {
                   >
                     <div className={`w-16 h-16 rounded-lg overflow-hidden border-2 ${selectedPhoto.filter === filter.id ? 'border-amber-500' : 'border-transparent'}`}>
                       <img 
-                        src={selectedPhoto.url} 
+                        src={getImageSrc(selectedPhoto)} 
                         alt="" 
                         className="w-full h-full object-cover"
                         style={{ filter: filter.css }}
