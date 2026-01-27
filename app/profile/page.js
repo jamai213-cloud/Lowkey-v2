@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { ArrowLeft, User, Mail, Calendar, Shield, Moon, LogOut, Star, Crown, PoundSterling, Users, Settings, Image, Music, Palette, Plus, Lock, Eye, EyeOff, Video, Check, UserCheck, Gem, Play, Edit } from 'lucide-react'
+import { ArrowLeft, User, Mail, Calendar, Shield, Moon, LogOut, Star, Crown, PoundSterling, Users, Settings, Image, Music, Palette, Plus, Lock, Eye, EyeOff, Video, Check, UserCheck, Gem, Play, Edit, Heart, Gift, X } from 'lucide-react'
 
 const VERIFICATION_TIERS = {
   'new': { name: 'New Member', icon: Users, color: 'text-gray-400', bgColor: 'bg-gray-500/20' },
@@ -10,6 +10,15 @@ const VERIFICATION_TIERS = {
   'trusted': { name: 'Trusted', icon: UserCheck, color: 'text-green-400', bgColor: 'bg-green-500/20' },
   'inner-circle': { name: 'Inner Circle', icon: Gem, color: 'text-amber-400', bgColor: 'bg-amber-500/20' }
 }
+
+const TIP_AMOUNTS = [
+  { amount: 1, label: '£1' },
+  { amount: 5, label: '£5' },
+  { amount: 10, label: '£10' },
+  { amount: 20, label: '£20' },
+  { amount: 50, label: '£50' },
+  { amount: 100, label: '£100' },
+]
 
 const PROFILE_SKINS = [
   { id: 'default', name: 'Default', colors: ['#1a1a2e', '#16213e'], price: 0 },
@@ -35,6 +44,10 @@ export default function ProfilePage() {
   const [showUpload, setShowUpload] = useState(false)
   const [showSkins, setShowSkins] = useState(false)
   const [showStoryCreate, setShowStoryCreate] = useState(false)
+  const [showTipModal, setShowTipModal] = useState(false)
+  const [tipAmount, setTipAmount] = useState(5)
+  const [tipMessage, setTipMessage] = useState('')
+  const [tipping, setTipping] = useState(false)
   const [uploadData, setUploadData] = useState({ type: 'photo', url: '', caption: '' })
   const [storyData, setStoryData] = useState({ type: 'photo', content: '', privacy: 'everyone', backgroundColor: '#1a1a2e' })
   const [galleryPrivacy, setGalleryPrivacy] = useState('public')
