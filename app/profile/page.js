@@ -190,6 +190,32 @@ export default function ProfilePage() {
     } catch (err) {}
   }
 
+  const sendTip = async () => {
+    if (tipAmount < 1) return
+    setTipping(true)
+    try {
+      const res = await fetch('/api/tips', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          senderId: user.id,
+          receiverId: user.id, // In a real app, this would be the profile owner's ID
+          amount: tipAmount,
+          message: tipMessage
+        })
+      })
+      if (res.ok) {
+        setShowTipModal(false)
+        setTipAmount(5)
+        setTipMessage('')
+        alert(`Tip of £${tipAmount} sent successfully!`)
+      }
+    } catch (err) {
+      console.error('Failed to send tip')
+    }
+    setTipping(false)
+  }
+
   const handleLogout = () => {
     localStorage.removeItem('lowkey_user')
     localStorage.removeItem('lowkey_token')
