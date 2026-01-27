@@ -293,6 +293,14 @@ export default function ProfilePage() {
               <span className="text-gray-400 text-xs">- {user.profileSong.artist}</span>
             </div>
           )}
+
+          {/* Tip Button */}
+          <button
+            onClick={() => setShowTipModal(true)}
+            className="mt-4 px-6 py-2 rounded-full bg-gradient-to-r from-pink-500 to-purple-500 text-white font-semibold flex items-center gap-2 mx-auto"
+          >
+            <Gift className="w-4 h-4" /> Send Tip
+          </button>
         </div>
 
         {/* Tabs */}
