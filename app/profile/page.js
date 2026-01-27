@@ -532,6 +532,102 @@ export default function ProfilePage() {
           </div>
         </div>
       )}
+
+      {/* Tip Modal */}
+      {showTipModal && (
+        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/80 backdrop-blur-sm" onClick={() => setShowTipModal(false)}>
+          <div className="w-full max-w-lg bg-[#1a1a2e] rounded-t-3xl p-6" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl text-white font-semibold flex items-center gap-2">
+                <Gift className="w-5 h-5 text-pink-400" /> Send a Tip
+              </h2>
+              <button onClick={() => setShowTipModal(false)} className="p-2 rounded-full hover:bg-white/10">
+                <X className="w-5 h-5 text-gray-400" />
+              </button>
+            </div>
+
+            <p className="text-gray-400 text-sm mb-4">Show your appreciation with a tip. 80% goes to the creator.</p>
+
+            {/* Quick Amounts */}
+            <div className="grid grid-cols-3 gap-2 mb-4">
+              {TIP_AMOUNTS.map(t => (
+                <button
+                  key={t.amount}
+                  onClick={() => setTipAmount(t.amount)}
+                  className={`py-3 rounded-xl font-semibold transition-colors ${
+                    tipAmount === t.amount
+                      ? 'bg-gradient-to-r from-pink-500 to-purple-500 text-white'
+                      : 'bg-white/10 text-gray-300 hover:bg-white/20'
+                  }`}
+                >
+                  {t.label}
+                </button>
+              ))}
+            </div>
+
+            {/* Custom Amount */}
+            <div className="mb-4">
+              <label className="text-gray-400 text-sm mb-2 block">Or enter custom amount</label>
+              <div className="relative">
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">£</span>
+                <input
+                  type="number"
+                  min="1"
+                  value={tipAmount}
+                  onChange={(e) => setTipAmount(Math.max(1, parseInt(e.target.value) || 1))}
+                  className="w-full pl-8 pr-4 py-3 rounded-xl bg-black/40 border border-white/10 text-white placeholder-gray-500 focus:outline-none focus:border-pink-500/50"
+                />
+              </div>
+            </div>
+
+            {/* Message */}
+            <div className="mb-4">
+              <label className="text-gray-400 text-sm mb-2 block">Add a message (optional)</label>
+              <input
+                type="text"
+                value={tipMessage}
+                onChange={(e) => setTipMessage(e.target.value)}
+                placeholder="Thanks for the great content!"
+                className="w-full px-4 py-3 rounded-xl bg-black/40 border border-white/10 text-white placeholder-gray-500 focus:outline-none focus:border-pink-500/50"
+              />
+            </div>
+
+            {/* Summary */}
+            <div className="p-4 rounded-xl bg-white/5 border border-white/10 mb-4">
+              <div className="flex justify-between text-sm mb-2">
+                <span className="text-gray-400">Tip amount</span>
+                <span className="text-white">£{tipAmount.toFixed(2)}</span>
+              </div>
+              <div className="flex justify-between text-sm mb-2">
+                <span className="text-gray-400">Platform fee (20%)</span>
+                <span className="text-gray-400">-£{(tipAmount * 0.20).toFixed(2)}</span>
+              </div>
+              <div className="flex justify-between text-sm pt-2 border-t border-white/10">
+                <span className="text-gray-400">Creator receives</span>
+                <span className="text-green-400 font-semibold">£{(tipAmount * 0.80).toFixed(2)}</span>
+              </div>
+            </div>
+
+            {/* Send Button */}
+            <button
+              onClick={sendTip}
+              disabled={tipping || tipAmount < 1}
+              className="w-full py-3 rounded-xl bg-gradient-to-r from-pink-500 to-purple-500 text-white font-semibold disabled:opacity-50 flex items-center justify-center gap-2"
+            >
+              {tipping ? (
+                <>
+                  <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  Processing...
+                </>
+              ) : (
+                <>
+                  <Heart className="w-5 h-5" /> Send £{tipAmount.toFixed(2)} Tip
+                </>
+              )}
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
