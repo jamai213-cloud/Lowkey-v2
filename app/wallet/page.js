@@ -48,7 +48,7 @@ export default function WalletPage() {
             <span className="text-black/60 text-sm font-medium">Available Balance</span>
           </div>
           <div className="text-4xl font-bold text-black mb-6">
-            $0.00
+            £0.00
           </div>
           <div className="flex gap-3">
             <button className="flex-1 py-3 rounded-xl bg-black/20 text-black font-semibold flex items-center justify-center gap-2">
@@ -108,7 +108,7 @@ export default function WalletPage() {
                   <span className={`font-semibold ${
                     tx.type === 'in' ? 'text-green-400' : 'text-red-400'
                   }`}>
-                    {tx.type === 'in' ? '+' : '-'}${tx.amount}
+                    {tx.type === 'in' ? '+' : '-'}£{tx.amount}
                   </span>
                 </div>
               ))}
