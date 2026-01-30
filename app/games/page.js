@@ -183,6 +183,7 @@ const PacManGame = ({ onClose }) => {
   const [position, setPosition] = useState({ x: 10, y: 10 })
   const [dots, setDots] = useState([])
   const [gameState, setGameState] = useState('ready')
+  const [touchStart, setTouchStart] = useState(null)
   const gridSize = 20
 
   useEffect(() => {
@@ -244,6 +245,37 @@ const PacManGame = ({ onClose }) => {
     setGameState('playing')
   }
 
+  // Touch controls
+  const handleTouchStart = (e) => {
+    setTouchStart({ x: e.touches[0].clientX, y: e.touches[0].clientY })
+  }
+
+  const handleTouchEnd = (e) => {
+    if (!touchStart) return
+    const dx = e.changedTouches[0].clientX - touchStart.x
+    const dy = e.changedTouches[0].clientY - touchStart.y
+    
+    if (Math.abs(dx) > Math.abs(dy)) {
+      if (dx > 20) movePlayer('RIGHT')
+      else if (dx < -20) movePlayer('LEFT')
+    } else {
+      if (dy > 20) movePlayer('DOWN')
+      else if (dy < -20) movePlayer('UP')
+    }
+    setTouchStart(null)
+  }
+
+  const movePlayer = (dir) => {
+    setPosition(prev => {
+      let newPos = { ...prev }
+      if (dir === 'UP' && prev.y > 0) newPos.y--
+      if (dir === 'DOWN' && prev.y < gridSize - 1) newPos.y++
+      if (dir === 'LEFT' && prev.x > 0) newPos.x--
+      if (dir === 'RIGHT' && prev.x < gridSize - 1) newPos.x++
+      return newPos
+    })
+  }
+
   return (
     <div className="fixed inset-0 z-50 bg-black/90 flex flex-col items-center justify-center p-4">
       <div className="flex justify-between items-center w-full max-w-md mb-4">
@@ -258,6 +290,8 @@ const PacManGame = ({ onClose }) => {
       <div 
         className="border-2 border-blue-500/50 rounded-lg overflow-hidden"
         style={{ width: gridSize * 15, height: gridSize * 15 }}
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
       >
         <div className="relative w-full h-full bg-gray-900">
           {dots.map((dot, i) => (
@@ -284,6 +318,21 @@ const PacManGame = ({ onClose }) => {
         </div>
       </div>
 
+      {/* Touch Controls */}
+      {gameState === 'playing' && (
+        <div className="mt-4 grid grid-cols-3 gap-2 w-36">
+          <div />
+          <button onClick={() => movePlayer('UP')} className="w-10 h-10 rounded-lg bg-white/20 flex items-center justify-center text-white text-xl">↑</button>
+          <div />
+          <button onClick={() => movePlayer('LEFT')} className="w-10 h-10 rounded-lg bg-white/20 flex items-center justify-center text-white text-xl">←</button>
+          <div />
+          <button onClick={() => movePlayer('RIGHT')} className="w-10 h-10 rounded-lg bg-white/20 flex items-center justify-center text-white text-xl">→</button>
+          <div />
+          <button onClick={() => movePlayer('DOWN')} className="w-10 h-10 rounded-lg bg-white/20 flex items-center justify-center text-white text-xl">↓</button>
+          <div />
+        </div>
+      )}
+
       {gameState === 'ready' && (
         <button onClick={startGame} className="mt-4 px-6 py-3 rounded-xl bg-yellow-500 text-black font-semibold">
           Start Game
@@ -297,7 +346,7 @@ const PacManGame = ({ onClose }) => {
           </button>
         </div>
       )}
-      <p className="text-gray-400 text-sm mt-4">Use arrow keys to move</p>
+      <p className="text-gray-400 text-sm mt-4">Swipe or use controls to move</p>
     </div>
   )
 }
