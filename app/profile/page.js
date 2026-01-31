@@ -247,17 +247,53 @@ export default function ProfilePage() {
   }
 
   const createStory = async () => {
-    if (!storyData.content) return
+    // For text stories, just need text content
+    // For photo/video stories, need file
+    if (storyData.type === 'text' && !storyData.text) return
+    if (storyData.type !== 'text' && !storyData.file) return
+    
+    setUploading(true)
     try {
+      let content = storyData.text
+      
+      // If it's a media story, convert file to base64
+      if (storyData.file) {
+        content = await new Promise((resolve) => {
+          const reader = new FileReader()
+          reader.onload = () => resolve(reader.result)
+          reader.readAsDataURL(storyData.file)
+        })
+      }
+      
       await fetch('/api/stories', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId: user.id, ...storyData })
+        body: JSON.stringify({ 
+          userId: user.id, 
+          type: storyData.type,
+          content: content,
+          privacy: storyData.privacy,
+          backgroundColor: storyData.backgroundColor,
+          filter: storyData.filter,
+          blur: storyData.blur
+        })
       })
       setShowStoryCreate(false)
-      setStoryData({ type: 'photo', content: '', privacy: 'everyone', backgroundColor: '#1a1a2e' })
+      setStoryData({ type: 'photo', file: null, preview: null, text: '', privacy: 'everyone', backgroundColor: '#1a1a2e', filter: 'none', blur: 0 })
       fetchStories(user.id)
-    } catch (err) {}
+    } catch (err) {
+      console.error('Story creation failed:', err)
+    }
+    setUploading(false)
+  }
+
+  const handleStoryFileSelect = (e) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    
+    const preview = URL.createObjectURL(file)
+    const type = file.type.startsWith('video/') ? 'video' : 'photo'
+    setStoryData({ ...storyData, file, preview, type })
   }
 
   const updateGalleryPrivacy = async (privacy) => {
