@@ -328,14 +328,17 @@ body {
 
 /* ===== HEADER LOGO SLOT - Responsive container ===== */
 .lk-logoSlot {
-  /* Mobile: 32px */
-  width: 32px;
-  height: 32px;
+  /* Mobile: 48px - MUCH BIGGER */
+  width: 48px;
+  height: 48px;
+  min-width: 48px;
+  min-height: 48px;
   flex-shrink: 0;
   display: block;
-  /* Glow effect */
-  filter: drop-shadow(0 0 8px rgba(147, 51, 234, 0.7))
-          drop-shadow(0 0 16px rgba(236, 72, 153, 0.5));
+  /* Strong glow effect for visibility */
+  filter: drop-shadow(0 0 6px rgba(147, 51, 234, 0.9))
+          drop-shadow(0 0 12px rgba(236, 72, 153, 0.7))
+          drop-shadow(0 0 20px rgba(147, 51, 234, 0.5));
   animation: logo-pulse 2.5s ease-in-out infinite;
 }
 
@@ -346,24 +349,38 @@ body {
   object-fit: contain;
 }
 
-/* Desktop: 36px */
+/* Tablet: 52px */
+@media (min-width: 641px) {
+  .lk-logoSlot {
+    width: 52px;
+    height: 52px;
+    min-width: 52px;
+    min-height: 52px;
+  }
+}
+
+/* Desktop: 56px */
 @media (min-width: 1024px) {
   .lk-logoSlot {
-    width: 36px;
-    height: 36px;
+    width: 56px;
+    height: 56px;
+    min-width: 56px;
+    min-height: 56px;
   }
 }
 
 /* Logo glow animation */
 @keyframes logo-pulse {
   0%, 100% {
-    filter: drop-shadow(0 0 8px rgba(147, 51, 234, 0.7))
-            drop-shadow(0 0 16px rgba(236, 72, 153, 0.5));
+    filter: drop-shadow(0 0 6px rgba(147, 51, 234, 0.9))
+            drop-shadow(0 0 12px rgba(236, 72, 153, 0.7))
+            drop-shadow(0 0 20px rgba(147, 51, 234, 0.5));
   }
   50% {
-    filter: drop-shadow(0 0 12px rgba(147, 51, 234, 1))
-            drop-shadow(0 0 24px rgba(236, 72, 153, 0.8))
-            drop-shadow(0 0 36px rgba(147, 51, 234, 0.6));
+    filter: drop-shadow(0 0 10px rgba(147, 51, 234, 1))
+            drop-shadow(0 0 20px rgba(236, 72, 153, 1))
+            drop-shadow(0 0 35px rgba(147, 51, 234, 0.8))
+            drop-shadow(0 0 50px rgba(236, 72, 153, 0.5));
   }
 }
 
