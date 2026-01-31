@@ -264,6 +264,63 @@ const AfterDarkDisclaimer = ({ isOpen, onAccept }) => {
   )
 }
 
+// Main Lounge Info Modal
+// Non-blocking info panel triggered when user taps the Lounge tile
+// Explains what the Main Lounge is without blocking access
+// User can proceed directly or dismiss
+const MainLoungeInfo = ({ isOpen, onClose, onEnter }) => {
+  if (!isOpen) return null
+  
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4" onClick={onClose}>
+      <div className="max-w-sm w-full" onClick={e => e.stopPropagation()}>
+        {/* Animated Background - subtle */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute top-1/4 left-1/4 w-64 h-64 rounded-full bg-purple-500/10 blur-3xl" />
+          <div className="absolute bottom-1/4 right-1/4 w-64 h-64 rounded-full bg-pink-500/10 blur-3xl" />
+        </div>
+        
+        <div className="relative glass-card rounded-2xl p-6 border border-white/10">
+          {/* Icon */}
+          <div className="w-14 h-14 mx-auto mb-4 rounded-full bg-purple-500/20 flex items-center justify-center border border-purple-500/30">
+            <Sofa className="w-7 h-7 text-purple-400" />
+          </div>
+          
+          {/* Content */}
+          <div className="text-center mb-6">
+            <h2 className="text-xl font-bold text-white mb-2">The Main Lounge</h2>
+            <p className="text-purple-400 text-sm mb-4">The heart of Lowkey</p>
+            
+            <p className="text-gray-300 text-sm leading-relaxed">
+              The central, open social space where conversation, culture, music, and community come together.
+            </p>
+            
+            <p className="text-gray-400 text-sm mt-3 italic">
+              A place for relaxed, real-time connection.
+            </p>
+          </div>
+          
+          {/* Actions */}
+          <div className="space-y-2">
+            <button 
+              onClick={onEnter}
+              className="w-full py-3 rounded-xl bg-gradient-to-r from-purple-600 to-purple-800 text-white font-semibold hover:opacity-90 transition-opacity"
+            >
+              Enter Lounge
+            </button>
+            <button 
+              onClick={onClose}
+              className="w-full py-2 text-gray-400 text-sm hover:text-white transition-colors"
+            >
+              Maybe later
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 // Forgot Password Modal
 const ForgotPasswordModal = ({ isOpen, onClose }) => {
   const [email, setEmail] = useState('')
