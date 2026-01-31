@@ -366,52 +366,7 @@ body {
   box-shadow: 0 2px 8px rgba(239, 68, 68, 0.5);
 }
 
-/* ===== HEADER LOGO - Responsive Sizing with Subtle Glow ===== */
-.header-logo {
-  /* Mobile (≤640px): 28-32px */
-  max-height: 32px;
-  width: auto;
-  /* Subtle glow for visibility on dark backgrounds */
-  filter: drop-shadow(0 0 8px rgba(147, 51, 234, 0.4)) 
-          drop-shadow(0 0 16px rgba(236, 72, 153, 0.2));
-  /* Smooth glow animation */
-  animation: logo-glow 3s ease-in-out infinite;
-}
-
-/* Tablet (641px - 1023px) */
-@media (min-width: 641px) {
-  .header-logo {
-    max-height: 34px;
-  }
-}
-
-/* Desktop (≥1024px) */
-@media (min-width: 1024px) {
-  .header-logo {
-    max-height: 36px;
-  }
-}
-
-/* Subtle glow animation - no layout impact */
-@keyframes logo-glow {
-  0%, 100% {
-    filter: drop-shadow(0 0 8px rgba(147, 51, 234, 0.4)) 
-            drop-shadow(0 0 16px rgba(236, 72, 153, 0.2));
-  }
-  50% {
-    filter: drop-shadow(0 0 12px rgba(147, 51, 234, 0.6)) 
-            drop-shadow(0 0 24px rgba(236, 72, 153, 0.35));
-  }
-}
-
-/* Respect reduced motion preference */
-@media (prefers-reduced-motion: reduce) {
-  .header-logo {
-    animation: none;
-    filter: drop-shadow(0 0 10px rgba(147, 51, 234, 0.5)) 
-            drop-shadow(0 0 20px rgba(236, 72, 153, 0.3));
-  }
-}
+/* Notification badge */
 
 /* Animation keyframes */
 @keyframes pulse-soft {
