@@ -443,6 +443,7 @@ const NotificationBell = ({ count, onClick }) => (
 // Home Page Component
 const HomePage = ({ user, onLogout, setUser }) => {
   const [showLockModal, setShowLockModal] = useState(false)
+  const [showOnboarding, setShowOnboarding] = useState(false)
   const [notifications, setNotifications] = useState([])
   const [showNotifications, setShowNotifications] = useState(false)
   const [noticeUnreadCount, setNoticeUnreadCount] = useState(0)
@@ -453,7 +454,24 @@ const HomePage = ({ user, onLogout, setUser }) => {
   useEffect(() => {
     fetchNotifications()
     fetchNoticeUnreadCount()
+    checkOnboarding()
   }, [])
+
+  // Check if user has seen onboarding
+  const checkOnboarding = () => {
+    const onboardingKey = `lowkey_onboarding_${user.id}`
+    const hasSeenOnboarding = localStorage.getItem(onboardingKey)
+    if (!hasSeenOnboarding) {
+      setShowOnboarding(true)
+    }
+  }
+
+  // Dismiss onboarding and mark as seen
+  const dismissOnboarding = () => {
+    const onboardingKey = `lowkey_onboarding_${user.id}`
+    localStorage.setItem(onboardingKey, 'true')
+    setShowOnboarding(false)
+  }
 
   const fetchNotifications = async () => {
     try {
