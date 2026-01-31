@@ -440,6 +440,25 @@ export default function ProfilePage() {
         {/* Profile Tab */}
         {activeTab === 'profile' && (
           <>
+            {/* Public Gallery Preview */}
+            {gallery.length > 0 && galleryPrivacy === 'public' && (
+              <div className="mb-4">
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="text-white font-semibold flex items-center gap-2">
+                    <Image className="w-4 h-4 text-amber-400" /> Gallery
+                  </h3>
+                  <button onClick={() => setActiveTab('gallery')} className="text-amber-400 text-sm">View all</button>
+                </div>
+                <div className="grid grid-cols-4 gap-1 rounded-xl overflow-hidden">
+                  {gallery.slice(0, 4).map(item => (
+                    <div key={item.id} className="aspect-square bg-white/10">
+                      <img src={item.imageData || item.url} alt="" className="w-full h-full object-cover" />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {user.isCreator && (
               <div className="mb-4 p-4 rounded-2xl bg-gradient-to-br from-pink-500/20 to-purple-500/20 border border-pink-500/30">
                 <h3 className="text-white font-semibold flex items-center gap-2 mb-3">
