@@ -84,6 +84,74 @@ const LockModal = ({ isOpen, onClose }) => {
   )
 }
 
+// Onboarding Slide Component - Shows once after first login
+const OnboardingSlide = ({ isOpen, onDismiss }) => {
+  if (!isOpen) return null
+  
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-sm p-4">
+      <div className="glass-card rounded-3xl p-6 max-w-md w-full shadow-2xl border border-white/10">
+        {/* Header */}
+        <div className="text-center mb-6">
+          <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-amber-400/30 to-yellow-500/30 flex items-center justify-center border border-amber-400/30">
+            <Sparkles className="w-8 h-8 text-amber-400" />
+          </div>
+          <h2 className="text-2xl font-bold text-white mb-2">Welcome to LowKey</h2>
+          <p className="text-gray-400 text-sm">A few things before you dive in</p>
+        </div>
+        
+        {/* Content */}
+        <div className="space-y-4 mb-6">
+          {/* Profile Picture Required */}
+          <div className="flex items-start gap-3 p-3 rounded-xl bg-white/5 border border-white/10">
+            <div className="w-10 h-10 rounded-full bg-pink-500/20 flex items-center justify-center flex-shrink-0">
+              <User className="w-5 h-5 text-pink-400" />
+            </div>
+            <div>
+              <h3 className="text-white font-medium text-sm">Display Picture Required</h3>
+              <p className="text-gray-400 text-xs mt-0.5">Upload a clear photo of yourself to connect with others.</p>
+            </div>
+          </div>
+          
+          {/* Verification is Intentional */}
+          <div className="flex items-start gap-3 p-3 rounded-xl bg-white/5 border border-white/10">
+            <div className="w-10 h-10 rounded-full bg-purple-500/20 flex items-center justify-center flex-shrink-0">
+              <CheckCircle className="w-5 h-5 text-purple-400" />
+            </div>
+            <div>
+              <h3 className="text-white font-medium text-sm">Verification is Intentional</h3>
+              <p className="text-gray-400 text-xs mt-0.5">We manually review profiles to keep the community safe and real.</p>
+            </div>
+          </div>
+          
+          {/* Features Unlock After Approval */}
+          <div className="flex items-start gap-3 p-3 rounded-xl bg-white/5 border border-white/10">
+            <div className="w-10 h-10 rounded-full bg-amber-500/20 flex items-center justify-center flex-shrink-0">
+              <Lock className="w-5 h-5 text-amber-400" />
+            </div>
+            <div>
+              <h3 className="text-white font-medium text-sm">Features Unlock After Approval</h3>
+              <p className="text-gray-400 text-xs mt-0.5">Some features like Radio & Music are available once you're verified.</p>
+            </div>
+          </div>
+        </div>
+        
+        {/* Dismiss Button */}
+        <button 
+          onClick={onDismiss}
+          className="w-full py-3 rounded-xl bg-gradient-to-r from-amber-400 to-yellow-500 text-black font-semibold hover:opacity-90 transition-opacity"
+        >
+          Got it, let's go
+        </button>
+        
+        <p className="text-center text-gray-500 text-xs mt-4">
+          You can update your profile anytime in Settings
+        </p>
+      </div>
+    </div>
+  )
+}
+
 // Forgot Password Modal
 const ForgotPasswordModal = ({ isOpen, onClose }) => {
   const [email, setEmail] = useState('')
