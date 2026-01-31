@@ -467,11 +467,23 @@ export default function ProfilePage() {
             ) : (
               <div className="grid grid-cols-3 gap-2">
                 {gallery.map(item => (
-                  <div key={item.id} className="aspect-square rounded-lg overflow-hidden bg-white/10">
+                  <div key={item.id} className="relative aspect-square rounded-lg overflow-hidden bg-white/10 group">
                     {item.type === 'video' ? (
-                      <video src={item.url} className="w-full h-full object-cover" />
+                      <video src={item.url || item.imageData} className="w-full h-full object-cover" />
                     ) : (
-                      <img src={item.url} alt="" className="w-full h-full object-cover" />
+                      <img src={item.imageData || item.url} alt="" className="w-full h-full object-cover" />
+                    )}
+                    {/* Delete button on hover/tap */}
+                    <button 
+                      onClick={() => deleteGalleryItem(item.id)}
+                      className="absolute top-1 right-1 p-1.5 rounded-full bg-red-500/80 text-white opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                    {item.caption && (
+                      <div className="absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black/80 to-transparent">
+                        <p className="text-white text-xs truncate">{item.caption}</p>
+                      </div>
                     )}
                   </div>
                 ))}
