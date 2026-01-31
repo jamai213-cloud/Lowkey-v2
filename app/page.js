@@ -200,6 +200,70 @@ const OnboardingSlide = ({ isOpen, onDismiss }) => {
   )
 }
 
+// After Dark Disclaimer Component
+// Contextual gate shown only the first time a user enters After Dark
+// This is separate from main onboarding because After Dark requires explicit consent
+// due to its privacy-focused and adult nature
+const AfterDarkDisclaimer = ({ isOpen, onAccept }) => {
+  if (!isOpen) return null
+  
+  return (
+    <div className="fixed inset-0 z-50 bg-[#0a0a0f]">
+      {/* Animated Background - consistent with app style */}
+      <div className="animated-bg">
+        <div className="blob blob-1" />
+        <div className="blob blob-2" />
+        <div className="blob blob-3" />
+        <div className="blob blob-4" />
+        <div className="blob blob-5" />
+        <div className="blob blob-6" />
+        <div className="noise-overlay" />
+      </div>
+      
+      <div className="relative z-10 min-h-screen flex flex-col items-center justify-center p-6">
+        <div className="max-w-md w-full text-center">
+          {/* Icon */}
+          <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-purple-500/20 flex items-center justify-center border border-purple-500/30">
+            <Moon className="w-10 h-10 text-purple-400" />
+          </div>
+          
+          {/* Header */}
+          <h1 className="text-2xl font-bold text-white mb-2">After Dark on Lowkey</h1>
+          <p className="text-purple-400 text-sm mb-8">Private. Discreet. Anonymous.</p>
+          
+          {/* Content */}
+          <div className="glass-card rounded-2xl p-5 mb-6 border border-white/10 text-left">
+            <p className="text-gray-300 text-sm leading-relaxed mb-4">
+              After Dark spaces are designed for privacy, discretion, and anonymous expression.
+            </p>
+            
+            <div className="border-l-2 border-purple-500 pl-4 mb-4">
+              <p className="text-white text-sm font-medium mb-2">
+                Respect and consent are mandatory at all times.
+              </p>
+              <p className="text-gray-400 text-sm">
+                Harassment, coercion, or non-consensual behaviour is not tolerated and will result in removal.
+              </p>
+            </div>
+            
+            <p className="text-gray-500 text-xs italic">
+              After Dark is optional and unlocked only after verification.
+            </p>
+          </div>
+          
+          {/* Accept Button */}
+          <button 
+            onClick={onAccept}
+            className="w-full py-4 rounded-xl bg-gradient-to-r from-purple-600 to-purple-800 text-white font-semibold hover:opacity-90 transition-opacity"
+          >
+            I Understand · Enter After Dark
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 // Forgot Password Modal
 const ForgotPasswordModal = ({ isOpen, onClose }) => {
   const [email, setEmail] = useState('')
