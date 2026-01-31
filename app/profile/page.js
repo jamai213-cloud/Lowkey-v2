@@ -48,9 +48,12 @@ export default function ProfilePage() {
   const [tipAmount, setTipAmount] = useState(5)
   const [tipMessage, setTipMessage] = useState('')
   const [tipping, setTipping] = useState(false)
-  const [uploadData, setUploadData] = useState({ type: 'photo', url: '', caption: '' })
+  const [uploadData, setUploadData] = useState({ type: 'photo', file: null, caption: '', preview: null })
+  const [uploading, setUploading] = useState(false)
   const [storyData, setStoryData] = useState({ type: 'photo', content: '', privacy: 'everyone', backgroundColor: '#1a1a2e' })
   const [galleryPrivacy, setGalleryPrivacy] = useState('public')
+  const fileInputRef = useRef(null)
+  const profilePicInputRef = useRef(null)
 
   useEffect(() => {
     const storedUser = localStorage.getItem('lowkey_user')
