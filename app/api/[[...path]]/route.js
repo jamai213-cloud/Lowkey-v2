@@ -666,18 +666,18 @@ async function handleRoute(request, { params }) {
     // Upload photo (base64 data from phone)
     if (route === '/gallery/upload' && method === 'POST') {
       const body = await safeParseJson(request)
-      const { userId, imageData, caption, privacy } = body
+      const { userId, data, imageData, caption, privacy, type } = body
       
-      // imageData is base64 encoded image from phone
-      if (!imageData) {
+      const mediaData = data || imageData
+      if (!mediaData) {
         return handleCORS(NextResponse.json({ error: 'No image data' }, { status: 400 }))
       }
       
       const item = {
         id: uuidv4(),
         userId,
-        type: 'photo',
-        imageData, // Store base64 directly
+        type: type || 'photo',
+        imageData: mediaData,
         caption: caption || '',
         privacy: privacy || 'public',
         filter: 'none',
@@ -685,6 +685,24 @@ async function handleRoute(request, { params }) {
       }
       await db.collection('gallery').insertOne(item)
       return handleCORS(NextResponse.json(cleanMongoDoc(item)))
+    }
+
+    // Profile avatar upload
+    if (route === '/profile/avatar' && method === 'POST') {
+      const body = await safeParseJson(request)
+      const { userId, data } = body
+      
+      if (!data) {
+        return handleCORS(NextResponse.json({ error: 'No image data' }, { status: 400 }))
+      }
+      
+      // Update user's avatar
+      await db.collection('users').updateOne(
+        { id: userId },
+        { $set: { avatar: data, avatarUpdatedAt: new Date() } }
+      )
+      
+      return handleCORS(NextResponse.json({ success: true, avatarUrl: data }))
     }
 
     if (route === '/gallery' && method === 'POST') {
