@@ -682,19 +682,33 @@ export default function ProfilePage() {
         className="hidden"
       />
 
-      {/* Upload Modal */}
+      {/* Upload Modal with Filters */}
       {showUpload && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm" onClick={() => setShowUpload(false)}>
-          <div className="bg-[#1a1a2e] rounded-2xl p-6 max-w-sm mx-4 w-full" onClick={e => e.stopPropagation()}>
+          <div className="bg-[#1a1a2e] rounded-2xl p-6 max-w-sm mx-4 w-full max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
             <h2 className="text-xl text-white font-semibold mb-4">Add to Gallery</h2>
             <div className="space-y-4">
-              {/* Preview */}
+              {/* Preview with applied filter */}
               {uploadData.preview ? (
                 <div className="relative">
                   {uploadData.type === 'video' ? (
-                    <video src={uploadData.preview} className="w-full h-48 object-cover rounded-xl" controls />
+                    <video 
+                      src={uploadData.preview} 
+                      className="w-full h-48 object-cover rounded-xl" 
+                      style={{ 
+                        filter: `${FILTERS.find(f => f.id === uploadData.filter)?.css || ''} blur(${uploadData.blur}px)` 
+                      }}
+                      controls 
+                    />
                   ) : (
-                    <img src={uploadData.preview} alt="Preview" className="w-full h-48 object-cover rounded-xl" />
+                    <img 
+                      src={uploadData.preview} 
+                      alt="Preview" 
+                      className="w-full h-48 object-cover rounded-xl" 
+                      style={{ 
+                        filter: `${FILTERS.find(f => f.id === uploadData.filter)?.css || ''} blur(${uploadData.blur}px)` 
+                      }}
+                    />
                   )}
                   <button 
                     onClick={() => setUploadData({ ...uploadData, file: null, preview: null })}
@@ -709,9 +723,52 @@ export default function ProfilePage() {
                   className="w-full h-48 rounded-xl border-2 border-dashed border-white/20 flex flex-col items-center justify-center gap-3 hover:border-amber-500/50 hover:bg-white/5 transition-colors"
                 >
                   <Upload className="w-10 h-10 text-gray-400" />
-                  <span className="text-gray-400">Tap to select from gallery</span>
+                  <span className="text-gray-400">Tap to select from device</span>
                   <span className="text-gray-500 text-sm">Photos or videos</span>
                 </button>
+              )}
+              
+              {/* Filters - only show when file is selected */}
+              {uploadData.preview && uploadData.type === 'photo' && (
+                <>
+                  <div>
+                    <label className="text-gray-400 text-xs mb-2 block">Filter</label>
+                    <div className="flex gap-2 overflow-x-auto pb-2">
+                      {FILTERS.map(filter => (
+                        <button
+                          key={filter.id}
+                          onClick={() => setUploadData({ ...uploadData, filter: filter.id })}
+                          className={`flex-shrink-0 px-3 py-1.5 rounded-lg text-xs ${
+                            uploadData.filter === filter.id 
+                              ? 'bg-amber-500 text-black' 
+                              : 'bg-white/10 text-white'
+                          }`}
+                        >
+                          {filter.name}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <label className="text-gray-400 text-xs mb-2 block">Blur Level</label>
+                    <div className="flex gap-2">
+                      {BLUR_LEVELS.map(level => (
+                        <button
+                          key={level.value}
+                          onClick={() => setUploadData({ ...uploadData, blur: level.value })}
+                          className={`flex-1 py-1.5 rounded-lg text-xs ${
+                            uploadData.blur === level.value 
+                              ? 'bg-purple-500 text-white' 
+                              : 'bg-white/10 text-white'
+                          }`}
+                        >
+                          {level.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </>
               )}
               
               <input 
@@ -723,7 +780,7 @@ export default function ProfilePage() {
               />
               
               <div className="flex gap-3">
-                <button onClick={() => { setShowUpload(false); setUploadData({ type: 'photo', file: null, caption: '', preview: null }) }} className="flex-1 py-3 rounded-xl bg-white/10 text-white">
+                <button onClick={() => { setShowUpload(false); setUploadData({ type: 'photo', file: null, caption: '', preview: null, filter: 'none', blur: 0 }) }} className="flex-1 py-3 rounded-xl bg-white/10 text-white">
                   Cancel
                 </button>
                 <button 
