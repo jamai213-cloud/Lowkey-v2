@@ -310,12 +310,11 @@ export default function EditProfilePage() {
 
   return (
     <div className="min-h-screen bg-[#0a0a0f] pb-24">
-      {/* Hidden file inputs */}
+      {/* Hidden file inputs - no capture attribute to allow gallery selection */}
       <input
         ref={fileInputRef}
         type="file"
-        accept="image/*"
-        capture="environment"
+        accept="image/*,video/*"
         onChange={(e) => handleFileSelect(e, false)}
         className="hidden"
       />
@@ -323,7 +322,6 @@ export default function EditProfilePage() {
         ref={profilePicInputRef}
         type="file"
         accept="image/*"
-        capture="environment"
         onChange={(e) => handleFileSelect(e, true)}
         className="hidden"
       />
