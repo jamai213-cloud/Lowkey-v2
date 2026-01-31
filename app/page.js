@@ -677,6 +677,7 @@ const HomePage = ({ user, onLogout, setUser }) => {
       </nav>
 
       <LockModal isOpen={showLockModal} onClose={() => setShowLockModal(false)} />
+      <OnboardingSlide isOpen={showOnboarding} onDismiss={dismissOnboarding} />
     </div>
   )
 }
