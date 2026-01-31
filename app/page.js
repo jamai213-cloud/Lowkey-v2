@@ -437,20 +437,11 @@ const HomePage = ({ user, onLogout, setUser }) => {
       {/* Header */}
       <header className="relative z-10 flex items-center justify-between p-4 border-b border-white/5">
         <div className="flex items-center gap-3">
-          {/* Logo wrapper - BIGGER with glow */}
-          <div 
-            style={{ 
-              width: '56px', 
-              height: '56px', 
-              flexShrink: 0,
-              filter: 'drop-shadow(0 0 10px rgba(147, 51, 234, 0.8)) drop-shadow(0 0 20px rgba(236, 72, 153, 0.6))',
-              animation: 'logo-pulse 2.5s ease-in-out infinite'
-            }}
-          >
+          {/* Logo slot - responsive sizing, no shrink */}
+          <div className="lk-logoSlot">
             <img 
               src="https://customer-assets.emergentagent.com/job_9cfb4bde-566c-4101-8a52-a8ca747e74ca/artifacts/xjtcpb4e_095E7AA1-912D-48A9-A667-A5A89F16DBD7.png" 
               alt="LowKey" 
-              style={{ width: '100%', height: '100%', objectFit: 'contain' }}
             />
           </div>
           <span className="text-lg font-semibold text-white">LowKey</span>
