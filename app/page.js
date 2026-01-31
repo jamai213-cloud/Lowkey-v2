@@ -556,6 +556,7 @@ const NotificationBell = ({ count, onClick }) => (
 const HomePage = ({ user, onLogout, setUser }) => {
   const [showLockModal, setShowLockModal] = useState(false)
   const [showOnboarding, setShowOnboarding] = useState(false)
+  const [showAfterDarkDisclaimer, setShowAfterDarkDisclaimer] = useState(false)
   const [notifications, setNotifications] = useState([])
   const [showNotifications, setShowNotifications] = useState(false)
   const [noticeUnreadCount, setNoticeUnreadCount] = useState(0)
@@ -583,6 +584,20 @@ const HomePage = ({ user, onLogout, setUser }) => {
     const onboardingKey = `lowkey_onboarding_${user.id}`
     localStorage.setItem(onboardingKey, 'true')
     setShowOnboarding(false)
+  }
+
+  // Check if user has acknowledged After Dark disclaimer
+  const hasAcknowledgedAfterDark = () => {
+    const key = `lowkey_afterdark_acknowledged_${user.id}`
+    return localStorage.getItem(key) === 'true'
+  }
+
+  // Accept After Dark disclaimer and proceed
+  const acceptAfterDarkDisclaimer = () => {
+    const key = `lowkey_afterdark_acknowledged_${user.id}`
+    localStorage.setItem(key, 'true')
+    setShowAfterDarkDisclaimer(false)
+    router.push('/afterdark')
   }
 
   const fetchNotifications = async () => {
