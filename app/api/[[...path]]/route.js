@@ -159,7 +159,20 @@ async function handleRoute(request, { params }) {
       const token = generateToken()
       await db.collection('users').updateOne({ id: user.id }, { $set: { token, lastLogin: new Date() } })
       console.log('[AUTH LOGIN] Success for user:', user.email)
-      return handleCORS(NextResponse.json({ user: cleanMongoDoc(user), token }))
+      
+      // Clean user data and remove large base64 images to reduce response size
+      const cleanedUser = cleanMongoDoc(user)
+      if (cleanedUser.profileDetails?.profilePicture?.startsWith('data:image')) {
+        // Keep a flag that they have a profile picture, but don't send the full base64
+        cleanedUser.hasProfilePicture = true
+        delete cleanedUser.profileDetails.profilePicture
+      }
+      if (cleanedUser.avatar?.startsWith('data:image')) {
+        cleanedUser.hasAvatar = true
+        delete cleanedUser.avatar
+      }
+      
+      return handleCORS(NextResponse.json({ user: cleanedUser, token }))
     }
 
     // ==================== USERS & PROFILE ====================
