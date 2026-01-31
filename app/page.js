@@ -440,7 +440,7 @@ const HomePage = ({ user, onLogout, setUser }) => {
           <img 
             src="https://customer-assets.emergentagent.com/job_9cfb4bde-566c-4101-8a52-a8ca747e74ca/artifacts/xjtcpb4e_095E7AA1-912D-48A9-A667-A5A89F16DBD7.png" 
             alt="LowKey" 
-            className="w-10 h-10 object-contain"
+            className="header-logo object-contain"
           />
           <span className="text-lg font-semibold text-white">LowKey</span>
         </div>
