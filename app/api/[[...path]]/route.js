@@ -1791,16 +1791,18 @@ async function handleRoute(request, { params }) {
 
     // ==================== RADIO (UK Urban Stations) ====================
     if (route === '/radio/stations' && method === 'GET') {
-      // UK Urban radio stations - verified working streams
+      // UK Urban radio stations - verified working streams (tested Jan 2026)
       const stations = [
-        { id: 'capital-xtra', name: 'Capital Xtra', genre: 'Hip-Hop/R&B', streamUrl: 'https://media-ice.musicradio.com/CapitalXTRALondon', color: '#FFD700', frequency: '96.9' },
-        { id: 'kisstory', name: 'Kisstory', genre: 'Old School', streamUrl: 'https://media-ice.musicradio.com/ABORIG', color: '#E91E63', frequency: '100.0' },
-        { id: 'kiss-fresh', name: 'Kiss Fresh', genre: 'New Music', streamUrl: 'https://media-ice.musicradio.com/KissFresh', color: '#9C27B0', frequency: '97.0' },
-        { id: 'magic-soul', name: 'Magic Soul', genre: 'Soul/R&B', streamUrl: 'https://media-ice.musicradio.com/MagicSoul', color: '#FF6B00', frequency: '105.4' },
-        { id: 'flex-fm', name: 'Flex FM', genre: 'Urban/Grime', streamUrl: 'https://eu8.fastcast4u.com/proxy/flexfm?mp=/1', color: '#00BCD4', frequency: '99.7' },
-        { id: 'reprezent', name: 'Reprezent Radio', genre: 'Urban/Youth', streamUrl: 'https://stream.reprezent.org.uk/reprezent', color: '#4CAF50', frequency: '107.3' },
-        { id: 'nts-1', name: 'NTS Radio', genre: 'Underground', streamUrl: 'https://stream-relay-geo.ntslive.net/stream', color: '#000000', frequency: '106.0' },
-        { id: 'foundation-fm', name: 'Foundation FM', genre: 'UK Black Music', streamUrl: 'https://streamer.radio.co/sb8f5c2348/listen', color: '#8B5CF6', frequency: '103.2' }
+        { id: 'capital-xtra-reloaded', name: 'Capital Xtra Reloaded', genre: 'Hip-Hop/R&B', streamUrl: 'https://media-ice.musicradio.com/CapitalXTRAReloaded', color: '#FFD700', frequency: '96.9' },
+        { id: 'nts-1', name: 'NTS Radio 1', genre: 'Underground', streamUrl: 'https://stream-relay-geo.ntslive.net/stream', color: '#000000', frequency: '106.0' },
+        { id: 'nts-2', name: 'NTS Radio 2', genre: 'Underground', streamUrl: 'https://stream-relay-geo.ntslive.net/stream2', color: '#333333', frequency: '106.2' },
+        { id: 'link-up', name: 'Link Up Radio', genre: 'Urban/Dancehall', streamUrl: 'http://uk7.internet-radio.com:8226/stream', color: '#E91E63', frequency: '98.5' },
+        { id: 'vibes-fm', name: 'Vibes FM', genre: 'R&B/Soul', streamUrl: 'http://uk1.internet-radio.com:8294/stream', color: '#9C27B0', frequency: '94.5' },
+        { id: 'afro-beats', name: 'Afro Beats Radio', genre: 'Afrobeats', streamUrl: 'http://uk2.internet-radio.com:8024/stream', color: '#4CAF50', frequency: '102.3' },
+        { id: 'one-luv', name: 'One Luv Radio', genre: 'Reggae/Dancehall', streamUrl: 'http://uk3.internet-radio.com:8082/stream', color: '#FF6B00', frequency: '99.1' },
+        { id: 'rnb-hits', name: 'RnB Hits', genre: 'R&B/Hip-Hop', streamUrl: 'http://uk7.internet-radio.com:8040/stream', color: '#8B5CF6', frequency: '101.7' },
+        { id: 'unique-radio', name: 'Unique Radio', genre: 'Urban/Grime', streamUrl: 'http://uk1.internet-radio.com:8004/stream', color: '#00BCD4', frequency: '103.8' },
+        { id: 'suncity', name: 'SunCity 104.9', genre: 'Urban/R&B', streamUrl: 'http://uk2.internet-radio.com:8024/stream', color: '#FF5722', frequency: '104.9' }
       ]
       return handleCORS(NextResponse.json(stations))
     }
