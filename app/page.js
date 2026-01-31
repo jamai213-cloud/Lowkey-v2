@@ -181,24 +181,32 @@ const AuthPage = ({ onLogin }) => {
         ? { identifier: email, password }
         : { email, password, displayName }
 
+      console.log('Attempting login with:', endpoint)
+      
       const res = await fetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body)
       })
 
+      console.log('Response status:', res.status)
       const data = await res.json()
+      console.log('Response data:', data)
 
       if (!res.ok) {
+        console.log('Login failed:', data.error)
         setError(data.error || 'Something went wrong')
         setLoading(false)
         return
       }
 
+      console.log('Login successful, saving to localStorage')
       localStorage.setItem('lowkey_user', JSON.stringify(data.user))
       localStorage.setItem('lowkey_token', data.token)
+      console.log('Calling onLogin')
       onLogin(data.user)
     } catch (err) {
+      console.error('Login error:', err)
       setError('Network error. Please try again.')
     }
     setLoading(false)
