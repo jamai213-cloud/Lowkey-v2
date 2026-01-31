@@ -123,11 +123,21 @@ export default function NoticesPage() {
           </button>
           <h1 className="text-xl font-semibold text-white">Notices</h1>
         </div>
-        {unreadCount > 0 && (
-          <span className="px-2 py-1 rounded-full bg-amber-500 text-black text-xs font-bold">
-            {unreadCount} unread
-          </span>
-        )}
+        <div className="flex items-center gap-2">
+          {unreadCount > 0 && (
+            <>
+              <button 
+                onClick={markAllAsRead}
+                className="px-3 py-1 rounded-full bg-white/10 text-gray-300 text-xs font-medium hover:bg-white/20"
+              >
+                Mark all read
+              </button>
+              <span className="px-2 py-1 rounded-full bg-amber-500 text-black text-xs font-bold">
+                {unreadCount} unread
+              </span>
+            </>
+          )}
+        </div>
       </header>
 
       <div className="p-4">
@@ -151,10 +161,10 @@ export default function NoticesPage() {
               const isRead = readNotices.includes(notice.id)
               
               return (
-                <button
+                <div
                   key={notice.id}
                   onClick={() => markAsRead(notice.id)}
-                  className={`w-full text-left p-4 rounded-xl border transition-colors ${
+                  className={`w-full text-left p-4 rounded-xl border transition-colors cursor-pointer ${
                     isRead 
                       ? 'bg-white/5 border-white/10' 
                       : 'bg-amber-500/10 border-amber-500/30'
@@ -189,8 +199,16 @@ export default function NoticesPage() {
                         </div>
                       </div>
                     </div>
+                    {isFounder && (
+                      <button 
+                        onClick={(e) => deleteNotice(notice.id, e)}
+                        className="p-2 rounded-lg hover:bg-red-500/20 text-gray-400 hover:text-red-400 transition-colors"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    )}
                   </div>
-                </button>
+                </div>
               )
             })}
           </div>
