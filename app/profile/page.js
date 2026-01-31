@@ -185,13 +185,15 @@ export default function ProfilePage() {
             type: uploadData.type,
             data: base64,
             caption: uploadData.caption,
-            privacy: galleryPrivacy
+            privacy: galleryPrivacy,
+            filter: uploadData.filter,
+            blur: uploadData.blur
           })
         })
         
         if (res.ok) {
           setShowUpload(false)
-          setUploadData({ type: 'photo', file: null, caption: '', preview: null })
+          setUploadData({ type: 'photo', file: null, caption: '', preview: null, filter: 'none', blur: 0 })
           fetchGallery(user.id)
         }
         setUploading(false)
