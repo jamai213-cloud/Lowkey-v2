@@ -1652,6 +1652,23 @@ async function handleRoute(request, { params }) {
       return handleCORS(NextResponse.json({ count: unread }))
     }
 
+    // Delete a notice (Founder only)
+    if (route.match(/^\/notices\/[^/]+$/) && method === 'DELETE') {
+      const noticeId = path[1]
+      const body = await safeParseJson(request)
+      
+      // Only Founder can delete notices
+      const requester = await db.collection('users').findOne({ id: body.founderId })
+      if (requester?.email?.toLowerCase() !== FOUNDER_EMAIL.toLowerCase()) {
+        return handleCORS(NextResponse.json({ error: 'Only the Founder can delete notices' }, { status: 403 }))
+      }
+      
+      await db.collection('notices').deleteOne({ id: noticeId })
+      // Also delete read records for this notice
+      await db.collection('notice_reads').deleteMany({ noticeId })
+      return handleCORS(NextResponse.json({ success: true }))
+    }
+
     // ==================== ITUNES MUSIC SEARCH (Real Music API) ====================
     if (route === '/itunes/search' && method === 'GET') {
       const url = new URL(request.url)
