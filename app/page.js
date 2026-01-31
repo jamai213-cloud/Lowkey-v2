@@ -625,10 +625,18 @@ const HomePage = ({ user, onLogout, setUser }) => {
   }
   
   const handleTileClick = (tileId, path) => {
+    // Check if feature is locked for unverified users
     if (lockedFeatures.includes(tileId) && !user.verified) {
       setShowLockModal(true)
       return
     }
+    
+    // Special handling for After Dark - show disclaimer on first entry
+    if (tileId === 'afterdark' && !hasAcknowledgedAfterDark()) {
+      setShowAfterDarkDisclaimer(true)
+      return
+    }
+    
     router.push(path)
   }
 
