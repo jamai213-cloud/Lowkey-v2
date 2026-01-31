@@ -705,6 +705,19 @@ async function handleRoute(request, { params }) {
       return handleCORS(NextResponse.json({ success: true, avatarUrl: data }))
     }
 
+    // Delete profile avatar
+    if (route === '/profile/avatar' && method === 'DELETE') {
+      const body = await safeParseJson(request)
+      const { userId } = body
+      
+      await db.collection('users').updateOne(
+        { id: userId },
+        { $set: { avatar: null, avatarUpdatedAt: new Date() } }
+      )
+      
+      return handleCORS(NextResponse.json({ success: true }))
+    }
+
     if (route === '/gallery' && method === 'POST') {
       const body = await safeParseJson(request)
       const item = {
