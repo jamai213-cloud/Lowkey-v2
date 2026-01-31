@@ -328,8 +328,22 @@ export default function ProfilePage() {
       <div className="p-4">
         {/* Profile Header */}
         <div className="flex flex-col items-center mb-4">
-          <div className={`w-24 h-24 rounded-full flex items-center justify-center mb-4 ${user.isCreator ? 'bg-gradient-to-br from-pink-500 to-purple-500' : 'bg-gradient-to-br from-purple-500 to-pink-500'}`}>
-            <User className="w-12 h-12 text-white" />
+          <div className="relative">
+            <div className={`w-24 h-24 rounded-full flex items-center justify-center mb-4 overflow-hidden ${user.isCreator ? 'bg-gradient-to-br from-pink-500 to-purple-500' : 'bg-gradient-to-br from-purple-500 to-pink-500'}`}>
+              {user.avatar ? (
+                <img src={user.avatar} alt="Profile" className="w-full h-full object-cover" />
+              ) : (
+                <User className="w-12 h-12 text-white" />
+              )}
+            </div>
+            {isOwnProfile && (
+              <button 
+                onClick={() => profilePicInputRef.current?.click()}
+                className="absolute bottom-3 right-0 w-8 h-8 rounded-full bg-amber-500 flex items-center justify-center shadow-lg"
+              >
+                <Camera className="w-4 h-4 text-black" />
+              </button>
+            )}
           </div>
           <h2 className="text-2xl font-bold text-white">{user.displayName}</h2>
           {user.bio && <p className="text-gray-400 text-center mt-1">{user.bio}</p>}
