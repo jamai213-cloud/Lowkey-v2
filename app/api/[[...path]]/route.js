@@ -120,20 +120,45 @@ async function handleRoute(request, { params }) {
     if (route === '/auth/login' && method === 'POST') {
       const body = await safeParseJson(request)
       const { identifier, password } = body
+      
+      // Debug logging
+      console.log('[AUTH LOGIN] Attempt for identifier:', identifier)
+      
       if (!identifier || !password) {
+        console.log('[AUTH LOGIN] Missing credentials')
         return handleCORS(NextResponse.json({ error: 'Credentials required' }, { status: 400 }))
       }
+      
       const user = await db.collection('users').findOne({
         $or: [
           { email: identifier.toLowerCase() },
           { displayNameLower: identifier.toLowerCase() }
         ]
       })
-      if (!user || user.password !== hashPassword(password)) {
+      
+      // Debug: Log if user was found
+      console.log('[AUTH LOGIN] User found:', !!user, user ? `(id: ${user.id}, email: ${user.email})` : '')
+      
+      if (!user) {
+        console.log('[AUTH LOGIN] No user found for identifier:', identifier.toLowerCase())
         return handleCORS(NextResponse.json({ error: 'Invalid credentials' }, { status: 401 }))
       }
+      
+      // Debug: Log password comparison (without revealing actual passwords)
+      const providedHash = hashPassword(password)
+      const passwordMatch = user.password === providedHash
+      console.log('[AUTH LOGIN] Password match:', passwordMatch)
+      console.log('[AUTH LOGIN] Stored hash prefix:', user.password?.substring(0, 10) + '...')
+      console.log('[AUTH LOGIN] Provided hash prefix:', providedHash.substring(0, 10) + '...')
+      
+      if (!passwordMatch) {
+        console.log('[AUTH LOGIN] Password mismatch for user:', user.email)
+        return handleCORS(NextResponse.json({ error: 'Invalid credentials' }, { status: 401 }))
+      }
+      
       const token = generateToken()
       await db.collection('users').updateOne({ id: user.id }, { $set: { token, lastLogin: new Date() } })
+      console.log('[AUTH LOGIN] Success for user:', user.email)
       return handleCORS(NextResponse.json({ user: cleanMongoDoc(user), token }))
     }
 
