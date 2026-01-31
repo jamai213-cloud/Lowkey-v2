@@ -130,17 +130,80 @@ export default function ProfilePage() {
   }
 
   const uploadToGallery = async () => {
-    if (!uploadData.url) return
+    if (!uploadData.file) return
+    setUploading(true)
+    
     try {
-      await fetch('/api/gallery', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId: user.id, ...uploadData })
-      })
-      setShowUpload(false)
-      setUploadData({ type: 'photo', url: '', caption: '' })
-      fetchGallery(user.id)
-    } catch (err) {}
+      // Convert file to base64
+      const reader = new FileReader()
+      reader.onload = async () => {
+        const base64 = reader.result
+        
+        const res = await fetch('/api/gallery/upload', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            userId: user.id, 
+            type: uploadData.type,
+            data: base64,
+            caption: uploadData.caption,
+            privacy: galleryPrivacy
+          })
+        })
+        
+        if (res.ok) {
+          setShowUpload(false)
+          setUploadData({ type: 'photo', file: null, caption: '', preview: null })
+          fetchGallery(user.id)
+        }
+        setUploading(false)
+      }
+      reader.readAsDataURL(uploadData.file)
+    } catch (err) {
+      console.error('Upload failed:', err)
+      setUploading(false)
+    }
+  }
+
+  const handleFileSelect = (e, isProfilePic = false) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    
+    const preview = URL.createObjectURL(file)
+    
+    if (isProfilePic) {
+      // Upload profile picture
+      uploadProfilePic(file)
+    } else {
+      const type = file.type.startsWith('video/') ? 'video' : 'photo'
+      setUploadData({ ...uploadData, file, preview, type })
+    }
+  }
+
+  const uploadProfilePic = async (file) => {
+    setUploading(true)
+    try {
+      const reader = new FileReader()
+      reader.onload = async () => {
+        const res = await fetch('/api/profile/avatar', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ userId: user.id, data: reader.result })
+        })
+        
+        if (res.ok) {
+          const data = await res.json()
+          const updatedUser = { ...user, avatar: data.avatarUrl }
+          setUser(updatedUser)
+          localStorage.setItem('lowkey_user', JSON.stringify(updatedUser))
+        }
+        setUploading(false)
+      }
+      reader.readAsDataURL(file)
+    } catch (err) {
+      console.error('Profile pic upload failed:', err)
+      setUploading(false)
+    }
   }
 
   const createStory = async () => {
