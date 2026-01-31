@@ -3,7 +3,7 @@ import requests
 import json
 
 def test_reset_password():
-    url = "https://lowkey-social-3.preview.emergentagent.com/api/auth/reset-password"
+    url = "https://social-connect-592.preview.emergentagent.com/api/auth/reset-password"
     headers = {"Content-Type": "application/json"}
     
     reset_data = {

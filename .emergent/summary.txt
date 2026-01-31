@@ -1,102 +1,174 @@
 <analysis>
-<original_problem_statement>
-The user wants to build a faithful, production-ready rebuild of an existing application called Lowkey from scratch. The project has evolved from a visual clone into a complex, multi-feature social application.
 
-**LATEST PRODUCT REQUIREMENTS:**
-- **Core Functionality**: All home screen tiles must be functional and routed. The UI should be vibrant, with colored tiles.
-- **Chat & Social**:
-    - A single Main Lounge for all users, featuring a general chat and a Creator Posts tab.
-    - Creators can post blurred teasers for a price (£ GBP).
-    - Communities which are private groups created by admins, accessible via an invite code.
-    - After Dark section for anonymous, kink-minded chat rooms.
-- **User Profiles & Roles**:
-    - Two main profile types: Normal and Content Creator.
-    - Creator profiles are subscription-based, with pricing in Pounds (£). Lowkey takes a 20% cut of all transactions.
-    - A special Founder role for  with an admin dashboard () to manage all users, verification, and roles.
-    - Profile Galleries for users to upload photos/videos with privacy controls (Public/Friends).
-    - 24-hour Stories/Status feature.
-- **Verification System**: A tiered system: New Member → Verified → Trusted → Inner Circle. These are managed by the Founder.
-- **Features**:
-    - **Radio**: A list of specific UK radio stations (Rinse FM, Capital Xtra, etc.) with colored logo placeholders.
-    - **Music**: A real music player with search functionality (like iTunes/Spotify) to find artists and post 24hr song snippets to a user's profile.
-    - **Profile Customization**: Premium profile skins available for purchase (£1).
-- **Search**: Must show all members in the system.
+<original_problem_statement>
+The user wants to build a faithful, production-ready rebuild of an existing application called Lowkey from scratch. The project is a complex, multi-feature social application.
+
+**LATEST PRODUCT REQUIREMENTS (from user messages):**
+- **UI Freeze**: **Do not change the design do not change the ui keep the app exactly the same no changes to Ui . Stop immediately if requests compromises the UI**. This is a strict and repeated instruction.
+- **Profile System**:
+    - A detailed profile form, similar to FabSwingers, with many personal details and an extensive kinks checklist.
+    - Direct profile picture and gallery photo upload from the user's device (phone gallery/camera), not via URL. Uploads should support captions.
+    - Ability to set photo privacy (Public vs. Friends).
+    - Ability to delete uploaded photos.
+- **Social & Monetization**:
+    - A tipping/donation system for users to send money (£ GBP) to creators. The platform takes a 20% cut.
+    - Communities with 24-hour expiring invite codes.
+    - A Notice Board for the Founder to post updates to all users.
+    - New messages from non-friends must go to a notification area (bell) where the user can accept the chat (moves to inbox) or delete the request.
+    - Option for users to leave comments anonymously.
+- **Founder Controls**: The Founder () needs the ability to remove users, reset their passwords, and force them to log out from an admin dashboard.
+- **Radio**: A list of specific, working UK-based urban/London radio stations. The UI should be a tile-based radio dial design that matches the existing app aesthetic.
+- **Music**: A functional music search page that works like Spotify/iTunes, allowing users to search for any artist or song.
+- **Games**: The games on the games page must have functional controls that work on mobile/touch devices.
+- **General**:
+    - All currency must be in Pounds (£), not Dollars ($).
+    - All alerts (messages, friend requests, notices, etc.) should have notification sounds, with a Quiet Mode toggle to mute them.
 </original_problem_statement>
 
 **User's preferred language**: English
 
 **what currently exists?**
-A very advanced Next.js application with a MongoDB backend. The frontend is nearly feature-complete from a UI perspective, with pages and components created for almost all user requests.
-- **Backend**: A massive monolithic API file () handles all backend logic, including authentication, user management, the Founder dashboard, creator subscriptions, profile galleries, stories, verification tiers, and more. Most endpoints are functional.
-- **Frontend**: The UI is highly developed. A home page displays all the tiles with a 3-column grid. Pages for all features (Lounge, Radio, Founder, Profile, Communities, etc.) have been created and styled. Role-based rendering is implemented on the profile page to show different views for Normal users, Creators, and the Founder.
-- **Authentication/Debug**: A critical debug endpoint  exists to reset and configure the  user account with full Founder permissions. A  page was created to allow the user to bypass login and review UI changes.
+The application is a feature-rich Next.js app with a monolithic MongoDB backend. Significant progress has been made, and many of the user's latest requests have been implemented.
+- **Backend**: The  monolith now includes endpoints for a detailed profile, direct file uploads, creator tipping, extended Founder controls (user removal/reset), a new music search proxy to the iTunes API, and updated radio station data.
+- **Frontend**:
+    - **Profile**: A new  page exists with a comprehensive, multi-tabbed form for personal details and kinks. The main profile page has a Send Tip button with a functional modal that calculates the platform fee. The photo upload component has been changed to a direct file input.
+    - **Radio**: The UI has been completely redesigned into a tile-based radio dial layout.
+    - **Music**: The UI has been rebuilt with a Spotify-like search bar and results display that pulls data from the iTunes API.
+    - **Games**: Basic touch controls (swipe gestures) have been added as an overlay to the Snake and Pac-Man games.
+    - **Founder Dashboard**: The dashboard now includes buttons to Reset Password, Force Logout, and Remove User for each member.
+    - **Wallet**: The currency symbol has been updated from  to .
+- **Authentication**: The  endpoint remains critical for setting up the Founder account on new deployments.
 
 **Last working item**:
-- **Last item agent was working on**: Implementing the user's latest request to refactor the home page UI. This involved:
-    1.  Swapping the Communities and Notices tiles in the grid.
-    2.  Applying dynamic, colored borders and backgrounds to all tiles for a more consistent and vibrant style.
-    3.  Removing the old, separate Notices list from the bottom of the home page.
-- **Status**: IN PROGRESS
+- **Last item agent was working on**: The agent was attempting to fix the radio streams. The user reported that many of the stations were not working. The agent tried to use the  tool to find new, working stream URLs for UK urban radio stations.
+- **Status**: BLOCKED
 - **Agent Testing Done**: N
-- **Which testing method agent to use?**: screenshot tool. After completing the UI changes in , take a screenshot of the home page to verify the new tile layout, order, and dynamic coloring.
+- **Which testing method agent to use?**: Manual testing by curl / python -c. The agent needs to find valid streaming URLs (e.g., ,  links) and test them with  to see if they return audio data before updating them in the code. Web search is not sufficient.
 - **User Testing Done**: N
 
 **All Pending/In progress Issue list**:
--   Issue 1: User Login/Access on Deployed Environments (P1)
+-   Issue 1: Find and implement working UK urban radio station streams (P0)
+-   Issue 2: Music search is not working as expected for the user (P1)
+-   Issue 3: Games are not fully functional (P2)
+-   Issue 4: User Login/Access on Deployed Environments (P2)
 
 **Issues Detail**:
--   **Issue 1: User Login/Access on Deployed Environments**
-    -   **Attempted fixes**: This is a persistent, recurring issue. The user frequently has trouble logging in on Preview/Vercel. The agent has successfully addressed this multiple times by creating and updating the  endpoint. This endpoint, when visited after deployment, correctly configures the  account with the necessary permissions (Founder, Admin, Creator, etc.). A  page was also created as a workaround for UI review.
+-   **Issue 1: Find and implement working UK urban radio station streams**
+    -   **Attempted fixes**: The agent last used  to find URLs, but this tool provided website links, not the direct technical stream URLs required by the audio player.
     -   **Next debug checklist**:
-        1.  Advise the user that after deploying, they **must** visit  to set up their account.
-        2.  Remind the user of the exact credentials: Email , Password .
-        3.  If UI review is the only goal, direct them to the  page.
-    -   **Why fix this issue and what will be achieved with the fix?**: This is the primary blocker for user acceptance and testing. Ensuring the user can log in builds trust and allows them to verify the implemented features.
-    -   **Status**: USER VERIFICATION PENDING
+        1.  Use  with more technical queries like  or .
+        2.  Manually inspect the HTML/network traffic of the radio station websites to find the stream source.
+        3.  Once a potential URL is found, use  to check the headers. A content-type of  or similar is a good sign.
+        4.  Update the list in  with verified, working URLs.
+    -   **Why fix this issue and what will be achieved with the fix?**: This is a direct user request. Fixing it will make the Radio feature functional and fulfill the user's requirement.
+    -   **Status**: BLOCKED
     -   **Is recurring issue?**: Y
-    -   **Should Test frontend/backend/both after fix?**: Both (Backend endpoint, verified via Frontend login).
-    -   **Blocked on other issue**: None.
+    -   **Should Test frontend/backend/both after fix?**: Frontend (by visiting the radio page and trying to play stations).
+    -   **Blocked on other issue**: No. Blocked on finding valid stream URLs.
+
+-   **Issue 2: Music search is not working as expected for the user**
+    -   **Attempted fixes**: The agent implemented a new backend endpoint () using the public iTunes Search API and rebuilt the frontend UI. The agent's own  test for drake was successful. However, the user reported Music can’t find artist. No further debugging was done.
+    -   **Next debug checklist**:
+        1.  Check the frontend code in  to ensure the search term is being correctly passed to the  endpoint.
+        2.  Check browser console logs for any errors when performing a search on the music page.
+        3.  Add more robust logging to the  endpoint in  to see what search terms are being received from the frontend.
+        4.  Test with a variety of artist names to see if the issue is specific to certain queries.
+    -   **Why fix this issue and what will be achieved with the fix?**: This is a core feature request. Fixing it will provide the Spotify/iTunes-like experience the user wants.
+    -   **Status**: NOT STARTED
+    -   **Is recurring issue?**: N
+    -   **Should Test frontend/backend/both after fix?**: Both.
+    -   **Blocked on other issue**: No.
+
+-   **Issue 3: Games are not fully functional**
+    -   **Attempted fixes**: The agent added swipe-based touch controls as an overlay in . This was a good attempt to add functionality without changing the UI.
+    -   **Next debug checklist**:
+        1.  The implementation needs to be tested to see if the swipe events correctly translate to game movements (up, down, left, right).
+        2.  The implementation may not be robust. Consider adding on-screen D-pad buttons that are only visible when a game is active, which is more reliable than swipes (this may violate the no UI change rule, so it should be proposed to the user first).
+    -   **Why fix this issue and what will be achieved with the fix?**: The user explicitly stated the games are non functional. Making them playable on mobile is required.
+    -   **Status**: IN PROGRESS
+    -   **Is recurring issue?**: N
+    -   **Should Test frontend/backend/both after fix?**: Frontend.
+    -   **Blocked on other issue**: No.
+
+-   **Issue 4: User Login/Access on Deployed Environments**
+    -   **Attempted fixes**: This is a recurring communication issue. The agent has repeatedly and successfully used the  endpoint to grant the  account full Founder/Admin permissions.
+    -   **Next debug checklist**: This is not a code issue. The next agent must be prepared to pre-emptively remind the user of the process: after any new deployment, they **must** visit  before attempting to log in.
+    -   **Why fix this issue and what will be achieved with the fix?**: Prevents user frustration and allows them to test new features.
+    -   **Status**: RESOLVED (Code-wise), USER VERIFICATION PENDING (Process-wise)
+    -   **Is recurring issue?**: Y
+    -   **Should Test frontend/backend/both after fix?**: N/A.
+    -   **Blocked on other issue**: No.
 
 **In progress Task List**:
--   Task 1: Complete Home Page Tile Refactor (P0)
-
-**Task Detail**:
--   **Task 1: Complete Home Page Tile Refactor**
-    -   **Where to resume**: Continue editing . The tile swap is done. The agent needs to finish implementing the logic to apply dynamic colors to the tile components and then remove the now-obsolete  component and its related JSX from the bottom of the page.
-    -   **What will be achieved with this?**: This will complete the user's request for a more vibrant and consistently styled home page, with the Notices feature integrated into the main tile grid.
-    -   **Status**: IN PROGRESS
-    -   **Should Test frontend/backend/both after fix?**: Frontend
-    -   **Blocked on something**: No
+None. The active work item is a blocked issue.
 
 **Upcoming and Future Tasks**
-- **Upcoming Tasks (P0, from last user request):**
-    - **Fix Search**: Modify the  endpoint and related frontend logic in  to ensure all users appear in search results.
-    - **Fix Radio Streams**: The user reported The music is not right. Investigate the stream URLs for the UK radio stations in  and replace any broken ones.
-    - **Implement Real Music Search**:
-        - Integrate a third-party music API (like the iTunes Search API) into the backend.
-        - Create a new API endpoint (e.g., ) in  to query this API.
-        - Build the UI on the profile page for searching for artists/tracks.
-        - Implement the post 24hr snippet feature, likely by integrating with the existing Stories functionality.
+- **Upcoming Tasks (from user requests):**
+    - **(P1) Implement Non-Friend Message Request Flow**: Create the UI in the bell notifications area for accepting/declining new message requests. The backend logic exists but the frontend flow needs to be built and verified.
+    - **(P2) Implement Anonymous Comments**: Add a checkbox or toggle on comment input fields to allow users to post anonymously. This will require backend and frontend changes.
+    - **(P3) Implement Photo Filters**: User requested Edit photos with filters etc. This was acknowledged but never started. A simple implementation could use CSS filters (). This should be scoped and planned.
 
-- **Future Tasks (P1):**
-    - **Refactor API**: The monolithic  is now over 1300 lines long and extremely difficult to maintain. It should be broken down into smaller files by feature (e.g., , , ).
-    - **Real-time Chat**: Upgrade the polling-based chat to a real-time solution using WebSockets for a better user experience.
-    - **Payment Integration**: Implement a real payment gateway (e.g., Stripe) to handle creator subscriptions and payouts, replacing the current placeholder logic.
+- **Future Tasks (Technical Debt):**
+    - **(P0) Refactor API Monolith**: The  file is now dangerously large (well over 2000 lines). It MUST be broken down into smaller, feature-specific files (e.g., , , ) to ensure maintainability and reduce risk.
 
 **Completed work in this session**
-- **Backend & Core Logic**:
-    - **Syntax Error Fixed**: Resolved critical syntax errors in  that were breaking the entire backend.
-    - **Admin & Founder System**: Implemented a comprehensive role management system, including a  dashboard for user administration.
-    - **Creator Economy**: Added backend logic for Creator profiles, subscriptions in pounds (£), and a 20% platform fee.
-    - **New Feature APIs**: Added APIs for Profile Galleries, Stories, multi-tier Verification, Communities, After Dark anonymous rooms, and updated Radio station data.
-    - **Debug Endpoint**: Created and repeatedly enhanced the crucial  endpoint to manage the Founder's account setup.
+- **Radio**:
+    - Replaced the entire radio page with a new tile-based dial design ().
+    - Updated the list of radio stations in  multiple times based on user feedback.
+- **Music**:
+    - Created a  endpoint in  that uses the iTunes Search API.
+    - Rebuilt the music page () with a modern search interface.
+- **Profile & Photos**:
+    - Created a new comprehensive profile editing page () with a FabSwingers-style form, including a large, multi-category kink checklist.
+    - Implemented direct file upload for photos (no URL input) on the edit page.
+    - Added backend endpoints for saving detailed profile info and handling file uploads.
+- **Founder & Admin**:
+    - Fixed the Founder login/permissions by using the  endpoint.
+    - Added backend endpoints for Remove User, Reset Password, and Force Logout.
+    - Updated the Founder Dashboard UI () with buttons to trigger these new actions.
+- **Monetization & Social**:
+    - Implemented a Send Tip feature on creator profiles with a detailed modal showing amounts in £ and the 20% platform fee calculation (, ).
+    - Implemented 24-hour expiration for Community invite codes.
+- **General Fixes**:
+    - Fixed the search page to show all users by default.
+    - Changed currency symbols from  to  in the Wallet page.
+    - Added basic touch/swipe controls to the Snake and Pac-Man games.
+    - Restricted Notices posting to the Founder account.
 
-- **Frontend & UI**:
-    - **Full Feature UI**: Created or overwrote pages for every required feature, including Lounge, Radio, Games, Profile, Founder, Communities, and more.
-    - **Role-Based UI**: The profile page now dynamically changes based on whether the user is Normal, a Creator, or the Founder.
-    - **Home Page V1**: Implemented the 13-tile grid layout.
-    - **New Features UI**: Built the UI for Profile Galleries, Stories, Profile Skins, the Founder dashboard, the Main Lounge with Creator Posts, and Communities.
-    - **Login Workaround**: Created a  page to allow the user to bypass login for UI review.
+**Earlier issues found/mentioned but not fixed**
+-   **Issue 1: Music search usability**
+    -   The user reported Music can’t find artist after the new feature was built. The agent verified the API works with a  test but did not debug the issue from the user's perspective.
+    -   **Debug checklist**: See Pending/In progress Issue list - Issue 2.
+    -   **Why to solve this issue and what will be achieved with this?**: It's a key requested feature that is currently not meeting user expectations.
+    -   **Should Test frontend/backend/both after fix**: Both.
+    -   **Is recurring issue?**: N
+
+-   **Issue 2: Photo Filters**
+    -   The user requested to Edit photos with filters etc. This was acknowledged by the agent but never implemented.
+    -   **Debug checklist**:
+        1.  Plan a simple implementation, likely using CSS filters.
+        2.  Add a UI element (e.g., a small modal with filter buttons) to the photo gallery or upload process.
+        3.  Save the selected filter class/style to the  in the database.
+        4.  Apply the saved filter when rendering the image.
+    -   **Why to solve this issue and what will be achieved with this?**: Fulfills a direct user request for profile customization.
+    -   **Should Test frontend/backend/both after fix**: Frontend.
+    -   **Is recurring issue?**: N
+
+-   **Issue 3: Anonymous Comments**
+    -   The user requested the choice to leave anonymous or not on comments. This was acknowledged but never implemented.
+    -   **Debug checklist**:
+        1.  Add a boolean field like  to the comment schema.
+        2.  Add a checkbox to the comment input UI.
+        3.  Update the comment submission endpoint to handle this new field.
+        4.  Update the comment display logic to show Anonymous instead of the username if the flag is true.
+    -   **Why to solve this issue and what will be achieved with this?**: Fulfills a direct user request for social interaction privacy.
+    -   **Should Test frontend/backend/both after fix**: Both.
+    -   **Is recurring issue?**: N
+
+**Known issue recurrence from previous fork**
+-   **Issue recurrence in previous fork**: User () being unable to log in or not having the correct Founder/Admin permissions after a new deployment.
+-   **Recurrence count**: High (has occurred in nearly every major interaction).
+-   **Status**: RESOLVED (from a code perspective). This is a process issue. The solution is to have the user visit the  endpoint after each deployment. The next agent must be proactive in communicating this.
 
 **Code Architecture**
 
@@ -106,93 +178,85 @@ A very advanced Next.js application with a MongoDB backend. The frontend is near
 - **Database**: MongoDB
 - **Styling**: TailwindCSS, shadcn/ui
 - **Authentication**: Custom JWT implementation.
-- **API**: Monolithic API route ().
-- **Access Control**: Custom Role-Based Access Control (RBAC) implementation for Founder, Admin, Creator, and Normal User roles.
-- **Debugging**: Use of special-purpose GET endpoints () to manage state and fix issues on deployed environments.
+- **API**: Monolithic API route (), now extremely large and complex.
+- **3rd Party Integration**: iTunes Search API (for music search, no key required).
+- **File Handling**: Direct file uploads for profile pictures/gallery items using .
+- **Security**:  used for the new password reset functionality.
 
 **key DB schema**
--   **User**: { ..., role: 'user'|'admin', isCreator: boolean, isFounder: boolean, verificationTier: 'new'|'verified'|'trusted'|'inner-circle', subscriptionPrice: number, quietMode: boolean, purchasedSkins: [...] }
--   **Story**: { userId, mediaUrl, expiresAt }
--   **GalleryItem**: { userId, mediaUrl, privacy: 'public'|'friends' }
--   **Community**: { name, adminId, inviteCode }
--   **CommunityMember**: { communityId, userId }
--   (Plus all previously defined schemas for chat, games, etc.)
+-   **User**: { ..., role, isCreator, isFounder, verificationTier, subscriptionPrice, quietMode, galleryPrivacy: 'public'|'friends', **profileDetails**: { aboutMe, lookingFor, age, gender, sexuality, status, physical: {...}, lifestyle: {...}, location: {...}, interests: {...}, kinks: {...} } }
+-   **GalleryItem**: { userId, mediaUrl, **caption**: string, privacy: 'public'|'friends' }
+-   **Tip**: { tipperId, receiverId, amount, message, platformFee, createdAt }
+-   **Community**: { name, adminId, inviteCode, **inviteCodeExpiresAt**: Date }
 
 **All files of reference**
--   : The most important and most modified file. Contains all backend logic. Needs careful handling.
--   : The main entry point (Auth/Home). Currently being refactored for new tile styling.
--   : Complex component with logic for different user roles, galleries, stories, and skins.
--   : The user management dashboard for the Founder.
--   : UI for the Main Lounge and Creator Posts.
--   : UI for the UK radio stations.
+-   : **MOST CRITICAL**. All backend logic is here. Heavily modified and very high-risk to edit.
+-   : **New**. Contains the large, complex profile editing form.
+-   : Heavily modified to include the Send Tip feature and the link to the new edit page.
+-   : Completely overwritten with the new UI. Its functionality depends on the stream URLs in .
+-   : Completely overwritten with the new search UI.
+-   : Modified to include new user management buttons and API calls.
+-   : Modified to include touch control logic.
 
-**Areas that need refactoring**:
--   The monolithic  is critically overdue for a refactor. It is over 1300 lines long and any change is high-risk. Breaking it into feature-specific modules is the most important technical debt to address in the future.
+**Areas that need refactoring**
+-   The monolithic  is the single biggest technical debt and risk in the project. It urgently needs to be broken down into separate files by domain (auth, users, profile, communities, etc.). Any future work will be slowed down and made riskier by this file.
 
 **key api endpoints**
-- : **Crucial endpoint** to reset the founder account on deployment.
-- , : Endpoints for managing users, verification, and roles.
-- : Endpoints for creator-specific actions like setting subscription price.
-- , : New endpoints for managing profile media.
-- : Endpoints for purchasing and setting profile skins.
-- , : Endpoints for the new social features.
-- All previous auth, chat, and feature endpoints still exist.
+-   : (New) Searches the iTunes API for music.
+-   : (New) POST/PUT endpoint for the detailed profile form.
+-   : (New) POST endpoint for direct file uploads.
+-   : (New) POST endpoint to process creator tips.
+-   : (New) POST endpoint to delete a user.
+-   : (New) POST endpoint to reset a user's password.
+-   : (New) POST endpoint to invalidate a user's tokens.
 
 **Critical Info for New Agent**
-- **Prioritize the current task**: Finish the home page tile refactor in  first.
-- **Address the user's latest requests**: After the home page fix, immediately start working on the list from the user's last message: fix search, fix radio streams, and implement the music search feature.
-- **The Login Issue is a Communication Issue**: The code to fix the user's login problems () exists and works. The challenge is communicating the required steps (deploy, visit URL, then log in) to the user clearly and repeatedly. Be prepared for this.
-- **Beware the Monolith**: Be extremely careful when editing . A small mistake can bring down the entire backend.
+-   **UI FREEZE IS MANDATORY**: The user has been extremely clear: **Do not change the design do not change the ui keep the app exactly the same no changes to Ui**. You must prioritize functionality fixes and additions that do not alter the existing visual layout. Propose any potential UI changes to the user for approval before implementing.
+-   **START WITH THE BLOCKED TASK**: Your first priority is to unblock the radio station issue. The current approach of using  is not working. You need to find a way to get technical stream URLs.
+-   **ADDRESS USER-REPORTED BUGS NEXT**: After the radio, address the music search issue and verify the game controls. The user has reported these as not working, so they are high priority.
+-   **FOUNDER LOGIN PROCESS**: Be prepared for the user to report login issues. Proactively remind them to visit the  endpoint after you inform them a new version is ready for review.
+-   **MONOLITH RISK**: Be extremely cautious when editing . It is fragile. Consider proposing the refactoring task to the user to improve stability for future development.
 
 **documents created in this job**
-- /app/app/demo/page.js (login bypass for UI review)
-- /app/app/founder/page.js
-- /app/app/communities/page.js
+-   
+-   
 
 **Last 10 User Messages and any pending HUMAN messages**
-1. **Request:** Fix search, swap Community/Notice tiles, add color to tiles, fix radio, add real music search. (IN PROGRESS)
-2. **Request:** Make my profile founder/admin. (RESOLVED)
-3. **Request:** Add real logos to radio stations. (RESOLVED, with colored placeholders)
-4. **Request:** Add profile gallery, stories, verification tiers, music player, and skins. (RESOLVED)
-5. **Request:** Implement Creator/Normal profiles, subscriptions, and Founder controls. (RESOLVED)
-6. **Request:** Change radio to UK stations, implement Main Lounge, Communities, and After Dark rooms. (RESOLVED)
-7. **Complaint:** Not working 😩 [login on preview]. (WORKAROUND PROVIDED:  page)
-8. **Complaint:** Can not sign in on preview I want to see all changes. (WORKAROUND PROVIDED)
-9. **Confirmation:** Proceed. (User confirmed to continue)
-10. **Complaint:** Not logging in. (RESOLVED by explaining deployment and credential steps)
+1.  **Request:** Fix non-functional games, find working UK radio streams (keep Capital Xtra), change  to  in Wallet. **Crucially, ordered NO MORE UI/DESIGN CHANGES.** (IN PROGRESS - Wallet done, Games attempted, Radio Blocked)
+2.  **Request:** Resume (User prompt to continue after agent's web search). (DONE)
+3.  **Request:** Direct photo upload from phone (no URL), add captions, add a donation/tip feature. (DONE)
+4.  **Request:** Proceed (User prompt to continue). (DONE)
+5.  **Request:** Longer kink form, profile pic upload, fix music search, add Founder powers (remove/reset users), add notification sounds for all actions, ensure currency is £, change message flow for non-friends, allow anonymous comments, and a new list of radio stations. (MOSTLY DONE - music fix, message flow, anon comments are pending)
+6.  **Request:** A detailed FabSwingers-style profile form, photo privacy, photo deletion, photo filters, and a new list of radio stations with a radio dial UI. (MOSTLY DONE - photo filters pending)
+7.  **Complaint/Request:** Radio not working, music setup is wrong, Founder account has no control. (DONE)
+8.  **Request:** Revert UI changes, implement 24-hr community codes, define Notice Board purpose, fix text overflow, and continue with previous tasks (search/radio/music). (DONE)
 
 **Project Health Check:**
-- **Broken**: Nothing is catastrophically broken like at the start of the session. The home page UI is mid-refactor but functional.
-- **Mocked**: No mocked data. The app uses a real MongoDB connection. Payment/transaction logic is placeholder.
+-   **Broken**: The Radio feature is currently broken as most stream URLs are invalid.
+-   **Mocked**: Payment processing for tips and subscriptions is still placeholder logic; no real payment gateway is integrated.
 
 **3rd Party Integrations**
-- **Resend**: For Forgot Password emails. Requires  from the user (not yet provided).
-- **iTunes/Spotify (Requested)**: For the music search feature. Will likely require using the public iTunes Search API, which does not need a key, or a Spotify API key if that is chosen.
+-   **iTunes Search API**: Used for the music search feature. Publicly accessible, does not require an API key.
+-   **Resend**: For Forgot Password emails. Still requires a user-provided .
 
 **Testing status**
-- **Testing agent used after significant changes**: NO (Agent relied on yarn run v1.22.22
-$ next build
-  ▲ Next.js 14.2.3
-  - Environments: .env
-
-   Creating an optimized production build ...
- ✓ Compiled successfully
-   Linting and checking validity of types ...
-   Collecting page data ...
-info Visit https://yarnpkg.com/en/docs/cli/run for documentation about this command. and extensive manual testing via screenshots and ).
-- **Troubleshoot agent used after agent stuck in loop**: NO
-- **Test files created**: None.
-- **Known regressions**: None.
+-   **Testing agent used after significant changes**: NO
+-   **Troubleshoot agent used after agent stuck in loop**: NO
+-   **Test files created**: None.
+-   **Known regressions**: Radio functionality is currently degraded due to broken stream links.
 
 **Credentials to test flow:**
-- **Founder/Admin**:
-  - **Email**: 
-  - **Password**: 
-- **Important**: The  endpoint must be hit after any database reset or on a new environment to ensure this account has the correct permissions.
+-   **Founder/Admin**:
+    -   **Email**: 
+    -   **Password**: 
+-   **Important**: The  endpoint must be hit after any database reset or on a new environment to ensure this account has the correct permissions.
 
 **What agent forgot to execute**
-- The agent was in the middle of executing the user's last request. It did not forget anything, but the home page refactoring is incomplete. The next logical steps are to finish that task and then move on to the other items from the user's final message (fixing search, radio, and music).
+-   **Photo Filters**: Requested by the user but never implemented.
+-   **Anonymous Comments**: Requested by the user but never implemented.
+-   **Full verification of several features**:
+    -   **Music Search**: The agent did not debug why it was failing for the user.
+    -   **Notification Sounds**: A  file was created, but there's no evidence the sounds were integrated into all required frontend components (new messages, friend requests, notices etc.).
+    -   **Non-Friend Message Flow**: The UI for the bell notification review (Accept/Decline) was likely not fully implemented or tested.
 
 </analysis>
-<SYS_PROMPT_SEPARATOR>
-
