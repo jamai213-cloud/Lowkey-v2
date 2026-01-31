@@ -1725,6 +1725,98 @@ async function handleRoute(request, { params }) {
       }
     }
 
+    // Deezer Search API (better previews)
+    if (route === '/deezer/search' && method === 'GET') {
+      const url = new URL(request.url)
+      const q = url.searchParams.get('q') || ''
+      
+      if (!q.trim()) {
+        return handleCORS(NextResponse.json({ results: [] }))
+      }
+      
+      try {
+        const deezerUrl = `https://api.deezer.com/search?q=${encodeURIComponent(q)}&limit=25`
+        const response = await fetch(deezerUrl)
+        const data = await response.json()
+        
+        const results = data.data?.map(item => ({
+          id: item.id,
+          type: 'track',
+          name: item.title,
+          title: item.title,
+          artist: item.artist?.name,
+          album: item.album?.title,
+          artwork: item.album?.cover_medium || item.album?.cover_small,
+          artworkLarge: item.album?.cover_xl || item.album?.cover_big,
+          preview: item.preview,
+          previewUrl: item.preview,
+          duration: item.duration * 1000, // Convert to ms
+          explicit: item.explicit_lyrics
+        })) || []
+        
+        return handleCORS(NextResponse.json({ results, total: data.total }))
+      } catch (error) {
+        console.error('Deezer API error:', error)
+        return handleCORS(NextResponse.json({ results: [], error: 'Search failed' }, { status: 500 }))
+      }
+    }
+
+    // Save track to user's saved list (24hr)
+    if (route === '/music/save' && method === 'POST') {
+      const body = await safeParseJson(request)
+      const { userId, track } = body
+      
+      const saved = {
+        id: uuidv4(),
+        userId,
+        track: {
+          id: track.id,
+          name: track.name || track.title,
+          title: track.name || track.title,
+          artist: track.artist?.name || track.artist,
+          album: track.album?.title || track.album,
+          artwork: track.artwork || track.album?.cover_medium,
+          preview: track.preview || track.previewUrl,
+          previewUrl: track.preview || track.previewUrl,
+          duration: track.duration
+        },
+        savedAt: new Date(),
+        expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000) // 24 hours
+      }
+      
+      // Check if already saved
+      const existing = await db.collection('saved_tracks').findOne({ 
+        userId, 
+        'track.id': track.id,
+        expiresAt: { $gt: new Date() }
+      })
+      
+      if (existing) {
+        return handleCORS(NextResponse.json({ message: 'Already saved', track: existing }))
+      }
+      
+      await db.collection('saved_tracks').insertOne(saved)
+      return handleCORS(NextResponse.json(cleanMongoDoc(saved)))
+    }
+
+    // Get user's saved tracks
+    if (route.match(/^\/music\/saved\/[^/]+$/) && method === 'GET') {
+      const userId = path[2]
+      const tracks = await db.collection('saved_tracks').find({
+        userId,
+        expiresAt: { $gt: new Date() }
+      }).sort({ savedAt: -1 }).toArray()
+      return handleCORS(NextResponse.json(tracks.map(cleanMongoDoc)))
+    }
+
+    // Remove saved track
+    if (route.match(/^\/music\/saved\/[^/]+\/[^/]+$/) && method === 'DELETE') {
+      const userId = path[2]
+      const trackId = path[3]
+      await db.collection('saved_tracks').deleteOne({ id: trackId, userId })
+      return handleCORS(NextResponse.json({ success: true }))
+    }
+
     // Save track to user's profile (24hr song status)
     if (route === '/profile/music-status' && method === 'POST') {
       const body = await safeParseJson(request)
