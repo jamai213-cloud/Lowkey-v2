@@ -369,12 +369,14 @@ const HomePage = ({ user, onLogout, setUser }) => {
   const [showLockModal, setShowLockModal] = useState(false)
   const [notifications, setNotifications] = useState([])
   const [showNotifications, setShowNotifications] = useState(false)
+  const [noticeUnreadCount, setNoticeUnreadCount] = useState(0)
   const router = useRouter()
   
   const lockedFeatures = ['radio', 'music', 'afterdark']
   
   useEffect(() => {
     fetchNotifications()
+    fetchNoticeUnreadCount()
   }, [])
 
   const fetchNotifications = async () => {
@@ -386,6 +388,18 @@ const HomePage = ({ user, onLogout, setUser }) => {
       }
     } catch (err) {
       console.error('Failed to fetch notifications')
+    }
+  }
+
+  const fetchNoticeUnreadCount = async () => {
+    try {
+      const res = await fetch(`/api/notices/unread/${user.id}`)
+      if (res.ok) {
+        const data = await res.json()
+        setNoticeUnreadCount(data.count || 0)
+      }
+    } catch (err) {
+      console.error('Failed to fetch notice unread count')
     }
   }
   
