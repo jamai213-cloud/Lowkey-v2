@@ -326,6 +326,35 @@ body {
 .glow-gold { box-shadow: 0 0 30px rgba(245, 158, 11, 0.4); }
 .glow-pink { box-shadow: 0 0 30px rgba(236, 72, 153, 0.4); }
 
+/* ===== HEADER LOGO WRAPPER - Fixed dimensions, no shrink ===== */
+.logo-wrap {
+  /* Mobile: 32px square */
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* Subtle drop-shadow for visibility */
+  filter: drop-shadow(0 0 8px rgba(147, 51, 234, 0.5)) 
+          drop-shadow(0 0 16px rgba(236, 72, 153, 0.3));
+}
+
+/* Desktop: 36px square */
+@media (min-width: 1024px) {
+  .logo-wrap {
+    width: 36px;
+    height: 36px;
+  }
+}
+
+/* Remove old header-logo styles if any conflict */
+.header-logo {
+  max-height: none;
+  width: auto;
+  height: auto;
+}
+
 /* Notification badge */
 .notification-badge {
   position: absolute;
