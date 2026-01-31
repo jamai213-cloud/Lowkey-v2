@@ -2,16 +2,16 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
-import { ArrowLeft, X } from 'lucide-react'
+import { ArrowLeft, X, Pause, Play, RotateCcw } from 'lucide-react'
 
-// Classic Snake Game
+// Classic Snake Game with Pause
 const SnakeGame = ({ onClose }) => {
   const canvasRef = useRef(null)
-  const [gameState, setGameState] = useState('ready')
+  const [gameState, setGameState] = useState('ready') // ready, playing, paused, over
   const [score, setScore] = useState(0)
   const directionRef = useRef('RIGHT')
-  const snakeRef = useRef([{x: 5, y: 5}])
-  const foodRef = useRef({x: 10, y: 10})
+  const snakeRef = useRef([{x: 10, y: 10}])
+  const foodRef = useRef({x: 15, y: 10})
   const gameLoopRef = useRef(null)
 
   const GRID = 20
@@ -22,11 +22,10 @@ const SnakeGame = ({ onClose }) => {
     if (!canvas) return
     const ctx = canvas.getContext('2d')
     
-    // Clear
     ctx.fillStyle = '#1a1a2e'
     ctx.fillRect(0, 0, canvas.width, canvas.height)
     
-    // Draw grid
+    // Grid
     ctx.strokeStyle = '#252545'
     for (let i = 0; i <= GRID; i++) {
       ctx.beginPath()
@@ -39,18 +38,28 @@ const SnakeGame = ({ onClose }) => {
       ctx.stroke()
     }
     
-    // Draw snake
+    // Snake
     snakeRef.current.forEach((seg, i) => {
       ctx.fillStyle = i === 0 ? '#4ade80' : '#22c55e'
       ctx.fillRect(seg.x * CELL + 1, seg.y * CELL + 1, CELL - 2, CELL - 2)
     })
     
-    // Draw food
+    // Food
     ctx.fillStyle = '#ef4444'
     ctx.beginPath()
     ctx.arc(foodRef.current.x * CELL + CELL/2, foodRef.current.y * CELL + CELL/2, CELL/2 - 2, 0, Math.PI * 2)
     ctx.fill()
-  }, [])
+    
+    // Paused overlay
+    if (gameState === 'paused') {
+      ctx.fillStyle = 'rgba(0,0,0,0.7)'
+      ctx.fillRect(0, 0, canvas.width, canvas.height)
+      ctx.fillStyle = '#ffffff'
+      ctx.font = 'bold 24px sans-serif'
+      ctx.textAlign = 'center'
+      ctx.fillText('PAUSED', canvas.width/2, canvas.height/2)
+    }
+  }, [gameState])
 
   const spawnFood = useCallback(() => {
     let newFood
@@ -61,6 +70,8 @@ const SnakeGame = ({ onClose }) => {
   }, [])
 
   const gameLoop = useCallback(() => {
+    if (gameState !== 'playing') return
+    
     const head = { ...snakeRef.current[0] }
     
     if (directionRef.current === 'UP') head.y--
@@ -68,13 +79,11 @@ const SnakeGame = ({ onClose }) => {
     if (directionRef.current === 'LEFT') head.x--
     if (directionRef.current === 'RIGHT') head.x++
     
-    // Wall collision
     if (head.x < 0 || head.x >= GRID || head.y < 0 || head.y >= GRID) {
       setGameState('over')
       return
     }
     
-    // Self collision
     if (snakeRef.current.some(s => s.x === head.x && s.y === head.y)) {
       setGameState('over')
       return
@@ -82,7 +91,6 @@ const SnakeGame = ({ onClose }) => {
     
     snakeRef.current.unshift(head)
     
-    // Eat food
     if (head.x === foodRef.current.x && head.y === foodRef.current.y) {
       setScore(s => s + 10)
       spawnFood()
@@ -91,35 +99,47 @@ const SnakeGame = ({ onClose }) => {
     }
     
     draw()
-  }, [draw, spawnFood])
+  }, [gameState, draw, spawnFood])
 
   useEffect(() => {
     if (gameState === 'playing') {
       gameLoopRef.current = setInterval(gameLoop, 120)
-      return () => clearInterval(gameLoopRef.current)
+    } else {
+      if (gameLoopRef.current) clearInterval(gameLoopRef.current)
     }
+    return () => { if (gameLoopRef.current) clearInterval(gameLoopRef.current) }
   }, [gameState, gameLoop])
 
   useEffect(() => {
     const handleKey = (e) => {
+      if (e.key === ' ' || e.key === 'Escape') {
+        e.preventDefault()
+        if (gameState === 'playing') setGameState('paused')
+        else if (gameState === 'paused') setGameState('playing')
+        return
+      }
       if (gameState !== 'playing') return
-      const key = e.key
-      if ((key === 'ArrowUp' || key === 'w') && directionRef.current !== 'DOWN') directionRef.current = 'UP'
-      if ((key === 'ArrowDown' || key === 's') && directionRef.current !== 'UP') directionRef.current = 'DOWN'
-      if ((key === 'ArrowLeft' || key === 'a') && directionRef.current !== 'RIGHT') directionRef.current = 'LEFT'
-      if ((key === 'ArrowRight' || key === 'd') && directionRef.current !== 'LEFT') directionRef.current = 'RIGHT'
+      const key = e.key.toLowerCase()
+      if ((key === 'arrowup' || key === 'w') && directionRef.current !== 'DOWN') directionRef.current = 'UP'
+      if ((key === 'arrowdown' || key === 's') && directionRef.current !== 'UP') directionRef.current = 'DOWN'
+      if ((key === 'arrowleft' || key === 'a') && directionRef.current !== 'RIGHT') directionRef.current = 'LEFT'
+      if ((key === 'arrowright' || key === 'd') && directionRef.current !== 'LEFT') directionRef.current = 'RIGHT'
     }
     window.addEventListener('keydown', handleKey)
     return () => window.removeEventListener('keydown', handleKey)
   }, [gameState])
 
   const startGame = () => {
-    snakeRef.current = [{x: 5, y: 5}]
+    snakeRef.current = [{x: 10, y: 10}]
     directionRef.current = 'RIGHT'
     spawnFood()
     setScore(0)
     setGameState('playing')
-    draw()
+  }
+
+  const togglePause = () => {
+    if (gameState === 'playing') setGameState('paused')
+    else if (gameState === 'paused') setGameState('playing')
   }
 
   const handleControl = (dir) => {
@@ -130,9 +150,7 @@ const SnakeGame = ({ onClose }) => {
     if (dir === 'RIGHT' && directionRef.current !== 'LEFT') directionRef.current = 'RIGHT'
   }
 
-  useEffect(() => {
-    draw()
-  }, [draw])
+  useEffect(() => { draw() }, [draw])
 
   return (
     <div className="fixed inset-0 z-50 bg-black flex flex-col items-center justify-center p-4">
@@ -147,7 +165,34 @@ const SnakeGame = ({ onClose }) => {
 
       <canvas ref={canvasRef} width={GRID * CELL} height={GRID * CELL} className="border-2 border-green-500 rounded-lg" />
 
-      {/* D-Pad Controls */}
+      {/* Game Controls */}
+      <div className="flex gap-2 mt-3">
+        {gameState === 'ready' && (
+          <button onClick={startGame} className="px-6 py-2 rounded-xl bg-green-500 text-white font-bold flex items-center gap-2">
+            <Play className="w-5 h-5" /> Start
+          </button>
+        )}
+        {(gameState === 'playing' || gameState === 'paused') && (
+          <>
+            <button onClick={togglePause} className="px-4 py-2 rounded-xl bg-yellow-500 text-black font-bold flex items-center gap-2">
+              {gameState === 'playing' ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5" />}
+              {gameState === 'playing' ? 'Pause' : 'Resume'}
+            </button>
+            <button onClick={startGame} className="px-4 py-2 rounded-xl bg-gray-600 text-white font-bold flex items-center gap-2">
+              <RotateCcw className="w-5 h-5" /> Restart
+            </button>
+          </>
+        )}
+        {gameState === 'over' && (
+          <button onClick={startGame} className="px-6 py-2 rounded-xl bg-green-500 text-white font-bold flex items-center gap-2">
+            <RotateCcw className="w-5 h-5" /> Play Again
+          </button>
+        )}
+      </div>
+
+      {gameState === 'over' && <p className="text-red-400 text-lg mt-2">Game Over! Score: {score}</p>}
+
+      {/* D-Pad */}
       <div className="mt-4 grid grid-cols-3 gap-1 w-36">
         <div />
         <button onTouchStart={() => handleControl('UP')} onClick={() => handleControl('UP')} 
@@ -155,9 +200,9 @@ const SnakeGame = ({ onClose }) => {
         <div />
         <button onTouchStart={() => handleControl('LEFT')} onClick={() => handleControl('LEFT')}
           className="w-12 h-12 rounded-lg bg-green-600 flex items-center justify-center text-white text-2xl font-bold active:bg-green-500">◀</button>
-        <div className="w-12 h-12 rounded-lg bg-gray-800 flex items-center justify-center">
-          <div className="w-4 h-4 rounded-full bg-green-500" />
-        </div>
+        <button onClick={togglePause} className="w-12 h-12 rounded-lg bg-gray-700 flex items-center justify-center">
+          {gameState === 'playing' ? <Pause className="w-5 h-5 text-white" /> : <Play className="w-5 h-5 text-white" />}
+        </button>
         <button onTouchStart={() => handleControl('RIGHT')} onClick={() => handleControl('RIGHT')}
           className="w-12 h-12 rounded-lg bg-green-600 flex items-center justify-center text-white text-2xl font-bold active:bg-green-500">▶</button>
         <div />
@@ -165,41 +210,21 @@ const SnakeGame = ({ onClose }) => {
           className="w-12 h-12 rounded-lg bg-green-600 flex items-center justify-center text-white text-2xl font-bold active:bg-green-500">▼</button>
         <div />
       </div>
-
-      {gameState === 'ready' && (
-        <button onClick={startGame} className="mt-4 px-8 py-3 rounded-xl bg-green-500 text-white font-bold text-lg">
-          Start Game
-        </button>
-      )}
-      {gameState === 'over' && (
-        <div className="mt-4 text-center">
-          <p className="text-red-400 text-xl mb-2">Game Over! Score: {score}</p>
-          <button onClick={startGame} className="px-8 py-3 rounded-xl bg-green-500 text-white font-bold text-lg">
-            Play Again
-          </button>
-        </div>
-      )}
     </div>
   )
 }
 
-// Classic Pac-Man with Maze
+// Classic Pac-Man with Maze and Pause
 const PacManGame = ({ onClose }) => {
   const canvasRef = useRef(null)
   const [gameState, setGameState] = useState('ready')
   const [score, setScore] = useState(0)
   const [lives, setLives] = useState(3)
+  const gameLoopRef = useRef(null)
   
   const CELL = 16
-  const gameRef = useRef({
-    pacman: { x: 1, y: 1, dir: 'RIGHT' },
-    ghosts: [],
-    dots: [],
-    powerMode: false,
-    powerTimer: 0
-  })
+  const gameRef = useRef(null)
 
-  // Classic Pac-Man maze (1 = wall, 0 = path, 2 = power pellet)
   const maze = [
     [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
     [1,2,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,2,1],
@@ -228,59 +253,53 @@ const PacManGame = ({ onClose }) => {
   const COLS = maze[0].length
 
   const initGame = useCallback(() => {
-    const game = gameRef.current
-    game.pacman = { x: 1, y: 1, dir: 'RIGHT', frame: 0 }
-    game.ghosts = [
-      { x: 9, y: 9, dir: 'UP', color: '#ff0000' },    // Blinky
-      { x: 8, y: 9, dir: 'LEFT', color: '#ffb8ff' },  // Pinky
-      { x: 10, y: 9, dir: 'RIGHT', color: '#00ffff' }, // Inky
-      { x: 9, y: 8, dir: 'DOWN', color: '#ffb852' }   // Clyde
-    ]
-    game.dots = []
-    game.powerMode = false
-    game.powerTimer = 0
-    
-    // Create dots from maze
+    const dots = []
     for (let y = 0; y < ROWS; y++) {
       for (let x = 0; x < COLS; x++) {
-        if (maze[y][x] === 0) {
-          game.dots.push({ x, y, power: false })
-        } else if (maze[y][x] === 2) {
-          game.dots.push({ x, y, power: true })
-        }
+        if (maze[y][x] === 0) dots.push({ x, y, power: false })
+        else if (maze[y][x] === 2) dots.push({ x, y, power: true })
       }
     }
     
+    gameRef.current = {
+      pacman: { x: 1, y: 1, dir: 'RIGHT', nextDir: 'RIGHT', frame: 0 },
+      ghosts: [
+        { x: 9, y: 9, dir: 'UP', color: '#ff0000', home: {x:9, y:9} },
+        { x: 8, y: 9, dir: 'LEFT', color: '#ffb8ff', home: {x:8, y:9} },
+        { x: 10, y: 9, dir: 'RIGHT', color: '#00ffff', home: {x:10, y:9} },
+        { x: 9, y: 8, dir: 'DOWN', color: '#ffb852', home: {x:9, y:8} }
+      ],
+      dots,
+      powerMode: false,
+      powerTimer: 0
+    }
     setScore(0)
     setLives(3)
   }, [])
 
   const canMove = (x, y) => {
-    if (x < 0 || x >= COLS || y < 0 || y >= ROWS) return false
+    if (x < 0 || x >= COLS || y < 0 || y >= ROWS) return y === 9 // Allow tunnel
     return maze[y][x] !== 1
   }
 
   const draw = useCallback(() => {
     const canvas = canvasRef.current
-    if (!canvas) return
+    if (!canvas || !gameRef.current) return
     const ctx = canvas.getContext('2d')
     const game = gameRef.current
     
-    // Clear
     ctx.fillStyle = '#000033'
     ctx.fillRect(0, 0, canvas.width, canvas.height)
     
-    // Draw maze walls
+    // Walls
     ctx.fillStyle = '#0000ff'
     for (let y = 0; y < ROWS; y++) {
       for (let x = 0; x < COLS; x++) {
-        if (maze[y][x] === 1) {
-          ctx.fillRect(x * CELL, y * CELL, CELL, CELL)
-        }
+        if (maze[y][x] === 1) ctx.fillRect(x * CELL, y * CELL, CELL, CELL)
       }
     }
     
-    // Draw dots
+    // Dots
     game.dots.forEach(dot => {
       ctx.fillStyle = '#ffb8ae'
       const size = dot.power ? 6 : 2
@@ -289,7 +308,7 @@ const PacManGame = ({ onClose }) => {
       ctx.fill()
     })
     
-    // Draw Pac-Man
+    // Pac-Man
     ctx.fillStyle = '#ffff00'
     const px = game.pacman.x * CELL + CELL/2
     const py = game.pacman.y * CELL + CELL/2
@@ -303,27 +322,20 @@ const PacManGame = ({ onClose }) => {
     ctx.lineTo(px, py)
     ctx.fill()
     
-    // Draw ghosts
+    // Ghosts
     game.ghosts.forEach(ghost => {
       const gx = ghost.x * CELL + CELL/2
       const gy = ghost.y * CELL + CELL/2
-      
-      // Ghost body color
       ctx.fillStyle = game.powerMode ? '#0000ff' : ghost.color
-      
-      // Ghost body (rounded top, wavy bottom)
       ctx.beginPath()
       ctx.arc(gx, gy - 2, CELL/2 - 2, Math.PI, 0)
       ctx.lineTo(gx + CELL/2 - 2, gy + CELL/2 - 4)
-      // Wavy bottom
       ctx.lineTo(gx + CELL/4, gy + CELL/2 - 7)
       ctx.lineTo(gx, gy + CELL/2 - 4)
       ctx.lineTo(gx - CELL/4, gy + CELL/2 - 7)
       ctx.lineTo(gx - CELL/2 + 2, gy + CELL/2 - 4)
       ctx.closePath()
       ctx.fill()
-      
-      // Eyes (only if not in power mode)
       if (!game.powerMode) {
         ctx.fillStyle = '#ffffff'
         ctx.beginPath()
@@ -337,50 +349,45 @@ const PacManGame = ({ onClose }) => {
         ctx.fill()
       }
     })
-  }, [])
+    
+    // Paused
+    if (gameState === 'paused') {
+      ctx.fillStyle = 'rgba(0,0,0,0.7)'
+      ctx.fillRect(0, 0, canvas.width, canvas.height)
+      ctx.fillStyle = '#ffffff'
+      ctx.font = 'bold 20px sans-serif'
+      ctx.textAlign = 'center'
+      ctx.fillText('PAUSED', canvas.width/2, canvas.height/2)
+    }
+  }, [gameState])
 
   const moveGhost = useCallback((ghost) => {
     const game = gameRef.current
     const dirs = ['UP', 'DOWN', 'LEFT', 'RIGHT']
     const opposite = { UP: 'DOWN', DOWN: 'UP', LEFT: 'RIGHT', RIGHT: 'LEFT' }
-    
-    // Calculate direction towards/away from pacman
     const dx = game.pacman.x - ghost.x
     const dy = game.pacman.y - ghost.y
     
     let preferred = []
     if (game.powerMode) {
-      // Run away
       preferred = dx > 0 ? ['LEFT', 'UP', 'DOWN', 'RIGHT'] : ['RIGHT', 'DOWN', 'UP', 'LEFT']
-      if (Math.abs(dy) > Math.abs(dx)) {
-        preferred = dy > 0 ? ['UP', 'LEFT', 'RIGHT', 'DOWN'] : ['DOWN', 'RIGHT', 'LEFT', 'UP']
-      }
     } else {
-      // Chase
       preferred = dx > 0 ? ['RIGHT', 'DOWN', 'UP', 'LEFT'] : ['LEFT', 'UP', 'DOWN', 'RIGHT']
       if (Math.abs(dy) > Math.abs(dx)) {
         preferred = dy > 0 ? ['DOWN', 'RIGHT', 'LEFT', 'UP'] : ['UP', 'LEFT', 'RIGHT', 'DOWN']
       }
     }
-    
-    // Add randomness
-    if (Math.random() < 0.3) {
-      preferred = dirs.sort(() => Math.random() - 0.5)
-    }
+    if (Math.random() < 0.3) preferred = dirs.sort(() => Math.random() - 0.5)
     
     for (const dir of preferred) {
-      if (dir === opposite[ghost.dir] && Math.random() > 0.05) continue
-      
+      if (dir === opposite[ghost.dir] && Math.random() > 0.1) continue
       let nx = ghost.x, ny = ghost.y
       if (dir === 'UP') ny--
       if (dir === 'DOWN') ny++
       if (dir === 'LEFT') nx--
       if (dir === 'RIGHT') nx++
-      
-      // Wrap around tunnel
       if (nx < 0) nx = COLS - 1
       if (nx >= COLS) nx = 0
-      
       if (canMove(nx, ny)) {
         ghost.x = nx
         ghost.y = ny
@@ -391,29 +398,43 @@ const PacManGame = ({ onClose }) => {
   }, [canMove])
 
   const gameLoop = useCallback(() => {
+    if (gameState !== 'playing' || !gameRef.current) return
     const game = gameRef.current
     
-    // Move Pac-Man
+    // Try next direction first
     let nx = game.pacman.x, ny = game.pacman.y
-    if (game.pacman.dir === 'UP') ny--
-    if (game.pacman.dir === 'DOWN') ny++
-    if (game.pacman.dir === 'LEFT') nx--
-    if (game.pacman.dir === 'RIGHT') nx++
-    
-    // Wrap around
+    if (game.pacman.nextDir === 'UP') ny--
+    if (game.pacman.nextDir === 'DOWN') ny++
+    if (game.pacman.nextDir === 'LEFT') nx--
+    if (game.pacman.nextDir === 'RIGHT') nx++
     if (nx < 0) nx = COLS - 1
     if (nx >= COLS) nx = 0
     
     if (canMove(nx, ny)) {
+      game.pacman.dir = game.pacman.nextDir
       game.pacman.x = nx
       game.pacman.y = ny
+    } else {
+      // Try current direction
+      nx = game.pacman.x
+      ny = game.pacman.y
+      if (game.pacman.dir === 'UP') ny--
+      if (game.pacman.dir === 'DOWN') ny++
+      if (game.pacman.dir === 'LEFT') nx--
+      if (game.pacman.dir === 'RIGHT') nx++
+      if (nx < 0) nx = COLS - 1
+      if (nx >= COLS) nx = 0
+      if (canMove(nx, ny)) {
+        game.pacman.x = nx
+        game.pacman.y = ny
+      }
     }
     game.pacman.frame++
     
     // Move ghosts
     game.ghosts.forEach(ghost => moveGhost(ghost))
     
-    // Check dot collision
+    // Dot collision
     const dotIdx = game.dots.findIndex(d => d.x === game.pacman.x && d.y === game.pacman.y)
     if (dotIdx !== -1) {
       const dot = game.dots[dotIdx]
@@ -427,36 +448,27 @@ const PacManGame = ({ onClose }) => {
       }
     }
     
-    // Power mode timer
+    // Power timer
     if (game.powerMode) {
       game.powerTimer--
-      if (game.powerTimer <= 0) {
-        game.powerMode = false
-      }
+      if (game.powerTimer <= 0) game.powerMode = false
     }
     
     // Ghost collision
-    for (let i = 0; i < game.ghosts.length; i++) {
-      const ghost = game.ghosts[i]
+    for (const ghost of game.ghosts) {
       if (ghost.x === game.pacman.x && ghost.y === game.pacman.y) {
         if (game.powerMode) {
-          // Eat ghost
           setScore(s => s + 200)
-          ghost.x = 9
-          ghost.y = 9
+          ghost.x = ghost.home.x
+          ghost.y = ghost.home.y
         } else {
-          // Lose life
           setLives(l => {
             if (l <= 1) {
               setGameState('over')
               return 0
             }
-            // Reset positions
-            game.pacman = { x: 1, y: 1, dir: 'RIGHT', frame: 0 }
-            game.ghosts.forEach((g, idx) => {
-              g.x = 8 + idx
-              g.y = 9
-            })
+            game.pacman = { x: 1, y: 1, dir: 'RIGHT', nextDir: 'RIGHT', frame: 0 }
+            game.ghosts.forEach(g => { g.x = g.home.x; g.y = g.home.y })
             return l - 1
           })
           return
@@ -464,30 +476,38 @@ const PacManGame = ({ onClose }) => {
       }
     }
     
-    // Win condition
+    // Win
     if (game.dots.length === 0) {
       setGameState('won')
       return
     }
     
     draw()
-  }, [draw, moveGhost, canMove])
+  }, [gameState, draw, moveGhost, canMove])
 
   useEffect(() => {
     if (gameState === 'playing') {
-      const interval = setInterval(gameLoop, 150)
-      return () => clearInterval(interval)
+      gameLoopRef.current = setInterval(gameLoop, 150)
+    } else {
+      if (gameLoopRef.current) clearInterval(gameLoopRef.current)
     }
+    return () => { if (gameLoopRef.current) clearInterval(gameLoopRef.current) }
   }, [gameState, gameLoop])
 
   useEffect(() => {
     const handleKey = (e) => {
-      if (gameState !== 'playing') return
-      const game = gameRef.current
-      if (e.key === 'ArrowUp' || e.key === 'w') game.pacman.dir = 'UP'
-      if (e.key === 'ArrowDown' || e.key === 's') game.pacman.dir = 'DOWN'
-      if (e.key === 'ArrowLeft' || e.key === 'a') game.pacman.dir = 'LEFT'
-      if (e.key === 'ArrowRight' || e.key === 'd') game.pacman.dir = 'RIGHT'
+      if (e.key === ' ' || e.key === 'Escape') {
+        e.preventDefault()
+        if (gameState === 'playing') setGameState('paused')
+        else if (gameState === 'paused') setGameState('playing')
+        return
+      }
+      if (!gameRef.current || gameState !== 'playing') return
+      const key = e.key.toLowerCase()
+      if (key === 'arrowup' || key === 'w') gameRef.current.pacman.nextDir = 'UP'
+      if (key === 'arrowdown' || key === 's') gameRef.current.pacman.nextDir = 'DOWN'
+      if (key === 'arrowleft' || key === 'a') gameRef.current.pacman.nextDir = 'LEFT'
+      if (key === 'arrowright' || key === 'd') gameRef.current.pacman.nextDir = 'RIGHT'
     }
     window.addEventListener('keydown', handleKey)
     return () => window.removeEventListener('keydown', handleKey)
@@ -499,15 +519,17 @@ const PacManGame = ({ onClose }) => {
     setTimeout(draw, 50)
   }
 
-  const handleControl = (dir) => {
-    if (gameState !== 'playing') return
-    gameRef.current.pacman.dir = dir
+  const togglePause = () => {
+    if (gameState === 'playing') setGameState('paused')
+    else if (gameState === 'paused') setGameState('playing')
   }
 
-  useEffect(() => {
-    initGame()
-    draw()
-  }, [initGame, draw])
+  const handleControl = (dir) => {
+    if (gameState !== 'playing' || !gameRef.current) return
+    gameRef.current.pacman.nextDir = dir
+  }
+
+  useEffect(() => { initGame(); draw() }, [initGame, draw])
 
   return (
     <div className="fixed inset-0 z-50 bg-black flex flex-col items-center justify-center p-4">
@@ -525,7 +547,35 @@ const PacManGame = ({ onClose }) => {
 
       <canvas ref={canvasRef} width={COLS * CELL} height={ROWS * CELL} className="border-2 border-blue-500 rounded" />
 
-      {/* D-Pad Controls */}
+      {/* Game Controls */}
+      <div className="flex gap-2 mt-3">
+        {gameState === 'ready' && (
+          <button onClick={startGame} className="px-6 py-2 rounded-xl bg-yellow-500 text-black font-bold flex items-center gap-2">
+            <Play className="w-5 h-5" /> Start
+          </button>
+        )}
+        {(gameState === 'playing' || gameState === 'paused') && (
+          <>
+            <button onClick={togglePause} className="px-4 py-2 rounded-xl bg-yellow-500 text-black font-bold flex items-center gap-2">
+              {gameState === 'playing' ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5" />}
+              {gameState === 'playing' ? 'Pause' : 'Resume'}
+            </button>
+            <button onClick={startGame} className="px-4 py-2 rounded-xl bg-gray-600 text-white font-bold flex items-center gap-2">
+              <RotateCcw className="w-5 h-5" /> Restart
+            </button>
+          </>
+        )}
+        {(gameState === 'over' || gameState === 'won') && (
+          <button onClick={startGame} className="px-6 py-2 rounded-xl bg-yellow-500 text-black font-bold flex items-center gap-2">
+            <RotateCcw className="w-5 h-5" /> Play Again
+          </button>
+        )}
+      </div>
+
+      {gameState === 'over' && <p className="text-red-400 text-lg mt-2">Game Over! Score: {score}</p>}
+      {gameState === 'won' && <p className="text-green-400 text-lg mt-2">🎉 You Won! Score: {score}</p>}
+
+      {/* D-Pad */}
       <div className="mt-4 grid grid-cols-3 gap-1 w-36">
         <div />
         <button onTouchStart={() => handleControl('UP')} onClick={() => handleControl('UP')}
@@ -533,9 +583,9 @@ const PacManGame = ({ onClose }) => {
         <div />
         <button onTouchStart={() => handleControl('LEFT')} onClick={() => handleControl('LEFT')}
           className="w-12 h-12 rounded-lg bg-yellow-600 flex items-center justify-center text-white text-2xl font-bold active:bg-yellow-500">◀</button>
-        <div className="w-12 h-12 rounded-lg bg-gray-800 flex items-center justify-center">
-          <div className="w-4 h-4 rounded-full bg-yellow-500" />
-        </div>
+        <button onClick={togglePause} className="w-12 h-12 rounded-lg bg-gray-700 flex items-center justify-center">
+          {gameState === 'playing' ? <Pause className="w-5 h-5 text-white" /> : <Play className="w-5 h-5 text-white" />}
+        </button>
         <button onTouchStart={() => handleControl('RIGHT')} onClick={() => handleControl('RIGHT')}
           className="w-12 h-12 rounded-lg bg-yellow-600 flex items-center justify-center text-white text-2xl font-bold active:bg-yellow-500">▶</button>
         <div />
@@ -543,28 +593,6 @@ const PacManGame = ({ onClose }) => {
           className="w-12 h-12 rounded-lg bg-yellow-600 flex items-center justify-center text-white text-2xl font-bold active:bg-yellow-500">▼</button>
         <div />
       </div>
-
-      {gameState === 'ready' && (
-        <button onClick={startGame} className="mt-4 px-8 py-3 rounded-xl bg-yellow-500 text-black font-bold text-lg">
-          Start Game
-        </button>
-      )}
-      {gameState === 'over' && (
-        <div className="mt-4 text-center">
-          <p className="text-red-400 text-xl mb-2">Game Over! Score: {score}</p>
-          <button onClick={startGame} className="px-8 py-3 rounded-xl bg-yellow-500 text-black font-bold text-lg">
-            Play Again
-          </button>
-        </div>
-      )}
-      {gameState === 'won' && (
-        <div className="mt-4 text-center">
-          <p className="text-green-400 text-xl mb-2">🎉 You Won! Score: {score}</p>
-          <button onClick={startGame} className="px-8 py-3 rounded-xl bg-yellow-500 text-black font-bold text-lg">
-            Play Again
-          </button>
-        </div>
-      )}
     </div>
   )
 }
@@ -578,9 +606,7 @@ const TicTacToe = ({ onClose }) => {
   const checkWinner = (squares) => {
     const lines = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]]
     for (const [a,b,c] of lines) {
-      if (squares[a] && squares[a] === squares[b] && squares[a] === squares[c]) {
-        return squares[a]
-      }
+      if (squares[a] && squares[a] === squares[b] && squares[a] === squares[c]) return squares[a]
     }
     return null
   }
@@ -594,12 +620,7 @@ const TicTacToe = ({ onClose }) => {
     setIsXNext(!isXNext)
   }
 
-  const reset = () => {
-    setBoard(Array(9).fill(null))
-    setIsXNext(true)
-    setWinner(null)
-  }
-
+  const reset = () => { setBoard(Array(9).fill(null)); setIsXNext(true); setWinner(null) }
   const isDraw = !winner && board.every(cell => cell)
 
   return (
@@ -610,11 +631,9 @@ const TicTacToe = ({ onClose }) => {
           <X className="w-6 h-6 text-white" />
         </button>
       </div>
-
       <div className="text-white mb-4 text-lg">
         {winner ? `Winner: ${winner}! 🎉` : isDraw ? "It's a Draw!" : `Next: ${isXNext ? 'X' : 'O'}`}
       </div>
-
       <div className="grid grid-cols-3 gap-2">
         {board.map((cell, i) => (
           <button key={i} onClick={() => handleClick(i)}
@@ -625,7 +644,6 @@ const TicTacToe = ({ onClose }) => {
           </button>
         ))}
       </div>
-
       {(winner || isDraw) && (
         <button onClick={reset} className="mt-6 px-8 py-3 rounded-xl bg-purple-500 text-white font-bold text-lg">
           Play Again
@@ -643,20 +661,15 @@ export default function GamesPage() {
 
   useEffect(() => {
     const storedUser = localStorage.getItem('lowkey_user')
-    if (!storedUser) {
-      router.push('/')
-      return
-    }
+    if (!storedUser) { router.push('/'); return }
     setUser(JSON.parse(storedUser))
     setLoading(false)
   }, [router])
 
   if (loading || !user) {
-    return (
-      <div className="min-h-screen bg-[#0a0a0f] flex items-center justify-center">
-        <div className="animate-pulse text-white">Loading...</div>
-      </div>
-    )
+    return <div className="min-h-screen bg-[#0a0a0f] flex items-center justify-center">
+      <div className="animate-pulse text-white">Loading...</div>
+    </div>
   }
 
   const games = [
@@ -673,7 +686,6 @@ export default function GamesPage() {
         </button>
         <h1 className="text-xl font-semibold text-white">Games</h1>
       </header>
-
       <div className="p-4 space-y-4">
         {games.map(game => (
           <button key={game.id} onClick={() => setActiveGame(game.id)}
@@ -690,7 +702,6 @@ export default function GamesPage() {
           </button>
         ))}
       </div>
-
       {activeGame === 'snake' && <SnakeGame onClose={() => setActiveGame(null)} />}
       {activeGame === 'pacman' && <PacManGame onClose={() => setActiveGame(null)} />}
       {activeGame === 'tictactoe' && <TicTacToe onClose={() => setActiveGame(null)} />}
