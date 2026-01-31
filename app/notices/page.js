@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { ArrowLeft, Bell, Check, Clock, Crown } from 'lucide-react'
+import { ArrowLeft, Bell, Check, Clock, Crown, Trash2 } from 'lucide-react'
 
 export default function NoticesPage() {
   const router = useRouter()
@@ -10,6 +10,8 @@ export default function NoticesPage() {
   const [notices, setNotices] = useState([])
   const [readNotices, setReadNotices] = useState([])
   const [loading, setLoading] = useState(true)
+
+  const isFounder = user?.email?.toLowerCase() === 'kinglowkey@hotmail.com'
 
   useEffect(() => {
     const storedUser = localStorage.getItem('lowkey_user')
@@ -37,11 +39,13 @@ export default function NoticesPage() {
   }
 
   const fetchReadStatus = async (userId) => {
-    // Get unread count to determine which are read
+    // Get all reads for this user
     try {
-      const res = await fetch(`/api/notices/unread/${userId}`)
+      const res = await fetch('/api/notices')
       if (res.ok) {
-        // We'll track read status locally after marking
+        const allNotices = await res.json()
+        // Mark all notices as we will check them one by one from server
+        // For now we check locally based on what user clicks
       }
     } catch (err) {
       console.error('Failed to fetch read status')
@@ -60,6 +64,42 @@ export default function NoticesPage() {
       setReadNotices([...readNotices, noticeId])
     } catch (err) {
       console.error('Failed to mark as read')
+    }
+  }
+
+  const markAllAsRead = async () => {
+    const unreadNotices = notices.filter(n => !readNotices.includes(n.id))
+    for (const notice of unreadNotices) {
+      try {
+        await fetch('/api/notices/read', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ userId: user.id, noticeId: notice.id })
+        })
+      } catch (err) {
+        console.error('Failed to mark as read')
+      }
+    }
+    setReadNotices(notices.map(n => n.id))
+  }
+
+  const deleteNotice = async (noticeId, e) => {
+    e.stopPropagation()
+    if (!isFounder) return
+    
+    if (!confirm('Are you sure you want to delete this notice?')) return
+    
+    try {
+      const res = await fetch(`/api/notices/${noticeId}`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ founderId: user.id })
+      })
+      if (res.ok) {
+        setNotices(notices.filter(n => n.id !== noticeId))
+      }
+    } catch (err) {
+      console.error('Failed to delete notice')
     }
   }
 
