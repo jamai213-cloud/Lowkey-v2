@@ -234,6 +234,7 @@ const PacManGame = ({ onClose }) => {
     if (gameState !== 'playing') return
 
     const handleKey = (e) => {
+      e.preventDefault()
       setPosition(prev => {
         let newPos = { ...prev }
         if (e.key === 'ArrowUp' && prev.y > 0) newPos.y--
@@ -276,8 +277,9 @@ const PacManGame = ({ onClose }) => {
     setGameState('playing')
   }
 
-  // Touch controls
+  // Touch controls - lower threshold
   const handleTouchStart = (e) => {
+    e.preventDefault()
     setTouchStart({ x: e.touches[0].clientX, y: e.touches[0].clientY })
   }
 
@@ -287,11 +289,11 @@ const PacManGame = ({ onClose }) => {
     const dy = e.changedTouches[0].clientY - touchStart.y
     
     if (Math.abs(dx) > Math.abs(dy)) {
-      if (dx > 20) movePlayer('RIGHT')
-      else if (dx < -20) movePlayer('LEFT')
+      if (dx > 15) movePlayer('RIGHT')
+      else if (dx < -15) movePlayer('LEFT')
     } else {
-      if (dy > 20) movePlayer('DOWN')
-      else if (dy < -20) movePlayer('UP')
+      if (dy > 15) movePlayer('DOWN')
+      else if (dy < -15) movePlayer('UP')
     }
     setTouchStart(null)
   }
@@ -316,13 +318,14 @@ const PacManGame = ({ onClose }) => {
         </button>
       </div>
 
-      <div className="text-white mb-2">Score: {score} | Dots: {dots.length}</div>
+      <div className="text-white mb-2 text-lg font-bold">Score: {score} | Dots: {dots.length}</div>
 
       <div 
-        className="border-2 border-blue-500/50 rounded-lg overflow-hidden"
+        className="border-2 border-yellow-500/50 rounded-lg overflow-hidden touch-none"
         style={{ width: gridSize * 15, height: gridSize * 15 }}
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
+        onTouchMove={(e) => e.preventDefault()}
       >
         <div className="relative w-full h-full bg-gray-900">
           {dots.map((dot, i) => (
@@ -349,35 +352,62 @@ const PacManGame = ({ onClose }) => {
         </div>
       </div>
 
-      {/* Touch Controls */}
+      {/* D-Pad Controls - Always visible when playing, bigger buttons */}
       {gameState === 'playing' && (
-        <div className="mt-4 grid grid-cols-3 gap-2 w-36">
-          <div />
-          <button onClick={() => movePlayer('UP')} className="w-10 h-10 rounded-lg bg-white/20 flex items-center justify-center text-white text-xl">↑</button>
-          <div />
-          <button onClick={() => movePlayer('LEFT')} className="w-10 h-10 rounded-lg bg-white/20 flex items-center justify-center text-white text-xl">←</button>
-          <div />
-          <button onClick={() => movePlayer('RIGHT')} className="w-10 h-10 rounded-lg bg-white/20 flex items-center justify-center text-white text-xl">→</button>
-          <div />
-          <button onClick={() => movePlayer('DOWN')} className="w-10 h-10 rounded-lg bg-white/20 flex items-center justify-center text-white text-xl">↓</button>
-          <div />
+        <div className="mt-6 relative w-44 h-44">
+          {/* Up */}
+          <button 
+            onTouchStart={(e) => { e.preventDefault(); movePlayer('UP'); }}
+            onClick={() => movePlayer('UP')} 
+            className="absolute top-0 left-1/2 -translate-x-1/2 w-14 h-14 rounded-xl bg-yellow-500/30 border-2 border-yellow-500/50 flex items-center justify-center text-white text-2xl font-bold active:bg-yellow-500/60 active:scale-95 transition-all"
+          >
+            ▲
+          </button>
+          {/* Down */}
+          <button 
+            onTouchStart={(e) => { e.preventDefault(); movePlayer('DOWN'); }}
+            onClick={() => movePlayer('DOWN')} 
+            className="absolute bottom-0 left-1/2 -translate-x-1/2 w-14 h-14 rounded-xl bg-yellow-500/30 border-2 border-yellow-500/50 flex items-center justify-center text-white text-2xl font-bold active:bg-yellow-500/60 active:scale-95 transition-all"
+          >
+            ▼
+          </button>
+          {/* Left */}
+          <button 
+            onTouchStart={(e) => { e.preventDefault(); movePlayer('LEFT'); }}
+            onClick={() => movePlayer('LEFT')} 
+            className="absolute left-0 top-1/2 -translate-y-1/2 w-14 h-14 rounded-xl bg-yellow-500/30 border-2 border-yellow-500/50 flex items-center justify-center text-white text-2xl font-bold active:bg-yellow-500/60 active:scale-95 transition-all"
+          >
+            ◀
+          </button>
+          {/* Right */}
+          <button 
+            onTouchStart={(e) => { e.preventDefault(); movePlayer('RIGHT'); }}
+            onClick={() => movePlayer('RIGHT')} 
+            className="absolute right-0 top-1/2 -translate-y-1/2 w-14 h-14 rounded-xl bg-yellow-500/30 border-2 border-yellow-500/50 flex items-center justify-center text-white text-2xl font-bold active:bg-yellow-500/60 active:scale-95 transition-all"
+          >
+            ▶
+          </button>
+          {/* Center indicator */}
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/10 flex items-center justify-center">
+            <div className="w-4 h-4 rounded-full bg-yellow-500/50" />
+          </div>
         </div>
       )}
 
       {gameState === 'ready' && (
-        <button onClick={startGame} className="mt-4 px-6 py-3 rounded-xl bg-yellow-500 text-black font-semibold">
+        <button onClick={startGame} className="mt-6 px-8 py-4 rounded-xl bg-yellow-500 text-black font-bold text-lg shadow-lg shadow-yellow-500/30">
           Start Game
         </button>
       )}
       {gameState === 'won' && (
-        <div className="mt-4 text-center">
-          <p className="text-green-400 mb-2">You Won! Score: {score}</p>
-          <button onClick={startGame} className="px-6 py-3 rounded-xl bg-yellow-500 text-black font-semibold">
+        <div className="mt-6 text-center">
+          <p className="text-green-400 text-xl mb-3">You Won! Score: {score}</p>
+          <button onClick={startGame} className="px-8 py-4 rounded-xl bg-yellow-500 text-black font-bold text-lg shadow-lg shadow-yellow-500/30">
             Play Again
           </button>
         </div>
       )}
-      <p className="text-gray-400 text-sm mt-4">Swipe or use controls to move</p>
+      <p className="text-gray-400 text-sm mt-4">Tap arrows or swipe on game area to move</p>
     </div>
   )
 }
