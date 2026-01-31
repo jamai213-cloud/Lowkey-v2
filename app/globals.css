@@ -21,6 +21,11 @@ html {
   max-width: 100vw;
 }
 
+/* Prevent horizontal pan/drag on touch devices */
+* {
+  touch-action: pan-y pinch-zoom;
+}
+
 :root {
   --lowkey-purple: #9333ea;
   --lowkey-gold: #f59e0b;
