@@ -69,12 +69,28 @@ export default function ProfilePage() {
       fetchEarnings(userData.id)
     }
     
+    fetchUserProfile(userData.id)
     fetchGallery(userData.id)
     fetchStories(userData.id)
     fetchSkins(userData.id)
     checkFounder(userData.id)
     setLoading(false)
   }, [])
+
+  const fetchUserProfile = async (userId) => {
+    try {
+      const res = await fetch(`/api/users/${userId}`)
+      if (res.ok) {
+        const data = await res.json()
+        // Update user with fresh data from server including avatar
+        const updatedUser = { ...user, ...data }
+        setUser(updatedUser)
+        localStorage.setItem('lowkey_user', JSON.stringify(updatedUser))
+      }
+    } catch (err) {
+      console.error('Failed to fetch user profile:', err)
+    }
+  }
 
   const checkFounder = async (userId) => {
     try {
