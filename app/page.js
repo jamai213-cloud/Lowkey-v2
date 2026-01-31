@@ -614,6 +614,7 @@ const HomePage = ({ user, onLogout, setUser }) => {
   const [showLockModal, setShowLockModal] = useState(false)
   const [showOnboarding, setShowOnboarding] = useState(false)
   const [showAfterDarkDisclaimer, setShowAfterDarkDisclaimer] = useState(false)
+  const [showLoungeInfo, setShowLoungeInfo] = useState(false)
   const [notifications, setNotifications] = useState([])
   const [showNotifications, setShowNotifications] = useState(false)
   const [noticeUnreadCount, setNoticeUnreadCount] = useState(0)
@@ -655,6 +656,27 @@ const HomePage = ({ user, onLogout, setUser }) => {
     localStorage.setItem(key, 'true')
     setShowAfterDarkDisclaimer(false)
     router.push('/afterdark')
+  }
+
+  // Check if user has seen lounge info (show once as intro, not blocking)
+  const hasSeenLoungeInfo = () => {
+    const key = `lowkey_lounge_info_${user.id}`
+    return localStorage.getItem(key) === 'true'
+  }
+
+  // Enter lounge and mark info as seen
+  const enterLounge = () => {
+    const key = `lowkey_lounge_info_${user.id}`
+    localStorage.setItem(key, 'true')
+    setShowLoungeInfo(false)
+    router.push('/lounge')
+  }
+
+  // Close lounge info without entering
+  const closeLoungeInfo = () => {
+    const key = `lowkey_lounge_info_${user.id}`
+    localStorage.setItem(key, 'true')
+    setShowLoungeInfo(false)
   }
 
   const fetchNotifications = async () => {
