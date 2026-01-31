@@ -299,6 +299,7 @@ export default function ProfilePage() {
   const currentSkin = PROFILE_SKINS.find(s => s.id === (user.currentSkin || 'default')) || PROFILE_SKINS[0]
   const tierInfo = VERIFICATION_TIERS[user.verificationTier || 'new']
   const TierIcon = tierInfo.icon
+  const isOwnProfile = true // This page always shows the current user's profile
 
   return (
     <div className="min-h-screen" style={{ background: `linear-gradient(180deg, ${currentSkin.colors[0]}, ${currentSkin.colors[1]})` }}>
