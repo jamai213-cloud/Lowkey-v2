@@ -522,9 +522,9 @@ const HomePage = ({ user, onLogout, setUser }) => {
                     <Lock className="w-5 h-5 text-gray-400" />
                   </div>
                 )}
-                {tile.id === 'notices' && unreadCount > 0 && (
+                {tile.id === 'notices' && noticeUnreadCount > 0 && (
                   <div className="absolute top-2 right-2 w-5 h-5 rounded-full bg-red-500 flex items-center justify-center">
-                    <span className="text-white text-xs font-bold">{unreadCount}</span>
+                    <span className="text-white text-xs font-bold">{noticeUnreadCount}</span>
                   </div>
                 )}
               </button>
