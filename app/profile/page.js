@@ -504,25 +504,74 @@ export default function ProfilePage() {
         )}
       </div>
 
+      {/* Hidden file inputs for gallery access */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*,video/*"
+        onChange={(e) => handleFileSelect(e, false)}
+        className="hidden"
+      />
+      <input
+        ref={profilePicInputRef}
+        type="file"
+        accept="image/*"
+        onChange={(e) => handleFileSelect(e, true)}
+        className="hidden"
+      />
+
       {/* Upload Modal */}
       {showUpload && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm" onClick={() => setShowUpload(false)}>
           <div className="bg-[#1a1a2e] rounded-2xl p-6 max-w-sm mx-4 w-full" onClick={e => e.stopPropagation()}>
             <h2 className="text-xl text-white font-semibold mb-4">Add to Gallery</h2>
             <div className="space-y-4">
-              <div className="flex gap-2">
-                <button onClick={() => setUploadData({ ...uploadData, type: 'photo' })} className={`flex-1 py-2 rounded-lg text-sm ${uploadData.type === 'photo' ? 'bg-amber-500 text-black' : 'bg-white/10 text-white'}`}>
-                  <Image className="w-4 h-4 inline mr-1" /> Photo
+              {/* Preview */}
+              {uploadData.preview ? (
+                <div className="relative">
+                  {uploadData.type === 'video' ? (
+                    <video src={uploadData.preview} className="w-full h-48 object-cover rounded-xl" controls />
+                  ) : (
+                    <img src={uploadData.preview} alt="Preview" className="w-full h-48 object-cover rounded-xl" />
+                  )}
+                  <button 
+                    onClick={() => setUploadData({ ...uploadData, file: null, preview: null })}
+                    className="absolute top-2 right-2 p-1 rounded-full bg-black/60 text-white"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+              ) : (
+                <button 
+                  onClick={() => fileInputRef.current?.click()}
+                  className="w-full h-48 rounded-xl border-2 border-dashed border-white/20 flex flex-col items-center justify-center gap-3 hover:border-amber-500/50 hover:bg-white/5 transition-colors"
+                >
+                  <Upload className="w-10 h-10 text-gray-400" />
+                  <span className="text-gray-400">Tap to select from gallery</span>
+                  <span className="text-gray-500 text-sm">Photos or videos</span>
                 </button>
-                <button onClick={() => setUploadData({ ...uploadData, type: 'video' })} className={`flex-1 py-2 rounded-lg text-sm ${uploadData.type === 'video' ? 'bg-amber-500 text-black' : 'bg-white/10 text-white'}`}>
-                  <Video className="w-4 h-4 inline mr-1" /> Video
-                </button>
-              </div>
-              <input type="url" value={uploadData.url} onChange={e => setUploadData({ ...uploadData, url: e.target.value })} placeholder="Media URL" className="w-full px-4 py-3 rounded-xl bg-black/40 border border-white/10 text-white placeholder-gray-500" />
-              <input type="text" value={uploadData.caption} onChange={e => setUploadData({ ...uploadData, caption: e.target.value })} placeholder="Caption (optional)" className="w-full px-4 py-3 rounded-xl bg-black/40 border border-white/10 text-white placeholder-gray-500" />
+              )}
+              
+              <input 
+                type="text" 
+                value={uploadData.caption} 
+                onChange={e => setUploadData({ ...uploadData, caption: e.target.value })} 
+                placeholder="Caption (optional)" 
+                className="w-full px-4 py-3 rounded-xl bg-black/40 border border-white/10 text-white placeholder-gray-500" 
+              />
+              
               <div className="flex gap-3">
-                <button onClick={() => setShowUpload(false)} className="flex-1 py-3 rounded-xl bg-white/10 text-white">Cancel</button>
-                <button onClick={uploadToGallery} className="flex-1 py-3 rounded-xl bg-amber-500 text-black font-semibold">Upload</button>
+                <button onClick={() => { setShowUpload(false); setUploadData({ type: 'photo', file: null, caption: '', preview: null }) }} className="flex-1 py-3 rounded-xl bg-white/10 text-white">
+                  Cancel
+                </button>
+                <button 
+                  onClick={uploadToGallery} 
+                  disabled={!uploadData.file || uploading}
+                  className="flex-1 py-3 rounded-xl bg-amber-500 text-black font-semibold disabled:opacity-50 flex items-center justify-center gap-2"
+                >
+                  {uploading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Upload className="w-5 h-5" />}
+                  {uploading ? 'Uploading...' : 'Upload'}
+                </button>
               </div>
             </div>
           </div>
