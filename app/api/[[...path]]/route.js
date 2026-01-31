@@ -162,8 +162,13 @@ async function handleRoute(request, { params }) {
       
       // Clean user data and remove large base64 images to reduce response size
       const cleanedUser = cleanMongoDoc(user)
+      
+      // Remove all base64 images to keep response small
+      if (cleanedUser.profilePicture?.startsWith('data:image')) {
+        cleanedUser.hasProfilePicture = true
+        delete cleanedUser.profilePicture
+      }
       if (cleanedUser.profileDetails?.profilePicture?.startsWith('data:image')) {
-        // Keep a flag that they have a profile picture, but don't send the full base64
         cleanedUser.hasProfilePicture = true
         delete cleanedUser.profileDetails.profilePicture
       }
