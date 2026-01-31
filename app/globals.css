@@ -348,13 +348,6 @@ body {
   }
 }
 
-/* Remove old header-logo styles if any conflict */
-.header-logo {
-  max-height: none;
-  width: auto;
-  height: auto;
-}
-
 /* Notification badge */
 .notification-badge {
   position: absolute;
