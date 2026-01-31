@@ -91,63 +91,110 @@ const OnboardingSlide = ({ isOpen, onDismiss }) => {
   if (!isOpen) return null
   
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/95 p-4">
-      <div className="max-w-md w-full">
+    <div className="fixed inset-0 z-50 bg-[#0a0a0f] overflow-y-auto">
+      {/* Animated Background - same as app */}
+      <div className="animated-bg">
+        <div className="blob blob-1" />
+        <div className="blob blob-2" />
+        <div className="blob blob-3" />
+        <div className="blob blob-4" />
+        <div className="blob blob-5" />
+        <div className="blob blob-6" />
+        <div className="noise-overlay" />
+      </div>
+      
+      <div className="relative z-10 min-h-screen flex flex-col p-6 pb-24">
         {/* Header */}
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-white mb-2">Welcome to LowKey</h1>
-          <p className="text-gray-400">A different kind of dating space</p>
+        <div className="text-center mb-8 pt-8">
+          <h1 className="text-3xl font-bold text-white mb-3">Welcome to LowKey</h1>
+          <p className="text-amber-400 text-lg font-medium">More than dating. A private, multi-dimensional world.</p>
+        </div>
+        
+        {/* Intro */}
+        <div className="mb-8">
+          <p className="text-gray-300 text-sm leading-relaxed mb-4">
+            Lowkey is a curated digital space where connection, creativity, and nightlife culture exist together — intentionally.
+          </p>
+          <p className="text-gray-400 text-sm italic">
+            This isn't just about matching profiles.<br />
+            It's about <span className="text-white">how</span> and <span className="text-white">where</span> you connect.
+          </p>
         </div>
         
         {/* What We Offer */}
-        <div className="mb-6">
-          <h2 className="text-amber-400 text-sm font-semibold uppercase tracking-wider mb-3">What We Offer</h2>
-          <ul className="space-y-2 text-gray-300 text-sm">
-            <li className="flex items-start gap-2">
+        <div className="glass-card rounded-2xl p-5 mb-6 border border-white/10">
+          <h2 className="text-amber-400 text-sm font-semibold uppercase tracking-wider mb-4">What Lowkey Offers</h2>
+          <p className="text-gray-400 text-xs mb-4">A multi-layered experience designed for different moods, moments, and levels of expression:</p>
+          <ul className="space-y-3 text-gray-300 text-sm">
+            <li className="flex items-start gap-3">
               <span className="text-amber-400 mt-0.5">•</span>
-              <span>A curated, intentional dating experience</span>
+              <span><span className="text-white">Main Lounges</span> for open conversation, community, and discovery</span>
             </li>
-            <li className="flex items-start gap-2">
-              <span className="text-amber-400 mt-0.5">•</span>
-              <span>Fewer profiles, higher-quality interactions</span>
+            <li className="flex items-start gap-3">
+              <span className="text-purple-400 mt-0.5">•</span>
+              <span><span className="text-white">After Dark spaces</span> that prioritise privacy, discretion, and anonymity</span>
             </li>
-            <li className="flex items-start gap-2">
-              <span className="text-amber-400 mt-0.5">•</span>
-              <span>A calm, respectful space for real connections</span>
+            <li className="flex items-start gap-3">
+              <span className="text-pink-400 mt-0.5">•</span>
+              <span><span className="text-white">Live radio & music rooms</span> to vibe, listen, and connect in real time</span>
+            </li>
+            <li className="flex items-start gap-3">
+              <span className="text-blue-400 mt-0.5">•</span>
+              <span><span className="text-white">Content creation spaces</span> to host, share, and build your presence</span>
+            </li>
+            <li className="flex items-start gap-3">
+              <span className="text-green-400 mt-0.5">•</span>
+              <span>A calm, intentional environment designed around <span className="text-white">safety and respect</span></span>
             </li>
           </ul>
+          <p className="text-gray-400 text-xs mt-4 italic">
+            Whether you're here to talk, listen, create, or explore — there's a space for it.
+          </p>
         </div>
         
         {/* What We Expect */}
-        <div className="mb-8">
-          <h2 className="text-purple-400 text-sm font-semibold uppercase tracking-wider mb-3">What We Expect</h2>
+        <div className="glass-card rounded-2xl p-5 mb-6 border border-white/10">
+          <h2 className="text-purple-400 text-sm font-semibold uppercase tracking-wider mb-4">What Lowkey Expects</h2>
+          <p className="text-gray-400 text-xs mb-4">To protect the experience and the people in it, Lowkey expects:</p>
           <ul className="space-y-2 text-gray-300 text-sm">
-            <li className="flex items-start gap-2">
+            <li className="flex items-start gap-3">
               <span className="text-purple-400 mt-0.5">•</span>
               <span>A real display photo</span>
             </li>
-            <li className="flex items-start gap-2">
+            <li className="flex items-start gap-3">
               <span className="text-purple-400 mt-0.5">•</span>
               <span>Honest profile information</span>
             </li>
-            <li className="flex items-start gap-2">
+            <li className="flex items-start gap-3">
               <span className="text-purple-400 mt-0.5">•</span>
-              <span>Respectful behaviour</span>
+              <span>Respectful behaviour at all times</span>
             </li>
-            <li className="flex items-start gap-2">
+            <li className="flex items-start gap-3">
               <span className="text-purple-400 mt-0.5">•</span>
-              <span>Patience during verification — some features unlock after approval</span>
+              <span>Patience during verification — some spaces unlock after approval</span>
             </li>
           </ul>
+          <p className="text-gray-500 text-xs mt-4">
+            Not everyone is accepted.<br />
+            <span className="text-gray-400">That's how Lowkey stays intentional, safe, and worth being part of.</span>
+          </p>
         </div>
         
-        {/* Continue Button */}
-        <button 
-          onClick={onDismiss}
-          className="w-full py-3.5 rounded-xl bg-white text-black font-semibold hover:bg-gray-100 transition-colors"
-        >
-          Continue
-        </button>
+        {/* Closing */}
+        <div className="text-center mb-8">
+          <p className="text-white font-medium">Lowkey isn't for everyone.</p>
+          <p className="text-amber-400 text-sm mt-1">It's for people who want more than surface-level connection.</p>
+        </div>
+        
+        {/* Continue Button - Fixed at bottom */}
+        <div className="mt-auto">
+          <button 
+            onClick={onDismiss}
+            className="w-full py-4 rounded-xl bg-gradient-to-r from-amber-400 to-yellow-500 text-black font-semibold hover:opacity-90 transition-opacity"
+          >
+            Continue
+          </button>
+        </div>
       </div>
     </div>
   )
