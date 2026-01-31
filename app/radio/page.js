@@ -11,8 +11,12 @@ export default function RadioPage() {
   const [stations, setStations] = useState([])
   const [loading, setLoading] = useState(true)
   
-  // Use global radio context
-  const { currentStation, isPlaying, volume, setVolume, playStation } = useRadio()
+  // Use global radio context for persistent playback
+  const { currentStation, isPlaying, volume, setVolume, playStation: contextPlayStation } = useRadio()
+  
+  // Local state for volume slider (0-100 for UI, converted to 0-1 for context)
+  const [localVolume, setLocalVolume] = useState(volume * 100)
+  const [muted, setMuted] = useState(volume === 0)
 
   useEffect(() => {
     const storedUser = localStorage.getItem('lowkey_user')
@@ -23,7 +27,29 @@ export default function RadioPage() {
     const userData = JSON.parse(storedUser)
     setUser(userData)
     fetchStations()
-  }, [router])
+  }, [])
+
+  // Sync local volume with context
+  useEffect(() => {
+    setLocalVolume(volume * 100)
+    setMuted(volume === 0)
+  }, [volume])
+
+  const handleVolumeChange = (value) => {
+    setLocalVolume(value)
+    setVolume(value / 100)
+    if (value > 0) setMuted(false)
+  }
+
+  const handleMuteToggle = () => {
+    if (muted) {
+      setVolume(0.8)
+      setMuted(false)
+    } else {
+      setVolume(0)
+      setMuted(true)
+    }
+  }
 
   const fetchStations = async () => {
     try {
@@ -38,12 +64,12 @@ export default function RadioPage() {
     setLoading(false)
   }
 
-  const handlePlayStation = async (station) => {
-    // Use global context to play
-    playStation(station)
+  const playStation = async (station) => {
+    // Use the global context to play/pause
+    contextPlayStation(station)
 
     // Save to history
-    if (user) {
+    if (user && (!currentStation || currentStation.id !== station.id)) {
       try {
         await fetch('/api/radio/history', {
           method: 'POST',
@@ -60,7 +86,12 @@ export default function RadioPage() {
     }
   }
 
-  if (loading || !user) {
+  // Check if a station is currently playing
+  const isStationPlaying = (stationId) => {
+    return currentStation?.id === stationId && isPlaying
+  }
+
+  if (loading) {
     return (
       <div className="min-h-screen bg-[#0a0a0f] flex items-center justify-center">
         <div className="animate-pulse text-white">Loading...</div>
@@ -69,122 +100,174 @@ export default function RadioPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f] pb-24">
+    <div className="min-h-screen bg-[#0a0a0f] pb-32">
       {/* Header */}
-      <header className="flex items-center gap-3 p-4 border-b border-white/10">
-        <button onClick={() => router.push('/')} className="p-2 rounded-full hover:bg-white/10">
-          <ArrowLeft className="w-5 h-5 text-white" />
-        </button>
-        <h1 className="text-xl font-semibold text-white">Radio</h1>
-        {currentStation && isPlaying && (
-          <div className="ml-auto flex items-center gap-2 px-3 py-1 rounded-full bg-red-500/20">
-            <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
-            <span className="text-red-400 text-xs font-medium">LIVE</span>
+      <header className="sticky top-0 z-20 bg-[#0a0a0f]/95 backdrop-blur-lg border-b border-white/10">
+        <div className="flex items-center justify-between p-4">
+          <div className="flex items-center gap-3">
+            <button onClick={() => router.push('/')} className="p-2 rounded-full hover:bg-white/10">
+              <ArrowLeft className="w-5 h-5 text-white" />
+            </button>
+            <h1 className="text-xl font-semibold text-white">Radio</h1>
           </div>
-        )}
-      </header>
-
-      {/* Volume Control */}
-      <div className="p-4 border-b border-white/10">
-        <div className="flex items-center gap-3">
-          <button 
-            onClick={() => setVolume(volume === 0 ? 0.8 : 0)}
-            className="p-2 rounded-full hover:bg-white/10"
-          >
-            {volume === 0 ? (
-              <VolumeX className="w-5 h-5 text-gray-400" />
-            ) : (
-              <Volume2 className="w-5 h-5 text-white" />
-            )}
-          </button>
-          <input
-            type="range"
-            min="0"
-            max="1"
-            step="0.1"
-            value={volume}
-            onChange={(e) => setVolume(parseFloat(e.target.value))}
-            className="flex-1 h-2 rounded-full appearance-none bg-white/20 accent-purple-500"
-          />
-          <span className="text-white/60 text-sm w-10">{Math.round(volume * 100)}%</span>
+          
+          {/* Volume Control */}
+          <div className="flex items-center gap-2">
+            <button 
+              onClick={handleMuteToggle}
+              className="p-2 rounded-full hover:bg-white/10"
+            >
+              {muted ? (
+                <VolumeX className="w-5 h-5 text-gray-400" />
+              ) : (
+                <Volume2 className="w-5 h-5 text-white" />
+              )}
+            </button>
+            <input
+              type="range"
+              min="0"
+              max="100"
+              value={localVolume}
+              onChange={(e) => handleVolumeChange(parseInt(e.target.value))}
+              className="w-20 h-1 bg-white/20 rounded-full appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-amber-400"
+            />
+          </div>
         </div>
-      </div>
+      </header>
 
       {/* Now Playing */}
       {currentStation && (
-        <div className="p-4 bg-gradient-to-r from-purple-900/30 to-pink-900/30 border-b border-white/10">
-          <div className="flex items-center gap-4">
-            <div 
-              className="w-16 h-16 rounded-xl flex items-center justify-center"
-              style={{ backgroundColor: currentStation.color }}
-            >
-              <RadioIcon className="w-8 h-8 text-white" />
+        <div className="p-4">
+          <div 
+            className="p-4 rounded-2xl border-2 transition-all"
+            style={{ 
+              background: `linear-gradient(135deg, ${currentStation.color}30, ${currentStation.color}10)`,
+              borderColor: `${currentStation.color}60`
+            }}
+          >
+            <div className="flex items-center gap-4">
+              {/* Radio Dial Indicator */}
+              <div 
+                className="w-20 h-20 rounded-full flex items-center justify-center relative"
+                style={{ 
+                  background: `conic-gradient(from 0deg, ${currentStation.color}, ${currentStation.color}40, ${currentStation.color})`,
+                  boxShadow: `0 0 30px ${currentStation.color}50`
+                }}
+              >
+                <div className="w-16 h-16 rounded-full bg-[#0a0a0f] flex flex-col items-center justify-center">
+                  <span className="text-white font-bold text-lg">{currentStation.frequency}</span>
+                  <span className="text-gray-400 text-xs">FM</span>
+                </div>
+                {isPlaying && (
+                  <div className="absolute w-full h-full rounded-full animate-ping opacity-20" style={{ backgroundColor: currentStation.color }} />
+                )}
+              </div>
+              
+              <div className="flex-1">
+                <p className="text-gray-400 text-sm">{isPlaying ? 'Now Playing' : 'Paused'}</p>
+                <h2 className="text-white text-xl font-bold">{currentStation.name}</h2>
+                <p className="text-gray-400 text-sm">{currentStation.genre}</p>
+              </div>
+              
+              <button 
+                onClick={() => playStation(currentStation)}
+                className="p-4 rounded-full text-black"
+                style={{ backgroundColor: currentStation.color }}
+              >
+                {isPlaying ? (
+                  <Pause className="w-6 h-6" />
+                ) : (
+                  <Play className="w-6 h-6 ml-0.5" />
+                )}
+              </button>
             </div>
-            <div className="flex-1">
-              <p className="text-white font-semibold text-lg">{currentStation.name}</p>
-              <p className="text-white/60 text-sm">{currentStation.genre}</p>
-              <p className="text-purple-400 text-xs mt-1">{currentStation.frequency}</p>
-            </div>
-            <button 
-              onClick={() => playStation(currentStation)}
-              className="w-14 h-14 rounded-full bg-white flex items-center justify-center"
-            >
-              {isPlaying ? (
-                <Pause className="w-7 h-7 text-purple-900" />
-              ) : (
-                <Play className="w-7 h-7 text-purple-900 ml-1" />
-              )}
-            </button>
           </div>
         </div>
       )}
 
-      {/* Info Banner */}
+      {/* Station Grid - Tile Design */}
       <div className="p-4">
-        <div className="p-3 rounded-xl bg-purple-500/10 border border-purple-500/20 mb-4">
-          <p className="text-purple-200 text-sm text-center">
-            🎧 Radio continues playing as you navigate the app!
-          </p>
-        </div>
-      </div>
-
-      {/* Stations Grid */}
-      <div className="p-4">
-        <h2 className="text-white font-semibold mb-4">UK Stations</h2>
+        <h2 className="text-white font-semibold mb-4">UK Urban Stations</h2>
         <div className="grid grid-cols-2 gap-3">
-          {stations.map(station => {
-            const isCurrentPlaying = currentStation?.id === station.id && isPlaying
-            
+          {stations.map((station) => {
+            const playing = isStationPlaying(station.id)
             return (
               <button
                 key={station.id}
-                onClick={() => handlePlayStation(station)}
-                className={`p-4 rounded-2xl border transition-all ${
-                  isCurrentPlaying 
-                    ? 'bg-white/10 border-purple-500/50 ring-2 ring-purple-500/30' 
-                    : 'bg-white/5 border-white/10 hover:bg-white/10'
+                onClick={() => playStation(station)}
+                className={`relative aspect-square rounded-2xl overflow-hidden transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] ${
+                  playing ? 'ring-2' : ''
                 }`}
+                style={{
+                  background: `linear-gradient(135deg, ${station.color}20, ${station.color}08)`,
+                  border: `1px solid ${station.color}40`,
+                  boxShadow: playing ? `0 0 20px ${station.color}40` : `0 4px 20px ${station.color}10`,
+                  ringColor: station.color
+                }}
               >
-                <div 
-                  className="w-12 h-12 rounded-xl flex items-center justify-center mx-auto mb-3"
-                  style={{ backgroundColor: station.color }}
-                >
-                  {isCurrentPlaying ? (
-                    <div className="flex items-center gap-0.5">
-                      <span className="w-1 h-4 bg-white rounded-full animate-pulse" />
-                      <span className="w-1 h-6 bg-white rounded-full animate-pulse delay-75" />
-                      <span className="w-1 h-3 bg-white rounded-full animate-pulse delay-150" />
+                {/* Radio Dial Design */}
+                <div className="absolute inset-0 flex flex-col items-center justify-center p-3">
+                  {/* Dial Circle */}
+                  <div 
+                    className={`w-16 h-16 rounded-full flex items-center justify-center mb-2 ${
+                      playing ? 'animate-pulse' : ''
+                    }`}
+                    style={{ 
+                      background: `radial-gradient(circle, ${station.color}40, ${station.color}15)`,
+                      border: `2px solid ${station.color}60`
+                    }}
+                  >
+                    <div className="w-12 h-12 rounded-full bg-[#0a0a0f]/80 flex flex-col items-center justify-center">
+                      <span className="text-white font-bold text-sm">{station.frequency}</span>
+                      <span className="text-gray-500 text-[10px]">FM</span>
                     </div>
+                  </div>
+                  
+                  {/* Station Name */}
+                  <h3 className="text-white text-sm font-semibold text-center leading-tight">{station.name}</h3>
+                  <p className="text-gray-400 text-xs text-center">{station.genre}</p>
+                </div>
+                
+                {/* Play/Pause Overlay */}
+                <div 
+                  className={`absolute bottom-2 right-2 w-8 h-8 rounded-full flex items-center justify-center transition-all ${
+                    playing ? 'opacity-100' : 'opacity-70'
+                  }`}
+                  style={{ backgroundColor: playing ? station.color : 'rgba(255,255,255,0.1)' }}
+                >
+                  {playing ? (
+                    <Pause className="w-4 h-4 text-black" />
                   ) : (
-                    <RadioIcon className="w-6 h-6 text-white" />
+                    <Play className="w-4 h-4 text-white" />
                   )}
                 </div>
-                <p className="text-white font-medium text-sm truncate">{station.name}</p>
-                <p className="text-gray-400 text-xs truncate">{station.genre}</p>
-                <p className="text-purple-400 text-xs mt-1">{station.frequency}</p>
+
+                {/* Live Indicator */}
+                {playing && (
+                  <div className="absolute top-2 left-2 flex items-center gap-1.5 px-2 py-1 rounded-full bg-red-500/80">
+                    <div className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
+                    <span className="text-white text-[10px] font-bold">LIVE</span>
+                  </div>
+                )}
               </button>
             )
           })}
+        </div>
+      </div>
+
+      {/* Radio Info */}
+      <div className="p-4">
+        <div className="p-4 rounded-xl bg-white/5 border border-white/10">
+          <div className="flex items-center gap-3 mb-2">
+            <RadioIcon className="w-5 h-5 text-amber-400" />
+            <h3 className="text-white font-semibold">About Radio</h3>
+          </div>
+          <p className="text-gray-400 text-sm">
+            Tune into UK's best urban radio stations. Listen to the latest hits, classic tracks, and exclusive content from top DJs.
+          </p>
+          <p className="text-purple-400 text-sm mt-2">
+            Radio continues playing as you navigate the app!
+          </p>
         </div>
       </div>
     </div>
