@@ -1791,18 +1791,16 @@ async function handleRoute(request, { params }) {
 
     // ==================== RADIO (UK Urban Stations) ====================
     if (route === '/radio/stations' && method === 'GET') {
-      // UK Urban radio stations - verified streams
+      // UK Urban radio stations - verified working streams
       const stations = [
         { id: 'capital-xtra', name: 'Capital Xtra', genre: 'Hip-Hop/R&B', streamUrl: 'https://media-ice.musicradio.com/CapitalXTRALondon', color: '#FFD700', frequency: '96.9' },
-        { id: 'hot108jamz', name: 'Hot 108 JAMZ', genre: 'Hip-Hop/R&B', streamUrl: 'https://ice6.securenetsystems.net/HOT108', color: '#FF4500', frequency: '108.0' },
-        { id: 'powerhitz', name: 'Powerhitz Hip Hop', genre: 'Hip-Hop', streamUrl: 'https://listen.powerapp.com.tr/powerhiphop/abr/playlist.m3u8', color: '#E91E63', frequency: '99.5' },
-        { id: 'afrobeats', name: 'Afrobeats Radio', genre: 'Afrobeats', streamUrl: 'https://stream.zeno.fm/yn65fsaurfhvv', color: '#4CAF50', frequency: '101.3' },
-        { id: 'dancehall', name: 'Dancehall Radio', genre: 'Dancehall/Reggae', streamUrl: 'https://stream.zeno.fm/e0y5kfb2rfhvv', color: '#9C27B0', frequency: '94.7' },
-        { id: 'trill-hd', name: 'Trill HD Radio', genre: 'Hip-Hop/Trap', streamUrl: 'https://stream.zeno.fm/6e1fqnk5rfhvv', color: '#00BCD4', frequency: '97.1' },
-        { id: 'beat-la', name: 'The Beat LA', genre: 'R&B/Hip-Hop', streamUrl: 'https://stream.revma.ihrhls.com/zc1465', color: '#FF6B00', frequency: '92.3' },
-        { id: 'afropop', name: 'Afropop Radio', genre: 'Afropop/World', streamUrl: 'https://stream.zeno.fm/q4d5e8curfhvv', color: '#8BC34A', frequency: '103.5' },
-        { id: 'reggae-king', name: 'Reggae King Radio', genre: 'Reggae/Roots', streamUrl: 'https://stream.zeno.fm/h12c0fgurfhvv', color: '#FFEB3B', frequency: '106.2' },
-        { id: 'soulection', name: 'Soulection Radio', genre: 'Soul/Future Beats', streamUrl: 'https://stream.zeno.fm/d5u1s8gurfhvv', color: '#673AB7', frequency: '89.9' }
+        { id: 'kisstory', name: 'Kisstory', genre: 'Old School', streamUrl: 'https://media-ice.musicradio.com/ABORIG', color: '#E91E63', frequency: '100.0' },
+        { id: 'kiss-fresh', name: 'Kiss Fresh', genre: 'New Music', streamUrl: 'https://media-ice.musicradio.com/KissFresh', color: '#9C27B0', frequency: '97.0' },
+        { id: 'magic-soul', name: 'Magic Soul', genre: 'Soul/R&B', streamUrl: 'https://media-ice.musicradio.com/MagicSoul', color: '#FF6B00', frequency: '105.4' },
+        { id: 'flex-fm', name: 'Flex FM', genre: 'Urban/Grime', streamUrl: 'https://eu8.fastcast4u.com/proxy/flexfm?mp=/1', color: '#00BCD4', frequency: '99.7' },
+        { id: 'reprezent', name: 'Reprezent Radio', genre: 'Urban/Youth', streamUrl: 'https://stream.reprezent.org.uk/reprezent', color: '#4CAF50', frequency: '107.3' },
+        { id: 'nts-1', name: 'NTS Radio', genre: 'Underground', streamUrl: 'https://stream-relay-geo.ntslive.net/stream', color: '#000000', frequency: '106.0' },
+        { id: 'foundation-fm', name: 'Foundation FM', genre: 'UK Black Music', streamUrl: 'https://streamer.radio.co/sb8f5c2348/listen', color: '#8B5CF6', frequency: '103.2' }
       ]
       return handleCORS(NextResponse.json(stations))
     }
