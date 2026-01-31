@@ -1808,18 +1808,18 @@ async function handleRoute(request, { params }) {
 
     // ==================== RADIO (UK Urban Stations) ====================
     if (route === '/radio/stations' && method === 'GET') {
-      // UK Urban radio stations - verified working streams (tested Jan 2026)
+      // UK radio stations - verified from Radio Browser API (lastcheckok=1)
       const stations = [
-        { id: 'capital-xtra-reloaded', name: 'Capital Xtra Reloaded', genre: 'Hip-Hop/R&B', streamUrl: 'https://media-ice.musicradio.com/CapitalXTRAReloaded', color: '#FFD700', frequency: '96.9' },
-        { id: 'nts-1', name: 'NTS Radio 1', genre: 'Underground', streamUrl: 'https://stream-relay-geo.ntslive.net/stream', color: '#000000', frequency: '106.0' },
-        { id: 'nts-2', name: 'NTS Radio 2', genre: 'Underground', streamUrl: 'https://stream-relay-geo.ntslive.net/stream2', color: '#333333', frequency: '106.2' },
-        { id: 'link-up', name: 'Link Up Radio', genre: 'Urban/Dancehall', streamUrl: 'http://uk7.internet-radio.com:8226/stream', color: '#E91E63', frequency: '98.5' },
-        { id: 'vibes-fm', name: 'Vibes FM', genre: 'R&B/Soul', streamUrl: 'http://uk1.internet-radio.com:8294/stream', color: '#9C27B0', frequency: '94.5' },
-        { id: 'afro-beats', name: 'Afro Beats Radio', genre: 'Afrobeats', streamUrl: 'http://uk2.internet-radio.com:8024/stream', color: '#4CAF50', frequency: '102.3' },
-        { id: 'one-luv', name: 'One Luv Radio', genre: 'Reggae/Dancehall', streamUrl: 'http://uk3.internet-radio.com:8082/stream', color: '#FF6B00', frequency: '99.1' },
-        { id: 'rnb-hits', name: 'RnB Hits', genre: 'R&B/Hip-Hop', streamUrl: 'http://uk7.internet-radio.com:8040/stream', color: '#8B5CF6', frequency: '101.7' },
-        { id: 'unique-radio', name: 'Unique Radio', genre: 'Urban/Grime', streamUrl: 'http://uk1.internet-radio.com:8004/stream', color: '#00BCD4', frequency: '103.8' },
-        { id: 'suncity', name: 'SunCity 104.9', genre: 'Urban/R&B', streamUrl: 'http://uk2.internet-radio.com:8024/stream', color: '#FF5722', frequency: '104.9' }
+        { id: 'capital-xtra', name: 'Capital XTRA', genre: 'Hip-Hop/R&B', streamUrl: 'http://media-the.musicradio.com/CapitalXTRALondonMP3', color: '#FFD700', frequency: '96.9' },
+        { id: 'bbc-1xtra', name: 'BBC 1Xtra', genre: 'Hip-Hop/Grime', streamUrl: 'http://as-hls-ww-live.akamaized.net/pool_92079267/live/ww/bbc_1xtra/bbc_1xtra.isml/bbc_1xtra-audio%3d128000.norewind.m3u8', color: '#FF0000', frequency: '1Xtra' },
+        { id: 'capital-fm', name: 'Capital FM London', genre: 'Pop/Dance', streamUrl: 'http://media-ice.musicradio.com/CapitalMP3', color: '#E91E63', frequency: '95.8' },
+        { id: 'heart-dance', name: 'Heart Dance', genre: 'Dance/Pop', streamUrl: 'https://media-ssl.musicradio.com/HeartDanceMP3', color: '#9C27B0', frequency: 'Dance' },
+        { id: 'nts-1', name: 'NTS Radio 1', genre: 'Underground', streamUrl: 'http://stream-relay-geo.ntslive.net/stream', color: '#000000', frequency: '106.0' },
+        { id: 'bbc-radio1', name: 'BBC Radio 1', genre: 'Pop/Dance', streamUrl: 'http://a.files.bbci.co.uk/ms6/live/3441A116-B12E-4D2F-ACA8-C1984642FA4B/audio/simulcast/hls/nonuk/pc_hd_abr_v2/ak/bbc_radio_one.m3u8', color: '#FF6B00', frequency: '97.7' },
+        { id: 'bbc-6music', name: 'BBC 6 Music', genre: 'Alternative', streamUrl: 'http://as-hls-ww-live.akamaized.net/pool_81827798/live/ww/bbc_6music/bbc_6music.isml/bbc_6music-audio%3d128000.norewind.m3u8', color: '#00BCD4', frequency: '6' },
+        { id: 'heart-80s', name: 'Heart 80s', genre: '80s/Pop', streamUrl: 'https://media-ssl.musicradio.com/Heart80sMP3', color: '#4CAF50', frequency: '80s' },
+        { id: 'heart-90s', name: 'Heart 90s', genre: '90s/Pop', streamUrl: 'https://media-ssl.musicradio.com/Heart90sMP3', color: '#8B5CF6', frequency: '90s' },
+        { id: 'smooth-chill', name: 'Smooth Chill', genre: 'Chill/Relaxing', streamUrl: 'https://media-ssl.musicradio.com/ChillMP3', color: '#2196F3', frequency: 'Chill' }
       ]
       return handleCORS(NextResponse.json(stations))
     }
