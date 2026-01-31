@@ -436,7 +436,7 @@ const HomePage = ({ user, onLogout, setUser }) => {
       
       {/* Header */}
       <header className="relative z-10 flex items-center justify-between p-4 border-b border-white/5">
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
           {/* Logo slot - responsive sizing, no shrink */}
           <div className="lk-logoSlot">
             <img 
@@ -444,7 +444,7 @@ const HomePage = ({ user, onLogout, setUser }) => {
               alt="LowKey" 
             />
           </div>
-          <span className="text-lg font-semibold text-white">LowKey</span>
+          <span className="lk-headerText">LowKey</span>
         </div>
         
         <div className="flex items-center gap-2">
