@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { 
   ArrowLeft, Search, Play, Pause, Music as MusicIcon, 
-  Clock, Share2, Plus, X, User, Disc3, Mic2
+  Clock, Plus, X, User, Disc3, Heart, Download, Upload, Loader2
 } from 'lucide-react'
 
 export default function MusicPage() {
@@ -16,85 +16,96 @@ export default function MusicPage() {
   const [loading, setLoading] = useState(false)
   const [playing, setPlaying] = useState(null)
   const [progress, setProgress] = useState(0)
-  const [friendStatuses, setFriendStatuses] = useState([])
   const [myStatus, setMyStatus] = useState(null)
-  const [showAddToStatus, setShowAddToStatus] = useState(null)
+  const [friendStatuses, setFriendStatuses] = useState([])
+  const [savedTracks, setSavedTracks] = useState([])
+  const [activeTab, setActiveTab] = useState('search') // search, saved, friends
   const audioRef = useRef(null)
-  const progressRef = useRef(null)
 
   useEffect(() => {
     const storedUser = localStorage.getItem('lowkey_user')
-    if (!storedUser) {
-      router.push('/')
-      return
-    }
+    if (!storedUser) { router.push('/'); return }
     const userData = JSON.parse(storedUser)
     setUser(userData)
     fetchMyStatus(userData.id)
     fetchFriendStatuses(userData.id)
-  }, [])
+    fetchSavedTracks(userData.id)
+  }, [router])
 
   useEffect(() => {
-    if (audioRef.current) {
-      audioRef.current.addEventListener('timeupdate', updateProgress)
-      audioRef.current.addEventListener('ended', () => setPlaying(null))
-      return () => {
-        audioRef.current?.removeEventListener('timeupdate', updateProgress)
-        audioRef.current?.removeEventListener('ended', () => setPlaying(null))
-      }
+    const audio = audioRef.current
+    if (!audio) return
+    
+    const updateProg = () => {
+      setProgress((audio.currentTime / audio.duration) * 100 || 0)
+    }
+    const onEnd = () => setPlaying(null)
+    
+    audio.addEventListener('timeupdate', updateProg)
+    audio.addEventListener('ended', onEnd)
+    return () => {
+      audio.removeEventListener('timeupdate', updateProg)
+      audio.removeEventListener('ended', onEnd)
     }
   }, [])
-
-  const updateProgress = () => {
-    if (audioRef.current) {
-      const percent = (audioRef.current.currentTime / audioRef.current.duration) * 100
-      setProgress(percent || 0)
-    }
-  }
 
   const fetchMyStatus = async (userId) => {
     try {
       const res = await fetch(`/api/profile/music-status/${userId}`)
       if (res.ok) {
         const data = await res.json()
-        setMyStatus(data)
+        if (data && data.track) setMyStatus(data)
       }
-    } catch (err) {
-      console.error('Failed to fetch music status')
-    }
+    } catch (err) { console.error('Failed to fetch status') }
   }
 
   const fetchFriendStatuses = async (userId) => {
     try {
       const res = await fetch(`/api/music-statuses?userId=${userId}`)
-      if (res.ok) {
-        const data = await res.json()
-        setFriendStatuses(data)
-      }
-    } catch (err) {
-      console.error('Failed to fetch friend statuses')
-    }
+      if (res.ok) setFriendStatuses(await res.json())
+    } catch (err) { console.error('Failed to fetch friend statuses') }
+  }
+
+  const fetchSavedTracks = async (userId) => {
+    try {
+      const res = await fetch(`/api/music/saved/${userId}`)
+      if (res.ok) setSavedTracks(await res.json())
+    } catch (err) { console.error('Failed to fetch saved tracks') }
   }
 
   const searchMusic = async (e) => {
     e?.preventDefault()
     if (!query.trim()) return
-
     setLoading(true)
+    setResults([])
+    
     try {
-      const res = await fetch(`/api/itunes/search?term=${encodeURIComponent(query)}&type=${searchType}`)
-      if (res.ok) {
-        const data = await res.json()
+      // Try Deezer first (better previews)
+      const deezerRes = await fetch(`/api/deezer/search?q=${encodeURIComponent(query)}`)
+      if (deezerRes.ok) {
+        const data = await deezerRes.json()
+        if (data.results?.length > 0) {
+          setResults(data.results)
+          setLoading(false)
+          return
+        }
+      }
+      
+      // Fallback to iTunes
+      const itunesRes = await fetch(`/api/itunes/search?term=${encodeURIComponent(query)}&type=${searchType}`)
+      if (itunesRes.ok) {
+        const data = await itunesRes.json()
         setResults(data.results || [])
       }
     } catch (err) {
-      console.error('Search failed')
+      console.error('Search failed:', err)
     }
     setLoading(false)
   }
 
   const playTrack = (track) => {
-    if (!track.previewUrl) return
+    const previewUrl = track.previewUrl || track.preview
+    if (!previewUrl) return
 
     if (playing?.id === track.id) {
       audioRef.current?.pause()
@@ -104,14 +115,28 @@ export default function MusicPage() {
 
     if (audioRef.current) {
       audioRef.current.pause()
-      audioRef.current.src = track.previewUrl
+      audioRef.current.src = previewUrl
       audioRef.current.play().catch(e => console.error('Audio error:', e))
     }
     setPlaying(track)
     setProgress(0)
   }
 
-  const addToStatus = async (track) => {
+  const saveTrackToProfile = async (track) => {
+    try {
+      const res = await fetch('/api/music/save', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: user.id, track })
+      })
+      if (res.ok) {
+        fetchSavedTracks(user.id)
+        alert('Track saved to your profile for 24 hours!')
+      }
+    } catch (err) { console.error('Failed to save track') }
+  }
+
+  const setAsStatus = async (track) => {
     try {
       const res = await fetch('/api/profile/music-status', {
         method: 'POST',
@@ -119,323 +144,269 @@ export default function MusicPage() {
         body: JSON.stringify({ userId: user.id, track })
       })
       if (res.ok) {
-        const data = await res.json()
-        setMyStatus(data)
-        setShowAddToStatus(null)
+        setMyStatus(await res.json())
         fetchFriendStatuses(user.id)
+        alert('Track set as your status!')
       }
-    } catch (err) {
-      console.error('Failed to add to status')
-    }
+    } catch (err) { console.error('Failed to set status') }
   }
 
-  const formatDuration = (seconds) => {
-    if (!seconds) return '--:--'
-    const mins = Math.floor(seconds / 60)
-    const secs = seconds % 60
-    return `${mins}:${secs.toString().padStart(2, '0')}`
+  const removeTrack = async (trackId) => {
+    try {
+      await fetch(`/api/music/saved/${user.id}/${trackId}`, { method: 'DELETE' })
+      fetchSavedTracks(user.id)
+    } catch (err) { console.error('Failed to remove track') }
   }
 
-  const searchTypes = [
-    { id: 'all', label: 'All', icon: MusicIcon },
-    { id: 'song', label: 'Songs', icon: Disc3 },
-    { id: 'artist', label: 'Artists', icon: Mic2 },
-    { id: 'album', label: 'Albums', icon: Disc3 }
-  ]
+  const formatDuration = (ms) => {
+    if (!ms) return '--:--'
+    const sec = Math.floor(ms / 1000)
+    return `${Math.floor(sec / 60)}:${(sec % 60).toString().padStart(2, '0')}`
+  }
+
+  if (!user) return <div className="min-h-screen bg-[#0a0a0f] flex items-center justify-center">
+    <div className="animate-pulse text-white">Loading...</div>
+  </div>
 
   return (
     <div className="min-h-screen bg-[#0a0a0f] pb-32">
       <audio ref={audioRef} />
-
+      
       {/* Header */}
-      <header className="sticky top-0 z-20 bg-[#0a0a0f]/95 backdrop-blur-lg border-b border-white/10">
+      <header className="sticky top-0 z-40 bg-[#0a0a0f]/95 backdrop-blur border-b border-white/10">
         <div className="flex items-center gap-3 p-4">
           <button onClick={() => router.push('/')} className="p-2 rounded-full hover:bg-white/10">
             <ArrowLeft className="w-5 h-5 text-white" />
           </button>
-          <h1 className="text-xl font-semibold text-white">Music</h1>
+          <h1 className="text-xl font-bold text-white">Music</h1>
         </div>
-
+        
         {/* Search Bar */}
-        <div className="px-4 pb-4">
-          <form onSubmit={searchMusic} className="relative">
+        <form onSubmit={searchMusic} className="px-4 pb-3">
+          <div className="relative">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
             <input
               type="text"
+              placeholder="Search artists, songs, albums..."
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search artists, songs, albums..."
-              className="w-full pl-12 pr-4 py-3 rounded-full bg-white/10 border border-white/10 text-white placeholder-gray-400 focus:outline-none focus:border-pink-500/50 text-base"
+              className="w-full pl-12 pr-4 py-3 rounded-full bg-white/10 text-white placeholder-gray-400 border border-white/10 focus:border-green-500 focus:outline-none"
             />
-          </form>
-
-          {/* Search Type Pills */}
-          <div className="flex gap-2 mt-3 overflow-x-auto pb-1">
-            {searchTypes.map(type => (
-              <button
-                key={type.id}
-                onClick={() => setSearchType(type.id)}
-                className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-sm whitespace-nowrap transition-colors ${
-                  searchType === type.id
-                    ? 'bg-pink-500 text-white'
-                    : 'bg-white/10 text-gray-300 hover:bg-white/20'
-                }`}
-              >
-                <type.icon className="w-4 h-4" />
-                {type.label}
+            {query && (
+              <button type="button" onClick={() => { setQuery(''); setResults([]) }} 
+                className="absolute right-14 top-1/2 -translate-y-1/2 p-1 rounded-full hover:bg-white/10">
+                <X className="w-4 h-4 text-gray-400" />
               </button>
-            ))}
+            )}
+            <button type="submit" disabled={loading}
+              className="absolute right-2 top-1/2 -translate-y-1/2 px-4 py-1.5 rounded-full bg-green-500 text-black font-semibold text-sm">
+              {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Search'}
+            </button>
           </div>
+        </form>
+
+        {/* Tabs */}
+        <div className="flex gap-2 px-4 pb-3">
+          {['search', 'saved', 'friends'].map(tab => (
+            <button key={tab} onClick={() => setActiveTab(tab)}
+              className={`px-4 py-1.5 rounded-full text-sm font-medium capitalize
+                ${activeTab === tab ? 'bg-white text-black' : 'bg-white/10 text-white'}`}>
+              {tab === 'saved' ? `Saved (${savedTracks.length})` : tab}
+            </button>
+          ))}
         </div>
       </header>
 
+      {/* Content */}
       <div className="p-4">
-        {/* My Music Status */}
-        {myStatus && (
-          <div className="mb-6">
-            <h2 className="text-white font-semibold mb-3 flex items-center gap-2">
-              <MusicIcon className="w-4 h-4 text-pink-400" />
-              Your 24hr Song
-            </h2>
-            <div className="p-4 rounded-2xl bg-gradient-to-r from-pink-500/20 to-purple-500/20 border border-pink-500/30">
-              <div className="flex items-center gap-4">
-                {myStatus.artwork ? (
-                  <img src={myStatus.artwork} alt="" className="w-16 h-16 rounded-xl object-cover" />
-                ) : (
-                  <div className="w-16 h-16 rounded-xl bg-pink-500/30 flex items-center justify-center">
-                    <MusicIcon className="w-8 h-8 text-pink-400" />
-                  </div>
-                )}
-                <div className="flex-1 min-w-0">
-                  <h3 className="text-white font-semibold truncate">{myStatus.trackName}</h3>
-                  <p className="text-gray-400 text-sm truncate">{myStatus.artistName}</p>
-                </div>
-                {myStatus.previewUrl && (
-                  <button
-                    onClick={() => playTrack({ 
-                      id: myStatus.trackId, 
-                      previewUrl: myStatus.previewUrl,
-                      name: myStatus.trackName,
-                      artist: myStatus.artistName,
-                      artwork: myStatus.artwork
-                    })}
-                    className="p-3 rounded-full bg-pink-500"
-                  >
-                    {playing?.id === myStatus.trackId ? (
-                      <Pause className="w-5 h-5 text-white" />
-                    ) : (
-                      <Play className="w-5 h-5 text-white" />
-                    )}
-                  </button>
-                )}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Friends' Music Status */}
-        {friendStatuses.length > 0 && (
-          <div className="mb-6">
-            <h2 className="text-white font-semibold mb-3 flex items-center gap-2">
-              <User className="w-4 h-4 text-amber-400" />
-              What Friends Are Playing
-            </h2>
-            <div className="flex gap-3 overflow-x-auto pb-2">
-              {friendStatuses.filter(s => s.userId !== user?.id).map(status => (
-                <button
-                  key={status.id}
-                  onClick={() => status.previewUrl && playTrack({
-                    id: status.trackId,
-                    previewUrl: status.previewUrl,
-                    name: status.trackName,
-                    artist: status.artistName,
-                    artwork: status.artwork
-                  })}
-                  className="flex-shrink-0 w-36 p-3 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-colors"
-                >
-                  {status.artwork ? (
-                    <img src={status.artwork} alt="" className="w-full aspect-square rounded-lg object-cover mb-2" />
-                  ) : (
-                    <div className="w-full aspect-square rounded-lg bg-gradient-to-br from-pink-500/30 to-purple-500/30 flex items-center justify-center mb-2">
-                      <MusicIcon className="w-10 h-10 text-pink-400" />
-                    </div>
-                  )}
-                  <p className="text-white text-sm font-medium truncate">{status.trackName}</p>
-                  <p className="text-gray-500 text-xs truncate">{status.displayName}</p>
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-
         {/* Search Results */}
-        {loading ? (
-          <div className="text-center text-gray-400 py-12">
-            <div className="animate-spin w-8 h-8 border-2 border-pink-500 border-t-transparent rounded-full mx-auto mb-4" />
-            Searching...
-          </div>
-        ) : results.length > 0 ? (
-          <div>
-            <h2 className="text-white font-semibold mb-3">Results</h2>
-            <div className="space-y-2">
-              {results.map((track, idx) => (
-                <div
-                  key={`${track.id}-${idx}`}
-                  className={`p-3 rounded-xl transition-colors ${
-                    playing?.id === track.id
-                      ? 'bg-pink-500/20 border border-pink-500/50'
-                      : 'bg-white/5 hover:bg-white/10'
-                  }`}
-                >
-                  <div className="flex items-center gap-3">
-                    {/* Artwork / Play Button */}
-                    <button
-                      onClick={() => playTrack(track)}
-                      disabled={!track.previewUrl}
-                      className="relative group"
-                    >
-                      {track.artwork ? (
-                        <img src={track.artwork} alt="" className="w-14 h-14 rounded-lg object-cover" />
-                      ) : (
-                        <div className="w-14 h-14 rounded-lg bg-gradient-to-br from-pink-500/30 to-purple-500/30 flex items-center justify-center">
-                          <MusicIcon className="w-6 h-6 text-pink-400" />
-                        </div>
-                      )}
-                      {track.previewUrl && (
-                        <div className="absolute inset-0 flex items-center justify-center bg-black/40 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity">
-                          {playing?.id === track.id ? (
-                            <Pause className="w-6 h-6 text-white" />
-                          ) : (
-                            <Play className="w-6 h-6 text-white" />
-                          )}
-                        </div>
-                      )}
-                    </button>
+        {activeTab === 'search' && (
+          <>
+            {loading && (
+              <div className="flex flex-col items-center py-12">
+                <Loader2 className="w-8 h-8 text-green-500 animate-spin mb-3" />
+                <p className="text-gray-400">Searching...</p>
+              </div>
+            )}
+            
+            {!loading && results.length === 0 && query && (
+              <div className="text-center py-12">
+                <MusicIcon className="w-16 h-16 text-gray-600 mx-auto mb-4" />
+                <p className="text-gray-400">No results found for "{query}"</p>
+                <p className="text-gray-500 text-sm mt-1">Try a different search term</p>
+              </div>
+            )}
+            
+            {!loading && results.length === 0 && !query && (
+              <div className="text-center py-12">
+                <Search className="w-16 h-16 text-gray-600 mx-auto mb-4" />
+                <p className="text-gray-400">Search for your favorite music</p>
+                <p className="text-gray-500 text-sm mt-1">Find artists, songs, and albums</p>
+              </div>
+            )}
 
-                    {/* Track Info */}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <h3 className="text-white font-medium truncate">{track.name}</h3>
-                        {track.explicit && (
-                          <span className="px-1.5 py-0.5 text-[10px] bg-white/20 text-white rounded">E</span>
-                        )}
+            {results.length > 0 && (
+              <div className="space-y-2">
+                <p className="text-gray-400 text-sm mb-4">{results.length} results</p>
+                {results.map(track => (
+                  <TrackItem 
+                    key={track.id} 
+                    track={track} 
+                    playing={playing}
+                    onPlay={() => playTrack(track)}
+                    onSave={() => saveTrackToProfile(track)}
+                    onSetStatus={() => setAsStatus(track)}
+                    formatDuration={formatDuration}
+                  />
+                ))}
+              </div>
+            )}
+          </>
+        )}
+
+        {/* Saved Tracks */}
+        {activeTab === 'saved' && (
+          <>
+            {savedTracks.length === 0 ? (
+              <div className="text-center py-12">
+                <Heart className="w-16 h-16 text-gray-600 mx-auto mb-4" />
+                <p className="text-gray-400">No saved tracks</p>
+                <p className="text-gray-500 text-sm mt-1">Save tracks from search to see them here</p>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                <p className="text-gray-400 text-sm mb-4">Tracks saved for 24 hours</p>
+                {savedTracks.map(item => (
+                  <TrackItem 
+                    key={item.id}
+                    track={item.track}
+                    playing={playing}
+                    onPlay={() => playTrack(item.track)}
+                    onRemove={() => removeTrack(item.id)}
+                    onSetStatus={() => setAsStatus(item.track)}
+                    formatDuration={formatDuration}
+                    showRemove
+                  />
+                ))}
+              </div>
+            )}
+          </>
+        )}
+
+        {/* Friends' Statuses */}
+        {activeTab === 'friends' && (
+          <>
+            {friendStatuses.length === 0 ? (
+              <div className="text-center py-12">
+                <User className="w-16 h-16 text-gray-600 mx-auto mb-4" />
+                <p className="text-gray-400">No friends listening</p>
+                <p className="text-gray-500 text-sm mt-1">When friends set a song status, it'll appear here</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {friendStatuses.map(status => (
+                  <div key={status.id} className="p-3 rounded-xl bg-white/5 border border-white/10">
+                    <div className="flex items-center gap-3 mb-2">
+                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-green-400 to-blue-500 flex items-center justify-center text-white text-sm font-bold">
+                        {status.displayName?.[0]?.toUpperCase() || 'U'}
                       </div>
-                      <p className="text-gray-400 text-sm truncate">{track.artist}</p>
-                      {track.album && track.type !== 'album' && (
-                        <p className="text-gray-500 text-xs truncate">{track.album}</p>
-                      )}
+                      <span className="text-white font-medium">{status.displayName}</span>
+                      <span className="text-gray-500 text-xs">is listening to</span>
                     </div>
-
-                    {/* Duration & Actions */}
-                    <div className="flex items-center gap-2">
-                      {track.duration && (
-                        <span className="text-gray-500 text-sm">{formatDuration(track.duration)}</span>
-                      )}
-                      <button
-                        onClick={() => setShowAddToStatus(track)}
-                        className="p-2 rounded-full hover:bg-white/10 text-gray-400 hover:text-pink-400 transition-colors"
-                        title="Add to 24hr status"
-                      >
-                        <Plus className="w-5 h-5" />
-                      </button>
-                    </div>
+                    {status.track && (
+                      <TrackItem 
+                        track={status.track}
+                        playing={playing}
+                        onPlay={() => playTrack(status.track)}
+                        formatDuration={formatDuration}
+                        compact
+                      />
+                    )}
                   </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        ) : query && !loading ? (
-          <div className="text-center text-gray-400 py-12">
-            <MusicIcon className="w-16 h-16 mx-auto mb-4 opacity-50" />
-            <p>No results for "{query}"</p>
-            <p className="text-sm mt-1">Try searching for an artist or song</p>
-          </div>
-        ) : (
-          <div className="text-center text-gray-400 py-12">
-            <Search className="w-16 h-16 mx-auto mb-4 opacity-50" />
-            <p className="text-lg">Search for music</p>
-            <p className="text-sm mt-1">Find any artist, song, or album</p>
-          </div>
+                ))}
+              </div>
+            )}
+          </>
         )}
       </div>
 
       {/* Now Playing Bar */}
       {playing && (
-        <div className="fixed bottom-0 left-0 right-0 z-30 bg-[#1a1a2e] border-t border-white/10">
-          {/* Progress Bar */}
-          <div className="h-1 bg-white/10">
-            <div 
-              className="h-full bg-pink-500 transition-all duration-200"
-              style={{ width: `${progress}%` }}
+        <div className="fixed bottom-0 left-0 right-0 bg-[#1a1a2e] border-t border-white/10 p-3 z-50">
+          <div className="flex items-center gap-3">
+            <img 
+              src={playing.artwork || playing.album?.cover_medium || '/placeholder.png'} 
+              alt="" 
+              className="w-12 h-12 rounded-lg object-cover"
             />
-          </div>
-          
-          <div className="p-4 flex items-center gap-4">
-            {playing.artwork ? (
-              <img src={playing.artwork} alt="" className="w-12 h-12 rounded-lg object-cover" />
-            ) : (
-              <div className="w-12 h-12 rounded-lg bg-pink-500/30 flex items-center justify-center">
-                <MusicIcon className="w-6 h-6 text-pink-400" />
-              </div>
-            )}
             <div className="flex-1 min-w-0">
-              <h3 className="text-white font-medium truncate">{playing.name}</h3>
-              <p className="text-gray-400 text-sm truncate">{playing.artist}</p>
+              <p className="text-white font-medium truncate">{playing.name || playing.title}</p>
+              <p className="text-gray-400 text-sm truncate">{playing.artist || playing.artist?.name}</p>
             </div>
-            <button
-              onClick={() => playTrack(playing)}
-              className="p-3 rounded-full bg-pink-500"
-            >
-              <Pause className="w-5 h-5 text-white" />
+            <button onClick={() => playTrack(playing)} className="p-3 rounded-full bg-green-500">
+              <Pause className="w-5 h-5 text-black" />
             </button>
+          </div>
+          <div className="mt-2 h-1 bg-white/10 rounded-full overflow-hidden">
+            <div className="h-full bg-green-500 transition-all" style={{ width: `${progress}%` }} />
           </div>
         </div>
       )}
+    </div>
+  )
+}
 
-      {/* Add to Status Modal */}
-      {showAddToStatus && (
-        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/80 backdrop-blur-sm" onClick={() => setShowAddToStatus(null)}>
-          <div className="w-full max-w-lg bg-[#1a1a2e] rounded-t-3xl p-6" onClick={e => e.stopPropagation()}>
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-white text-lg font-semibold">Add to your 24hr status</h3>
-              <button onClick={() => setShowAddToStatus(null)} className="p-2 rounded-full hover:bg-white/10">
-                <X className="w-5 h-5 text-gray-400" />
-              </button>
-            </div>
-            
-            <div className="flex items-center gap-4 p-4 rounded-xl bg-white/5 mb-4">
-              {showAddToStatus.artwork ? (
-                <img src={showAddToStatus.artwork} alt="" className="w-16 h-16 rounded-lg object-cover" />
-              ) : (
-                <div className="w-16 h-16 rounded-lg bg-pink-500/30 flex items-center justify-center">
-                  <MusicIcon className="w-8 h-8 text-pink-400" />
-                </div>
-              )}
-              <div className="flex-1 min-w-0">
-                <h4 className="text-white font-medium truncate">{showAddToStatus.name}</h4>
-                <p className="text-gray-400 text-sm truncate">{showAddToStatus.artist}</p>
-              </div>
-            </div>
+// Track Item Component
+function TrackItem({ track, playing, onPlay, onSave, onRemove, onSetStatus, formatDuration, showRemove, compact }) {
+  const isPlaying = playing?.id === track.id
+  const artwork = track.artwork || track.album?.cover_medium || track.album?.cover_small
+  const name = track.name || track.title
+  const artist = track.artist?.name || track.artist
+  const album = track.album?.title || track.album
+  const duration = track.duration ? (track.duration > 1000 ? track.duration : track.duration * 1000) : null
+  const hasPreview = track.previewUrl || track.preview
 
-            <p className="text-gray-400 text-sm mb-4">
-              This song will be shown on your profile for 24 hours. Friends can listen to it too!
-            </p>
-
-            <div className="flex gap-3">
-              <button
-                onClick={() => setShowAddToStatus(null)}
-                className="flex-1 py-3 rounded-xl bg-white/10 text-white font-medium"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={() => addToStatus(showAddToStatus)}
-                className="flex-1 py-3 rounded-xl bg-gradient-to-r from-pink-500 to-purple-500 text-white font-semibold"
-              >
-                Add to Status
-              </button>
-            </div>
-          </div>
+  return (
+    <div className={`flex items-center gap-3 p-2 rounded-xl ${isPlaying ? 'bg-green-500/10 border border-green-500/30' : 'bg-white/5 hover:bg-white/10'} transition-colors`}>
+      <div className="relative">
+        <img src={artwork || '/placeholder.png'} alt="" className={`${compact ? 'w-10 h-10' : 'w-14 h-14'} rounded-lg object-cover`} />
+        {hasPreview && (
+          <button onClick={onPlay}
+            className={`absolute inset-0 flex items-center justify-center bg-black/40 rounded-lg opacity-0 hover:opacity-100 transition-opacity ${isPlaying ? 'opacity-100' : ''}`}>
+            {isPlaying ? <Pause className="w-6 h-6 text-white" /> : <Play className="w-6 h-6 text-white" />}
+          </button>
+        )}
+      </div>
+      
+      <div className="flex-1 min-w-0">
+        <p className={`text-white font-medium truncate ${compact ? 'text-sm' : ''}`}>{name}</p>
+        <p className={`text-gray-400 truncate ${compact ? 'text-xs' : 'text-sm'}`}>{artist}</p>
+        {!compact && album && <p className="text-gray-500 text-xs truncate">{album}</p>}
+      </div>
+      
+      {!compact && (
+        <div className="flex items-center gap-1">
+          {duration && (
+            <span className="text-gray-500 text-xs mr-2">{formatDuration(duration)}</span>
+          )}
+          {onSetStatus && (
+            <button onClick={onSetStatus} title="Set as status"
+              className="p-2 rounded-full hover:bg-white/10 text-gray-400 hover:text-green-400">
+              <Upload className="w-4 h-4" />
+            </button>
+          )}
+          {onSave && (
+            <button onClick={onSave} title="Save to profile"
+              className="p-2 rounded-full hover:bg-white/10 text-gray-400 hover:text-pink-400">
+              <Heart className="w-4 h-4" />
+            </button>
+          )}
+          {showRemove && onRemove && (
+            <button onClick={onRemove} title="Remove"
+              className="p-2 rounded-full hover:bg-white/10 text-gray-400 hover:text-red-400">
+              <X className="w-4 h-4" />
+            </button>
+          )}
         </div>
       )}
     </div>
