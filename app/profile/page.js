@@ -1,8 +1,8 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
-import { ArrowLeft, User, Mail, Calendar, Shield, Moon, LogOut, Star, Crown, PoundSterling, Users, Settings, Image, Music, Palette, Plus, Lock, Eye, EyeOff, Video, Check, UserCheck, Gem, Play, Edit, Heart, Gift, X } from 'lucide-react'
+import { ArrowLeft, User, Mail, Calendar, Shield, Moon, LogOut, Star, Crown, PoundSterling, Users, Settings, Image, Music, Palette, Plus, Lock, Eye, EyeOff, Video, Check, UserCheck, Gem, Play, Edit, Heart, Gift, X, Upload, Camera, Loader2 } from 'lucide-react'
 
 const VERIFICATION_TIERS = {
   'new': { name: 'New Member', icon: Users, color: 'text-gray-400', bgColor: 'bg-gray-500/20' },
