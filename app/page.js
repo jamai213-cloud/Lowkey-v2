@@ -716,6 +716,12 @@ const HomePage = ({ user, onLogout, setUser }) => {
       return
     }
     
+    // Special handling for Lounge - show info on first visit (non-blocking)
+    if (tileId === 'lounge' && !hasSeenLoungeInfo()) {
+      setShowLoungeInfo(true)
+      return
+    }
+    
     router.push(path)
   }
 
