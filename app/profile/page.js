@@ -368,12 +368,22 @@ export default function ProfilePage() {
               )}
             </div>
             {isOwnProfile && (
-              <button 
-                onClick={() => profilePicInputRef.current?.click()}
-                className="absolute bottom-3 right-0 w-8 h-8 rounded-full bg-amber-500 flex items-center justify-center shadow-lg"
-              >
-                <Camera className="w-4 h-4 text-black" />
-              </button>
+              <>
+                <button 
+                  onClick={() => profilePicInputRef.current?.click()}
+                  className="absolute bottom-3 right-0 w-8 h-8 rounded-full bg-amber-500 flex items-center justify-center shadow-lg"
+                >
+                  <Camera className="w-4 h-4 text-black" />
+                </button>
+                {user.avatar && (
+                  <button 
+                    onClick={deleteProfilePic}
+                    className="absolute bottom-3 left-0 w-8 h-8 rounded-full bg-red-500 flex items-center justify-center shadow-lg"
+                  >
+                    <X className="w-4 h-4 text-white" />
+                  </button>
+                )}
+              </>
             )}
           </div>
           <h2 className="text-2xl font-bold text-white">{user.displayName}</h2>
