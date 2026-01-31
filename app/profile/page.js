@@ -231,6 +231,36 @@ export default function ProfilePage() {
     } catch (err) {}
   }
 
+  const deleteGalleryItem = async (itemId) => {
+    if (!confirm('Delete this photo?')) return
+    try {
+      await fetch(`/api/gallery/${itemId}`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: user.id })
+      })
+      fetchGallery(user.id)
+    } catch (err) {
+      console.error('Failed to delete:', err)
+    }
+  }
+
+  const deleteProfilePic = async () => {
+    if (!confirm('Remove profile picture?')) return
+    try {
+      await fetch('/api/profile/avatar', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: user.id })
+      })
+      const updatedUser = { ...user, avatar: null }
+      setUser(updatedUser)
+      localStorage.setItem('lowkey_user', JSON.stringify(updatedUser))
+    } catch (err) {
+      console.error('Failed to delete profile pic:', err)
+    }
+  }
+
   const purchaseSkin = async (skinId) => {
     try {
       await fetch('/api/skins/purchase', {
