@@ -48,12 +48,34 @@ export default function ProfilePage() {
   const [tipAmount, setTipAmount] = useState(5)
   const [tipMessage, setTipMessage] = useState('')
   const [tipping, setTipping] = useState(false)
-  const [uploadData, setUploadData] = useState({ type: 'photo', file: null, caption: '', preview: null })
+  const [uploadData, setUploadData] = useState({ type: 'photo', file: null, caption: '', preview: null, filter: 'none', blur: 0 })
   const [uploading, setUploading] = useState(false)
-  const [storyData, setStoryData] = useState({ type: 'photo', content: '', privacy: 'everyone', backgroundColor: '#1a1a2e' })
+  const [storyData, setStoryData] = useState({ type: 'photo', file: null, preview: null, text: '', privacy: 'everyone', backgroundColor: '#1a1a2e', filter: 'none', blur: 0 })
   const [galleryPrivacy, setGalleryPrivacy] = useState('public')
   const fileInputRef = useRef(null)
+  const storyFileInputRef = useRef(null)
   const profilePicInputRef = useRef(null)
+
+  // Available filters
+  const FILTERS = [
+    { id: 'none', name: 'None', css: '' },
+    { id: 'grayscale', name: 'B&W', css: 'grayscale(100%)' },
+    { id: 'sepia', name: 'Sepia', css: 'sepia(100%)' },
+    { id: 'vintage', name: 'Vintage', css: 'sepia(50%) contrast(90%) brightness(90%)' },
+    { id: 'warm', name: 'Warm', css: 'saturate(150%) hue-rotate(-10deg)' },
+    { id: 'cool', name: 'Cool', css: 'saturate(120%) hue-rotate(20deg)' },
+    { id: 'dramatic', name: 'Drama', css: 'contrast(130%) saturate(120%)' },
+    { id: 'fade', name: 'Fade', css: 'contrast(90%) brightness(110%) saturate(80%)' },
+  ]
+
+  // Blur levels
+  const BLUR_LEVELS = [
+    { value: 0, label: 'None' },
+    { value: 2, label: 'Light' },
+    { value: 5, label: 'Medium' },
+    { value: 10, label: 'Heavy' },
+    { value: 20, label: 'Max' },
+  ]
 
   useEffect(() => {
     const storedUser = localStorage.getItem('lowkey_user')
