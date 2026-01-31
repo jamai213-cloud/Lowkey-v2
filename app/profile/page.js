@@ -797,40 +797,200 @@ export default function ProfilePage() {
         </div>
       )}
 
-      {/* Story Create Modal */}
+      {/* Story Create Modal with File Upload */}
       {showStoryCreate && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm" onClick={() => setShowStoryCreate(false)}>
-          <div className="bg-[#1a1a2e] rounded-2xl p-6 max-w-sm mx-4 w-full" onClick={e => e.stopPropagation()}>
+          <div className="bg-[#1a1a2e] rounded-2xl p-6 max-w-sm mx-4 w-full max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
             <h2 className="text-xl text-white font-semibold mb-4">Create Story</h2>
             <div className="space-y-4">
+              {/* Story Type Selection */}
               <div className="flex gap-2">
-                {['photo', 'video', 'text'].map(t => (
-                  <button key={t} onClick={() => setStoryData({ ...storyData, type: t })} className={`flex-1 py-2 rounded-lg text-xs capitalize ${storyData.type === t ? 'bg-amber-500 text-black' : 'bg-white/10 text-white'}`}>
-                    {t}
-                  </button>
-                ))}
+                <button 
+                  onClick={() => setStoryData({ ...storyData, type: 'photo', file: null, preview: null })} 
+                  className={`flex-1 py-2 rounded-lg text-xs flex items-center justify-center gap-1 ${storyData.type === 'photo' ? 'bg-amber-500 text-black' : 'bg-white/10 text-white'}`}
+                >
+                  <Camera className="w-3 h-3" /> Photo
+                </button>
+                <button 
+                  onClick={() => setStoryData({ ...storyData, type: 'video', file: null, preview: null })} 
+                  className={`flex-1 py-2 rounded-lg text-xs flex items-center justify-center gap-1 ${storyData.type === 'video' ? 'bg-amber-500 text-black' : 'bg-white/10 text-white'}`}
+                >
+                  <Video className="w-3 h-3" /> Video
+                </button>
+                <button 
+                  onClick={() => setStoryData({ ...storyData, type: 'text', file: null, preview: null })} 
+                  className={`flex-1 py-2 rounded-lg text-xs flex items-center justify-center gap-1 ${storyData.type === 'text' ? 'bg-amber-500 text-black' : 'bg-white/10 text-white'}`}
+                >
+                  <Edit className="w-3 h-3" /> Text
+                </button>
               </div>
+              
+              {/* Content Area */}
               {storyData.type === 'text' ? (
-                <textarea value={storyData.content} onChange={e => setStoryData({ ...storyData, content: e.target.value })} placeholder="What's on your mind?" className="w-full px-4 py-3 rounded-xl bg-black/40 border border-white/10 text-white placeholder-gray-500 h-24 resize-none" />
+                <div 
+                  className="w-full h-48 rounded-xl p-4 flex items-center justify-center"
+                  style={{ backgroundColor: storyData.backgroundColor }}
+                >
+                  <textarea 
+                    value={storyData.text} 
+                    onChange={e => setStoryData({ ...storyData, text: e.target.value })} 
+                    placeholder="What's on your mind?" 
+                    className="w-full h-full bg-transparent text-white text-center text-lg placeholder-white/50 resize-none focus:outline-none"
+                    maxLength={200}
+                  />
+                </div>
               ) : (
-                <input type="url" value={storyData.content} onChange={e => setStoryData({ ...storyData, content: e.target.value })} placeholder="Media URL" className="w-full px-4 py-3 rounded-xl bg-black/40 border border-white/10 text-white placeholder-gray-500" />
+                <>
+                  {storyData.preview ? (
+                    <div className="relative">
+                      {storyData.type === 'video' ? (
+                        <video 
+                          src={storyData.preview} 
+                          className="w-full h-48 object-cover rounded-xl" 
+                          style={{ 
+                            filter: `${FILTERS.find(f => f.id === storyData.filter)?.css || ''} blur(${storyData.blur}px)` 
+                          }}
+                          controls 
+                        />
+                      ) : (
+                        <img 
+                          src={storyData.preview} 
+                          alt="Preview" 
+                          className="w-full h-48 object-cover rounded-xl" 
+                          style={{ 
+                            filter: `${FILTERS.find(f => f.id === storyData.filter)?.css || ''} blur(${storyData.blur}px)` 
+                          }}
+                        />
+                      )}
+                      <button 
+                        onClick={() => setStoryData({ ...storyData, file: null, preview: null })}
+                        className="absolute top-2 right-2 p-1 rounded-full bg-black/60 text-white"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ) : (
+                    <button 
+                      onClick={() => storyFileInputRef.current?.click()}
+                      className="w-full h-48 rounded-xl border-2 border-dashed border-white/20 flex flex-col items-center justify-center gap-3 hover:border-amber-500/50 hover:bg-white/5 transition-colors"
+                    >
+                      <Upload className="w-10 h-10 text-gray-400" />
+                      <span className="text-gray-400">Tap to select {storyData.type}</span>
+                      <span className="text-gray-500 text-sm">From your device</span>
+                    </button>
+                  )}
+                </>
               )}
+              
+              {/* Filters for photo stories */}
+              {storyData.preview && storyData.type === 'photo' && (
+                <>
+                  <div>
+                    <label className="text-gray-400 text-xs mb-2 block">Filter</label>
+                    <div className="flex gap-2 overflow-x-auto pb-2">
+                      {FILTERS.map(filter => (
+                        <button
+                          key={filter.id}
+                          onClick={() => setStoryData({ ...storyData, filter: filter.id })}
+                          className={`flex-shrink-0 px-3 py-1.5 rounded-lg text-xs ${
+                            storyData.filter === filter.id 
+                              ? 'bg-amber-500 text-black' 
+                              : 'bg-white/10 text-white'
+                          }`}
+                        >
+                          {filter.name}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <label className="text-gray-400 text-xs mb-2 block">Blur Level</label>
+                    <div className="flex gap-2">
+                      {BLUR_LEVELS.map(level => (
+                        <button
+                          key={level.value}
+                          onClick={() => setStoryData({ ...storyData, blur: level.value })}
+                          className={`flex-1 py-1.5 rounded-lg text-xs ${
+                            storyData.blur === level.value 
+                              ? 'bg-purple-500 text-white' 
+                              : 'bg-white/10 text-white'
+                          }`}
+                        >
+                          {level.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </>
+              )}
+              
+              {/* Background color for text stories */}
+              {storyData.type === 'text' && (
+                <div>
+                  <label className="text-gray-400 text-xs mb-2 block">Background</label>
+                  <div className="flex gap-2 flex-wrap">
+                    {['#1a1a2e', '#2d1b4e', '#0c2340', '#3d1c02', '#0d2818', '#3d2b2b', '#1a0a2e', '#2d2006'].map(color => (
+                      <button
+                        key={color}
+                        onClick={() => setStoryData({ ...storyData, backgroundColor: color })}
+                        className={`w-8 h-8 rounded-full ${storyData.backgroundColor === color ? 'ring-2 ring-white ring-offset-2 ring-offset-[#1a1a2e]' : ''}`}
+                        style={{ backgroundColor: color }}
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
+              
+              {/* Privacy */}
               <div className="flex gap-2">
-                <button onClick={() => setStoryData({ ...storyData, privacy: 'everyone' })} className={`flex-1 py-2 rounded-lg text-xs ${storyData.privacy === 'everyone' ? 'bg-green-500 text-white' : 'bg-white/10 text-gray-400'}`}>
+                <button 
+                  onClick={() => setStoryData({ ...storyData, privacy: 'everyone' })} 
+                  className={`flex-1 py-2 rounded-lg text-xs ${storyData.privacy === 'everyone' ? 'bg-green-500 text-white' : 'bg-white/10 text-gray-400'}`}
+                >
                   <Eye className="w-3 h-3 inline mr-1" /> Everyone
                 </button>
-                <button onClick={() => setStoryData({ ...storyData, privacy: 'friends' })} className={`flex-1 py-2 rounded-lg text-xs ${storyData.privacy === 'friends' ? 'bg-blue-500 text-white' : 'bg-white/10 text-gray-400'}`}>
+                <button 
+                  onClick={() => setStoryData({ ...storyData, privacy: 'friends' })} 
+                  className={`flex-1 py-2 rounded-lg text-xs ${storyData.privacy === 'friends' ? 'bg-blue-500 text-white' : 'bg-white/10 text-gray-400'}`}
+                >
                   <Lock className="w-3 h-3 inline mr-1" /> Friends Only
                 </button>
               </div>
+              
+              {/* Actions */}
               <div className="flex gap-3">
-                <button onClick={() => setShowStoryCreate(false)} className="flex-1 py-3 rounded-xl bg-white/10 text-white">Cancel</button>
-                <button onClick={createStory} className="flex-1 py-3 rounded-xl bg-amber-500 text-black font-semibold">Post</button>
+                <button 
+                  onClick={() => { 
+                    setShowStoryCreate(false)
+                    setStoryData({ type: 'photo', file: null, preview: null, text: '', privacy: 'everyone', backgroundColor: '#1a1a2e', filter: 'none', blur: 0 })
+                  }} 
+                  className="flex-1 py-3 rounded-xl bg-white/10 text-white"
+                >
+                  Cancel
+                </button>
+                <button 
+                  onClick={createStory} 
+                  disabled={uploading || (storyData.type === 'text' ? !storyData.text : !storyData.file)}
+                  className="flex-1 py-3 rounded-xl bg-amber-500 text-black font-semibold disabled:opacity-50 flex items-center justify-center gap-2"
+                >
+                  {uploading ? <Loader2 className="w-5 h-5 animate-spin" /> : null}
+                  {uploading ? 'Posting...' : 'Post Story'}
+                </button>
               </div>
             </div>
           </div>
         </div>
       )}
+
+      {/* Hidden file input for story uploads */}
+      <input
+        ref={storyFileInputRef}
+        type="file"
+        accept="image/*,video/*"
+        onChange={handleStoryFileSelect}
+        className="hidden"
+      />
 
       {/* Skins Modal */}
       {showSkins && (
