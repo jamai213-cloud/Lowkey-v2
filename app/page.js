@@ -437,11 +437,14 @@ const HomePage = ({ user, onLogout, setUser }) => {
       {/* Header */}
       <header className="relative z-10 flex items-center justify-between p-4 border-b border-white/5">
         <div className="flex items-center gap-3">
-          <img 
-            src="https://customer-assets.emergentagent.com/job_9cfb4bde-566c-4101-8a52-a8ca747e74ca/artifacts/xjtcpb4e_095E7AA1-912D-48A9-A667-A5A89F16DBD7.png" 
-            alt="LowKey" 
-            className="header-logo object-contain"
-          />
+          {/* Logo wrapper - fixed size, prevents shrinking */}
+          <div className="logo-wrap">
+            <img 
+              src="https://customer-assets.emergentagent.com/job_9cfb4bde-566c-4101-8a52-a8ca747e74ca/artifacts/xjtcpb4e_095E7AA1-912D-48A9-A667-A5A89F16DBD7.png" 
+              alt="LowKey" 
+              className="h-full w-full object-contain"
+            />
+          </div>
           <span className="text-lg font-semibold text-white">LowKey</span>
         </div>
         
