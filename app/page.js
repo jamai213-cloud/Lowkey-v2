@@ -899,6 +899,7 @@ const HomePage = ({ user, onLogout, setUser }) => {
       <LockModal isOpen={showLockModal} onClose={() => setShowLockModal(false)} />
       <OnboardingSlide isOpen={showOnboarding} onDismiss={dismissOnboarding} />
       <AfterDarkDisclaimer isOpen={showAfterDarkDisclaimer} onAccept={acceptAfterDarkDisclaimer} />
+      <MainLoungeInfo isOpen={showLoungeInfo} onClose={closeLoungeInfo} onEnter={enterLounge} />
     </div>
   )
 }
