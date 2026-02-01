@@ -131,8 +131,8 @@ export default function FriendsPage() {
               >
                 {/* Profile Picture - Always visible for friends */}
                 <div className="w-14 h-14 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex-shrink-0 overflow-hidden">
-                  {friend.avatar ? (
-                    <img src={friend.avatar} alt="" className="w-full h-full object-cover" />
+                  {(friend.avatar || friend.profilePicture) ? (
+                    <img src={friend.avatar || friend.profilePicture} alt="" className="w-full h-full object-cover" />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center">
                       <User className="w-7 h-7 text-white" />
