@@ -650,18 +650,20 @@ async function handleRoute(request, { params }) {
       return handleCORS(NextResponse.json(cleanMongoDoc(notification)))
     }
 
-    // ==================== PROFILE COMMENTS ====================
-    // Profile Picture update
+    // ==================== PROFILE PICTURE ====================
+    // Profile Picture update - uses 'avatar' field as the single profile picture
     if (route === '/profile/picture' && method === 'PUT') {
       const body = await safeParseJson(request)
       const { userId, profilePicture } = body
+      // Store in 'avatar' field for consistency
       await db.collection('users').updateOne(
         { id: userId },
-        { $set: { profilePicture, updatedAt: new Date() } }
+        { $set: { avatar: profilePicture, avatarUpdatedAt: new Date(), updatedAt: new Date() } }
       )
       return handleCORS(NextResponse.json({ success: true }))
     }
 
+    // ==================== PROFILE COMMENTS ====================
     if (route === '/profile/comments' && method === 'GET') {
       const url = new URL(request.url)
       const profileId = url.searchParams.get('profileId')
