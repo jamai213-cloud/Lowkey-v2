@@ -180,6 +180,126 @@ async function handleRoute(request, { params }) {
       return handleCORS(NextResponse.json({ user: cleanedUser, token }))
     }
 
+    // Forgot Password - Send reset email
+    if (route === '/auth/forgot-password' && method === 'POST') {
+      const body = await safeParseJson(request)
+      const { email } = body
+      
+      console.log('[FORGOT PASSWORD] Request for:', email)
+      
+      if (!email) {
+        return handleCORS(NextResponse.json({ error: 'Email required' }, { status: 400 }))
+      }
+      
+      const user = await db.collection('users').findOne({ email: email.toLowerCase() })
+      
+      // Always return success to prevent email enumeration
+      if (!user) {
+        console.log('[FORGOT PASSWORD] No user found for:', email)
+        return handleCORS(NextResponse.json({ message: 'If account exists, reset email sent' }))
+      }
+      
+      // Generate reset token
+      const resetToken = crypto.randomBytes(32).toString('hex')
+      const resetExpires = new Date(Date.now() + 3600000) // 1 hour
+      
+      await db.collection('users').updateOne(
+        { id: user.id },
+        { $set: { resetToken, resetExpires } }
+      )
+      
+      // Send email via Resend
+      const resendKey = process.env.RESEND_API_KEY
+      if (!resendKey) {
+        console.error('[FORGOT PASSWORD] RESEND_API_KEY not set')
+        return handleCORS(NextResponse.json({ error: 'Email service not configured' }, { status: 500 }))
+      }
+      
+      const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://lowkey-v2-slm5.vercel.app'
+      const resetLink = `${baseUrl}/reset-password?token=${resetToken}`
+      
+      try {
+        const emailRes = await fetch('https://api.resend.com/emails', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${resendKey}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            from: 'LowKey <noreply@resend.dev>',
+            to: user.email,
+            subject: 'Reset Your LowKey Password',
+            html: `
+              <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background: #1a1a2e; color: #fff;">
+                <h1 style="color: #f59e0b; text-align: center;">LowKey</h1>
+                <h2 style="text-align: center;">Password Reset Request</h2>
+                <p>Hi ${user.displayName || 'there'},</p>
+                <p>You requested to reset your password. Click the button below to set a new password:</p>
+                <div style="text-align: center; margin: 30px 0;">
+                  <a href="${resetLink}" style="background: linear-gradient(to right, #f59e0b, #eab308); color: #000; padding: 15px 30px; text-decoration: none; border-radius: 10px; font-weight: bold;">Reset Password</a>
+                </div>
+                <p style="color: #888; font-size: 12px;">This link expires in 1 hour. If you didn't request this, ignore this email.</p>
+                <p style="color: #888; font-size: 12px;">Link: ${resetLink}</p>
+              </div>
+            `
+          })
+        })
+        
+        const emailResult = await emailRes.json()
+        console.log('[FORGOT PASSWORD] Email sent:', emailResult)
+        
+        if (!emailRes.ok) {
+          console.error('[FORGOT PASSWORD] Resend error:', emailResult)
+          return handleCORS(NextResponse.json({ error: 'Failed to send email' }, { status: 500 }))
+        }
+        
+      } catch (emailErr) {
+        console.error('[FORGOT PASSWORD] Email error:', emailErr)
+        return handleCORS(NextResponse.json({ error: 'Failed to send email' }, { status: 500 }))
+      }
+      
+      return handleCORS(NextResponse.json({ message: 'If account exists, reset email sent' }))
+    }
+
+    // Reset Password - Verify token and update password
+    if (route === '/auth/reset-password' && method === 'POST') {
+      const body = await safeParseJson(request)
+      const { token, password } = body
+      
+      console.log('[RESET PASSWORD] Attempt with token:', token?.substring(0, 10) + '...')
+      
+      if (!token || !password) {
+        return handleCORS(NextResponse.json({ error: 'Token and password required' }, { status: 400 }))
+      }
+      
+      if (password.length < 6) {
+        return handleCORS(NextResponse.json({ error: 'Password must be at least 6 characters' }, { status: 400 }))
+      }
+      
+      const user = await db.collection('users').findOne({ 
+        resetToken: token,
+        resetExpires: { $gt: new Date() }
+      })
+      
+      if (!user) {
+        console.log('[RESET PASSWORD] Invalid or expired token')
+        return handleCORS(NextResponse.json({ error: 'Invalid or expired reset link' }, { status: 400 }))
+      }
+      
+      // Update password and clear reset token
+      const newPasswordHash = hashPassword(password)
+      await db.collection('users').updateOne(
+        { id: user.id },
+        { 
+          $set: { password: newPasswordHash },
+          $unset: { resetToken: '', resetExpires: '' }
+        }
+      )
+      
+      console.log('[RESET PASSWORD] Success for:', user.email)
+      return handleCORS(NextResponse.json({ message: 'Password reset successful' }))
+    }
+
     // ==================== USERS & PROFILE ====================
     if (route === '/users' && method === 'GET') {
       const users = await db.collection('users').find({}).toArray()
