@@ -1430,6 +1430,132 @@ async function handleRoute(request, { params }) {
     }
 
     // ==================== FRIENDS ====================
+    // Send friend request
+    if (route === '/friends/request' && method === 'POST') {
+      const body = await safeParseJson(request)
+      const { userId, friendId } = body
+      
+      // Check if already friends
+      const user = await db.collection('users').findOne({ id: userId })
+      if (user?.friends?.includes(friendId)) {
+        return handleCORS(NextResponse.json({ error: 'Already friends' }, { status: 400 }))
+      }
+      
+      // Check if request already exists
+      const existingRequest = await db.collection('friend_requests').findOne({
+        $or: [
+          { fromUserId: userId, toUserId: friendId },
+          { fromUserId: friendId, toUserId: userId }
+        ]
+      })
+      if (existingRequest) {
+        return handleCORS(NextResponse.json({ error: 'Request already exists' }, { status: 400 }))
+      }
+      
+      // Create friend request
+      const request = {
+        id: uuidv4(),
+        fromUserId: userId,
+        toUserId: friendId,
+        status: 'pending',
+        createdAt: new Date()
+      }
+      await db.collection('friend_requests').insertOne(request)
+      
+      // Create notification for the recipient
+      await db.collection('notifications').insertOne({
+        id: uuidv4(),
+        userId: friendId,
+        type: 'friend_request',
+        title: 'New Friend Request',
+        message: `${user.displayName} sent you a friend request`,
+        fromUserId: userId,
+        read: false,
+        createdAt: new Date()
+      })
+      
+      return handleCORS(NextResponse.json({ success: true }))
+    }
+
+    // Get friend requests
+    if (route.match(/^\/friends\/requests\/[^/]+$/) && method === 'GET') {
+      const userId = path[2]
+      
+      // Pending requests (received)
+      const pending = await db.collection('friend_requests').find({ toUserId: userId, status: 'pending' }).toArray()
+      const pendingWithDetails = await Promise.all(pending.map(async (req) => {
+        const fromUser = await db.collection('users').findOne({ id: req.fromUserId })
+        return {
+          ...req,
+          fromName: fromUser?.displayName,
+          fromAvatar: fromUser?.avatar
+        }
+      }))
+      
+      // Sent requests
+      const sent = await db.collection('friend_requests').find({ fromUserId: userId, status: 'pending' }).toArray()
+      
+      return handleCORS(NextResponse.json({
+        pending: pendingWithDetails,
+        sent: sent.map(s => s.toUserId)
+      }))
+    }
+
+    // Accept friend request
+    if (route === '/friends/accept' && method === 'POST') {
+      const body = await safeParseJson(request)
+      const { userId, friendId } = body
+      
+      // Find and update the request
+      const request = await db.collection('friend_requests').findOne({
+        fromUserId: friendId,
+        toUserId: userId,
+        status: 'pending'
+      })
+      
+      if (!request) {
+        return handleCORS(NextResponse.json({ error: 'Request not found' }, { status: 404 }))
+      }
+      
+      // Update request status
+      await db.collection('friend_requests').updateOne({ id: request.id }, { $set: { status: 'accepted' } })
+      
+      // Add each other as friends
+      await db.collection('users').updateOne({ id: userId }, { $addToSet: { friends: friendId } })
+      await db.collection('users').updateOne({ id: friendId }, { $addToSet: { friends: userId } })
+      
+      // Notify the requester
+      const accepter = await db.collection('users').findOne({ id: userId })
+      await db.collection('notifications').insertOne({
+        id: uuidv4(),
+        userId: friendId,
+        type: 'friend_accepted',
+        title: 'Friend Request Accepted',
+        message: `${accepter.displayName} accepted your friend request`,
+        fromUserId: userId,
+        read: false,
+        createdAt: new Date()
+      })
+      
+      return handleCORS(NextResponse.json({ success: true }))
+    }
+
+    // Decline friend request
+    if (route === '/friends/decline' && method === 'POST') {
+      const body = await safeParseJson(request)
+      const { userId, friendId } = body
+      
+      // Delete the request
+      await db.collection('friend_requests').deleteOne({
+        fromUserId: friendId,
+        toUserId: userId,
+        status: 'pending'
+      })
+      
+      return handleCORS(NextResponse.json({ success: true }))
+    }
+
+    // Old direct add (keep for backwards compatibility)
     if (route === '/friends/add' && method === 'POST') {
       const body = await safeParseJson(request)
       const { userId, friendId } = body
