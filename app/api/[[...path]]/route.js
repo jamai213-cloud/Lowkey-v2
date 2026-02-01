@@ -307,6 +307,82 @@ async function handleRoute(request, { params }) {
       return handleCORS(NextResponse.json(users.map(cleanMongoDoc)))
     }
 
+    // Profile view with privacy settings
+    if (route.match(/^\/profile\/[^/]+$/) && method === 'GET') {
+      const profileUserId = path[1]
+      const url = new URL(request.url)
+      const viewerId = url.searchParams.get('viewerId')
+      
+      const profileUser = await db.collection('users').findOne({ id: profileUserId })
+      if (!profileUser) {
+        return handleCORS(NextResponse.json({ error: 'User not found' }, { status: 404 }))
+      }
+      
+      const viewer = viewerId ? await db.collection('users').findOne({ id: viewerId }) : null
+      const isFriend = viewer?.friends?.includes(profileUserId)
+      const isOwnProfile = viewerId === profileUserId
+      const isPublicProfile = profileUser.profilePrivacy === 'public' || !profileUser.profilePrivacy
+      
+      // Get gallery count
+      const galleryCount = await db.collection('gallery').countDocuments({ userId: profileUserId })
+      
+      // Base profile info (always visible in search)
+      const baseProfile = {
+        id: profileUser.id,
+        displayName: profileUser.displayName,
+        avatar: profileUser.avatar,
+        verified: profileUser.verified,
+        isFounder: profileUser.isFounder,
+        isCreator: profileUser.isCreator,
+        verificationTier: profileUser.verificationTier,
+        profilePrivacy: profileUser.profilePrivacy || 'public',
+        bio: profileUser.bio,
+        galleryCount,
+        friends: profileUser.friends || []
+      }
+      
+      // If private profile and not friend/owner, return limited info
+      if (profileUser.profilePrivacy === 'private' && !isFriend && !isOwnProfile) {
+        return handleCORS(NextResponse.json({
+          ...baseProfile,
+          isPublic: false,
+          kinks: null,
+          gallery: null
+        }))
+      }
+      
+      // If creator with subscription requirement
+      if (profileUser.isCreator && profileUser.requiresSubscription && !isFriend && !isOwnProfile) {
+        // Check if viewer is subscribed
+        const isSubscribed = viewer?.subscriptions?.includes(profileUserId)
+        if (!isSubscribed) {
+          return handleCORS(NextResponse.json({
+            ...baseProfile,
+            isPublic: false,
+            requiresSubscription: true,
+            isSubscribed: false,
+            kinks: null,
+            gallery: null
+          }))
+        }
+      }
+      
+      // Full profile for friends, public profiles, or own profile
+      const gallery = await db.collection('gallery').find({ userId: profileUserId }).limit(9).toArray()
+      
+      return handleCORS(NextResponse.json({
+        ...baseProfile,
+        isPublic: true,
+        kinks: profileUser.kinks || [],
+        gallery: gallery.map(cleanMongoDoc),
+        location: profileUser.location,
+        age: profileUser.age,
+        gender: profileUser.gender,
+        lookingFor: profileUser.lookingFor,
+        createdAt: profileUser.createdAt
+      }))
+    }
+
     if (route.match(/^\/users\/[^/]+$/) && method === 'GET') {
       const userId = path[1]
       const user = await db.collection('users').findOne({ id: userId })
