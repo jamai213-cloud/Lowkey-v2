@@ -1767,7 +1767,8 @@ async function handleRoute(request, { params }) {
       const post = {
         id: uuidv4(),
         creatorId: body.creatorId,
-        imageUrl: body.imageUrl,
+        imageData: body.imageData, // Support file upload as base64
+        imageUrl: body.imageUrl,   // Keep backward compatibility with URL
         caption: body.caption,
         price: body.price || 0,
         isBlurred: true,
