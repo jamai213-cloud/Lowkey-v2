@@ -2161,8 +2161,17 @@ async function handleRoute(request, { params }) {
 
     // ==================== DEBUG ====================
     if (route === '/debug/db' && method === 'GET') {
+      const dbName = getDbName()
+      const mongoUri = getMongoUri()
       const userCount = await db.collection('users').countDocuments()
-      return handleCORS(NextResponse.json({ status: 'connected', userCount }))
+      const users = await db.collection('users').find({}, { projection: { email: 1, displayName: 1, id: 1 } }).limit(10).toArray()
+      return handleCORS(NextResponse.json({ 
+        status: 'connected', 
+        dbName,
+        mongoUriPrefix: mongoUri.substring(0, 30) + '...',
+        userCount,
+        users: users.map(u => ({ email: u.email, displayName: u.displayName }))
+      }))
     }
 
     if (route === '/debug/fix-login' && (method === 'GET' || method === 'POST')) {
