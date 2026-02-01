@@ -197,10 +197,22 @@ export default function LoungePage() {
               messages.map((msg) => (
                 <div
                   key={msg.id}
-                  className={`flex ${msg.senderId === user?.id ? 'justify-end' : 'justify-start'}`}
+                  className={`flex items-end gap-2 ${msg.senderId === user?.id ? 'justify-end' : 'justify-start'}`}
                 >
+                  {/* Avatar for other users - show on left */}
+                  {msg.senderId !== user?.id && (
+                    <div className="w-8 h-8 rounded-full bg-purple-500/30 flex-shrink-0 overflow-hidden">
+                      {msg.senderAvatar ? (
+                        <img src={msg.senderAvatar} alt="" className="w-full h-full object-cover" />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-purple-400 text-xs font-bold">
+                          {msg.senderName?.charAt(0)?.toUpperCase() || '?'}
+                        </div>
+                      )}
+                    </div>
+                  )}
                   <div
-                    className={`max-w-[75%] px-4 py-2 rounded-2xl ${
+                    className={`max-w-[70%] px-4 py-2 rounded-2xl ${
                       msg.senderId === user?.id
                         ? 'bg-amber-500 text-black'
                         : 'bg-white/10 text-white'
@@ -214,6 +226,18 @@ export default function LoungePage() {
                       {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                     </p>
                   </div>
+                  {/* Avatar for current user - show on right */}
+                  {msg.senderId === user?.id && (
+                    <div className="w-8 h-8 rounded-full bg-amber-500/30 flex-shrink-0 overflow-hidden">
+                      {user.avatar ? (
+                        <img src={user.avatar} alt="" className="w-full h-full object-cover" />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-amber-400 text-xs font-bold">
+                          {user.displayName?.charAt(0)?.toUpperCase() || '?'}
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
               ))
             )}
