@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
-import { ArrowLeft, Send, Users, Image, Lock, MessageSquare, PoundSterling, Star } from 'lucide-react'
+import { ArrowLeft, Send, Users, Image, Lock, MessageSquare, PoundSterling, Star, Upload, X } from 'lucide-react'
 
 export default function LoungePage() {
   const router = useRouter()
@@ -13,7 +13,9 @@ export default function LoungePage() {
   const [newMessage, setNewMessage] = useState('')
   const [loading, setLoading] = useState(true)
   const [showPostForm, setShowPostForm] = useState(false)
-  const [newPost, setNewPost] = useState({ imageUrl: '', caption: '', price: '' })
+  const [newPost, setNewPost] = useState({ imageData: '', caption: '', price: '' })
+  const [imagePreview, setImagePreview] = useState(null)
+  const fileInputRef = useRef(null)
   const [activeTab, setActiveTab] = useState('chat') // chat, posts
   const messagesEndRef = useRef(null)
   const pollRef = useRef(null)
