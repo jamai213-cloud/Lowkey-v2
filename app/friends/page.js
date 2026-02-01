@@ -111,8 +111,12 @@ export default function FriendsPage() {
                 key={friend.id}
                 className="flex items-center gap-4 p-4 rounded-xl bg-white/5 border border-white/10"
               >
-                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
-                  <User className="w-6 h-6 text-white" />
+                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center overflow-hidden">
+                  {friend.avatar ? (
+                    <img src={friend.avatar} alt="" className="w-full h-full object-cover" />
+                  ) : (
+                    <User className="w-6 h-6 text-white" />
+                  )}
                 </div>
                 <div className="flex-1">
                   <h3 className="text-white font-medium">{friend.displayName}</h3>
