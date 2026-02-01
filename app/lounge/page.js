@@ -113,9 +113,44 @@ export default function LoungePage() {
     }
   }
 
+  // Handle file selection for tease post
+  const handleFileSelect = (e) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    // Check file size (max 10MB)
+    if (file.size > 10 * 1024 * 1024) {
+      alert('File too large. Max size is 10MB')
+      return
+    }
+
+    // Check file type
+    if (!file.type.startsWith('image/')) {
+      alert('Please select an image file')
+      return
+    }
+
+    const reader = new FileReader()
+    reader.onload = (event) => {
+      const base64 = event.target.result
+      setNewPost({ ...newPost, imageData: base64 })
+      setImagePreview(base64)
+    }
+    reader.readAsDataURL(file)
+  }
+
+  // Clear selected image
+  const clearImage = () => {
+    setNewPost({ ...newPost, imageData: '' })
+    setImagePreview(null)
+    if (fileInputRef.current) {
+      fileInputRef.current.value = ''
+    }
+  }
+
   const createPost = async (e) => {
     e.preventDefault()
-    if (!newPost.imageUrl) return
+    if (!newPost.imageData) return
 
     try {
       const res = await fetch('/api/main-lounge/posts', {
@@ -123,13 +158,14 @@ export default function LoungePage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           creatorId: user.id,
-          imageUrl: newPost.imageUrl,
+          imageData: newPost.imageData,
           caption: newPost.caption,
           price: parseFloat(newPost.price) || 0
         })
       })
       if (res.ok) {
-        setNewPost({ imageUrl: '', caption: '', price: '' })
+        setNewPost({ imageData: '', caption: '', price: '' })
+        setImagePreview(null)
         setShowPostForm(false)
         fetchPosts()
       }
