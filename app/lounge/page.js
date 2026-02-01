@@ -380,14 +380,38 @@ export default function LoungePage() {
           <div className="bg-[#1a1a2e] rounded-2xl p-6 max-w-sm mx-4 w-full" onClick={e => e.stopPropagation()}>
             <h2 className="text-xl text-white font-semibold mb-4">Create Tease Post</h2>
             <form onSubmit={createPost} className="space-y-4">
+              {/* File Upload */}
               <input
-                type="url"
-                value={newPost.imageUrl}
-                onChange={(e) => setNewPost({ ...newPost, imageUrl: e.target.value })}
-                placeholder="Image URL"
-                className="w-full px-4 py-3 rounded-xl bg-black/40 border border-white/10 text-white placeholder-gray-500 focus:outline-none focus:border-pink-500/50"
-                required
+                type="file"
+                ref={fileInputRef}
+                accept="image/*"
+                onChange={handleFileSelect}
+                className="hidden"
               />
+              
+              {imagePreview ? (
+                <div className="relative aspect-video rounded-xl overflow-hidden bg-black/40 border border-white/10">
+                  <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
+                  <button 
+                    type="button"
+                    onClick={clearImage}
+                    className="absolute top-2 right-2 p-1.5 rounded-full bg-black/60 hover:bg-black/80 transition-colors"
+                  >
+                    <X className="w-4 h-4 text-white" />
+                  </button>
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="w-full aspect-video rounded-xl bg-black/40 border border-dashed border-white/20 flex flex-col items-center justify-center gap-2 hover:border-pink-500/50 transition-colors"
+                >
+                  <Upload className="w-8 h-8 text-gray-400" />
+                  <span className="text-gray-400 text-sm">Tap to upload image</span>
+                  <span className="text-gray-500 text-xs">Max 10MB • JPG, PNG, GIF</span>
+                </button>
+              )}
+              
               <textarea
                 value={newPost.caption}
                 onChange={(e) => setNewPost({ ...newPost, caption: e.target.value })}
@@ -408,8 +432,8 @@ export default function LoungePage() {
               </div>
               <p className="text-gray-400 text-xs">Your image will be blurred with the LowKey logo. Subscribers can view full content. LowKey takes 20%.</p>
               <div className="flex gap-3">
-                <button type="button" onClick={() => setShowPostForm(false)} className="flex-1 py-3 rounded-xl bg-white/10 text-white">Cancel</button>
-                <button type="submit" className="flex-1 py-3 rounded-xl bg-gradient-to-r from-pink-500 to-purple-500 text-white font-semibold">Post</button>
+                <button type="button" onClick={() => { setShowPostForm(false); clearImage(); }} className="flex-1 py-3 rounded-xl bg-white/10 text-white">Cancel</button>
+                <button type="submit" disabled={!newPost.imageData} className="flex-1 py-3 rounded-xl bg-gradient-to-r from-pink-500 to-purple-500 text-white font-semibold disabled:opacity-50">Post</button>
               </div>
             </form>
           </div>
