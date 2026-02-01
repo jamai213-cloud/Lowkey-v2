@@ -178,8 +178,8 @@ export default function FriendsPage() {
               {/* Large Profile Picture */}
               <div className="absolute -bottom-14 left-1/2 -translate-x-1/2">
                 <div className="w-28 h-28 rounded-full border-4 border-[#1a1a2e] overflow-hidden bg-gradient-to-br from-purple-500 to-pink-500">
-                  {selectedFriend.avatar ? (
-                    <img src={selectedFriend.avatar} alt="" className="w-full h-full object-cover" />
+                  {(selectedFriend.avatar || selectedFriend.profilePicture) ? (
+                    <img src={selectedFriend.avatar || selectedFriend.profilePicture} alt="" className="w-full h-full object-cover" />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center">
                       <User className="w-12 h-12 text-white" />
