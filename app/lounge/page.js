@@ -336,7 +336,7 @@ export default function LoungePage() {
                     {/* Blurred Image with LowKey overlay */}
                     <div className="relative aspect-square">
                       <img 
-                        src={post.imageUrl} 
+                        src={post.imageData || post.imageUrl} 
                         alt="Teaser" 
                         className="w-full h-full object-cover blur-lg"
                       />
