@@ -1526,12 +1526,26 @@ async function handleRoute(request, { params }) {
 
     if (route === '/main-lounge/messages' && method === 'GET') {
       const msgs = await db.collection('lounge_messages').find({ loungeId: 'main-lounge' }).sort({ createdAt: -1 }).limit(100).toArray()
-      return handleCORS(NextResponse.json(msgs.reverse().map(cleanMongoDoc)))
+      // Enrich messages with sender avatar
+      const enrichedMsgs = await Promise.all(msgs.map(async (msg) => {
+        const sender = await db.collection('users').findOne({ id: msg.senderId })
+        return { ...cleanMongoDoc(msg), senderAvatar: sender?.avatar || null }
+      }))
+      return handleCORS(NextResponse.json(enrichedMsgs.reverse()))
     }
 
     if (route === '/main-lounge/messages' && method === 'POST') {
       const body = await safeParseJson(request)
-      const msg = { id: uuidv4(), loungeId: 'main-lounge', senderId: body.senderId, senderName: body.senderName, content: body.content, createdAt: new Date() }
+      const sender = await db.collection('users').findOne({ id: body.senderId })
+      const msg = { 
+        id: uuidv4(), 
+        loungeId: 'main-lounge', 
+        senderId: body.senderId, 
+        senderName: body.senderName, 
+        senderAvatar: sender?.avatar || null,
+        content: body.content, 
+        createdAt: new Date() 
+      }
       await db.collection('lounge_messages').insertOne(msg)
       return handleCORS(NextResponse.json(cleanMongoDoc(msg)))
     }
