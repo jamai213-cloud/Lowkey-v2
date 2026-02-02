@@ -2810,6 +2810,126 @@ async function handleRoute(request, { params }) {
       return handleCORS(NextResponse.json({ success: true }))
     }
 
+    // ==================== BLIND DATE VOICE SIGNALING ====================
+    // Send WebRTC signal to partner
+    if (route === '/blinddate/signal' && method === 'POST') {
+      const body = await safeParseJson(request)
+      const { sessionId, fromUserId, toUserId, type, data } = body
+      
+      // Store signal for the recipient to poll
+      const signal = {
+        id: uuidv4(),
+        sessionId,
+        fromUserId,
+        toUserId,
+        type,
+        data,
+        createdAt: new Date(),
+        processed: false
+      }
+      
+      await db.collection('blinddate_signals').insertOne(signal)
+      
+      // Clean up old signals (older than 30 seconds)
+      await db.collection('blinddate_signals').deleteMany({
+        createdAt: { $lt: new Date(Date.now() - 30000) }
+      })
+      
+      return handleCORS(NextResponse.json({ success: true }))
+    }
+
+    // Poll for WebRTC signals
+    if (route === '/blinddate/signal' && method === 'GET') {
+      const url = new URL(request.url)
+      const sessionId = url.searchParams.get('sessionId')
+      const userId = url.searchParams.get('userId')
+      
+      // Get unprocessed signals for this user
+      const signals = await db.collection('blinddate_signals')
+        .find({
+          sessionId,
+          toUserId: userId,
+          processed: false
+        })
+        .sort({ createdAt: 1 })
+        .toArray()
+      
+      // Mark signals as processed
+      if (signals.length > 0) {
+        const signalIds = signals.map(s => s.id)
+        await db.collection('blinddate_signals').updateMany(
+          { id: { $in: signalIds } },
+          { $set: { processed: true } }
+        )
+      }
+      
+      return handleCORS(NextResponse.json(signals.map(cleanMongoDoc)))
+    }
+
+    // End voice call
+    if (route === '/blinddate/voice/end' && method === 'POST') {
+      const body = await safeParseJson(request)
+      const { sessionId, oderId } = body
+      
+      // Clean up signals for this session
+      await db.collection('blinddate_signals').deleteMany({ sessionId })
+      
+      // Update session to indicate voice ended
+      await db.collection('blinddate_sessions').updateOne(
+        { id: sessionId },
+        { $set: { voiceEnded: true, voiceEndedAt: new Date() } }
+      )
+      
+      return handleCORS(NextResponse.json({ success: true }))
+    }
+
+    // Report user in blind date
+    if (route === '/blinddate/report' && method === 'POST') {
+      const body = await safeParseJson(request)
+      const { sessionId, reporterId, reportedUserId, reason } = body
+      
+      const report = {
+        id: uuidv4(),
+        sessionId,
+        reporterId,
+        reportedUserId,
+        reason,
+        type: 'blinddate',
+        createdAt: new Date(),
+        status: 'pending'
+      }
+      
+      await db.collection('reports').insertOne(report)
+      
+      return handleCORS(NextResponse.json({ success: true }))
+    }
+
+    // Block user from future blind date matches
+    if (route === '/blinddate/block' && method === 'POST') {
+      const body = await safeParseJson(request)
+      const { userId, blockedUserId } = body
+      
+      // Add to block list
+      await db.collection('users').updateOne(
+        { id: userId },
+        { $addToSet: { blinddateBlockedUsers: blockedUserId } }
+      )
+      
+      // End current session if exists
+      await db.collection('blinddate_sessions').updateMany(
+        {
+          $or: [
+            { user1Id: userId, user2Id: blockedUserId },
+            { user1Id: blockedUserId, user2Id: userId }
+          ],
+          status: 'active'
+        },
+        { $set: { status: 'ended', endedBy: userId, endedAt: new Date(), endReason: 'blocked' } }
+      )
+      
+      return handleCORS(NextResponse.json({ success: true }))
+    }
+
     return handleCORS(NextResponse.json({ error: `Route ${route} not found` }, { status: 404 }))
 
   } catch (error) {
