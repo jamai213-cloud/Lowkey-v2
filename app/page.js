@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { 
   Users, MessageSquare, Sofa, Search, Wallet, Moon, Gamepad2, Radio, Music, 
   Calendar, Bell, Lock, X, Eye, EyeOff, Volume2, UserPlus, CheckCircle, 
-  LogOut, Settings, Sparkles, Home, User, ChevronRight, Send
+  LogOut, Settings, Sparkles, Home, User, ChevronRight, Send, Heart
 } from 'lucide-react'
 
 // Auth Context
