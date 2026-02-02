@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { ArrowLeft, User, UserPlus, UserMinus, MessageSquare, X, Crown, Check, Sparkles, Image, Heart } from 'lucide-react'
+import { ArrowLeft, User, UserPlus, UserMinus, MessageSquare, X, Crown, Check, Sparkles, Image, Heart, MapPin, Calendar, ChevronLeft } from 'lucide-react'
 
 export default function FriendsPage() {
   const router = useRouter()
@@ -10,7 +10,7 @@ export default function FriendsPage() {
   const [friends, setFriends] = useState([])
   const [loading, setLoading] = useState(true)
   const [selectedFriend, setSelectedFriend] = useState(null)
-  const [showProfileModal, setShowProfileModal] = useState(false)
+  const [viewingProfile, setViewingProfile] = useState(false)
 
   useEffect(() => {
     const storedUser = localStorage.getItem('lowkey_user')
