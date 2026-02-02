@@ -336,6 +336,16 @@ export default function BlindDatePage() {
   }
 
   const endDate = async () => {
+    // End voice call first
+    if (voiceRef.current) {
+      await voiceRef.current.end()
+    }
+    
+    // Clear chat polling
+    if (chatPollRef.current) {
+      clearInterval(chatPollRef.current)
+    }
+    
     if (timerRef.current) clearInterval(timerRef.current)
     if (promptTimerRef.current) clearInterval(promptTimerRef.current)
 
@@ -353,6 +363,52 @@ export default function BlindDatePage() {
     }
 
     setStage('ended')
+  }
+
+  // Report user
+  const reportUser = async () => {
+    if (!matchedUser) return
+    
+    const reason = prompt('Please describe the issue:')
+    if (!reason) return
+    
+    try {
+      await fetch('/api/blinddate/report', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          sessionId: matchedUser.sessionId,
+          reporterId: user.id,
+          reportedUserId: matchedUser.id,
+          reason
+        })
+      })
+      alert('Report submitted. Thank you for helping keep Lowkey safe.')
+    } catch (err) {
+      console.error('Report failed:', err)
+    }
+  }
+
+  // Block user
+  const blockUser = async () => {
+    if (!matchedUser) return
+    
+    if (!confirm('Block this user? You won\'t be matched with them again.')) return
+    
+    try {
+      await fetch('/api/blinddate/block', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: user.id,
+          blockedUserId: matchedUser.id
+        })
+      })
+      // End the date after blocking
+      await endDate()
+    } catch (err) {
+      console.error('Block failed:', err)
+    }
   }
 
   const formatTime = (seconds) => {
