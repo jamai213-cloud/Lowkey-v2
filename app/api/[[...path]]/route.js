@@ -2930,6 +2930,39 @@ async function handleRoute(request, { params }) {
       return handleCORS(NextResponse.json({ success: true }))
     }
 
+    // Blind date fallback chat - send message
+    if (route === '/blinddate/chat' && method === 'POST') {
+      const body = await safeParseJson(request)
+      const { sessionId, senderId, senderAlias, message } = body
+      
+      const chatMessage = {
+        id: uuidv4(),
+        sessionId,
+        senderId,
+        senderAlias,
+        message,
+        createdAt: new Date()
+      }
+      
+      await db.collection('blinddate_chat').insertOne(chatMessage)
+      
+      return handleCORS(NextResponse.json({ success: true }))
+    }
+
+    // Blind date fallback chat - get messages
+    if (route === '/blinddate/chat' && method === 'GET') {
+      const url = new URL(request.url)
+      const sessionId = url.searchParams.get('sessionId')
+      
+      const messages = await db.collection('blinddate_chat')
+        .find({ sessionId })
+        .sort({ createdAt: 1 })
+        .limit(100)
+        .toArray()
+      
+      return handleCORS(NextResponse.json(messages.map(cleanMongoDoc)))
+    }
+
     return handleCORS(NextResponse.json({ error: `Route ${route} not found` }, { status: 404 }))
 
   } catch (error) {
