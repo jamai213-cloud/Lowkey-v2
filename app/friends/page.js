@@ -45,7 +45,8 @@ export default function FriendsPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId: user.id, friendId })
       })
-      setShowProfileModal(false)
+      setViewingProfile(false)
+      setSelectedFriend(null)
       fetchFriends(user.id)
     } catch (err) {
       console.error('Failed to remove friend')
