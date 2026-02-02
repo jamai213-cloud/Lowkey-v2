@@ -3,9 +3,10 @@
 import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { 
-  ArrowLeft, Heart, Clock, Volume2, VolumeX, Phone, PhoneOff,
-  User, X, Check, Eye, Timer, Sparkles, MessageSquare, Flag, Shield
+  ArrowLeft, Heart, Clock, Volume2, VolumeX, Phone, PhoneOff, Mic, MicOff,
+  User, X, Check, Eye, Timer, Sparkles, MessageSquare, Flag, Shield, Send, AlertCircle
 } from 'lucide-react'
+import { createBlindDateVoice } from '../lib/blindDateVoice'
 
 // Mood options for blind date
 const MOOD_OPTIONS = [
@@ -50,11 +51,22 @@ export default function BlindDatePage() {
   const [isMuted, setIsMuted] = useState(false)
   const [currentPrompt, setCurrentPrompt] = useState(null)
   const [showRevealModal, setShowRevealModal] = useState(false)
-  const [revealChoice, setRevealChoice] = useState(null) // 'reveal', 'extend', 'end'
+  const [revealChoice, setRevealChoice] = useState(null)
   const [partnerChoice, setPartnerChoice] = useState(null)
-  const [revealResult, setRevealResult] = useState(null) // 'mutual', 'not_mutual', null
+  const [revealResult, setRevealResult] = useState(null)
+  
+  // Voice state
+  const [voiceConnected, setVoiceConnected] = useState(false)
+  const [voiceError, setVoiceError] = useState(null)
+  const [voiceFallback, setVoiceFallback] = useState(false) // True if fell back to text
+  const [chatMessages, setChatMessages] = useState([])
+  const [newMessage, setNewMessage] = useState('')
+  
   const timerRef = useRef(null)
   const promptTimerRef = useRef(null)
+  const voiceRef = useRef(null)
+  const remoteAudioRef = useRef(null)
+  const chatPollRef = useRef(null)
 
   useEffect(() => {
     const storedUser = localStorage.getItem('lowkey_user')
@@ -63,6 +75,13 @@ export default function BlindDatePage() {
       return
     }
     setUser(JSON.parse(storedUser))
+    
+    // Cleanup on unmount
+    return () => {
+      if (voiceRef.current) {
+        voiceRef.current.end()
+      }
+    }
   }, [])
 
   // Timer effect for active date
