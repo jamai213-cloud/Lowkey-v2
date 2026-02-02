@@ -76,11 +76,17 @@ export default function FriendsPage() {
       if (res.ok) {
         const profileData = await res.json()
         setSelectedFriend(profileData)
-        setShowProfileModal(true)
+        setViewingProfile(true)
       }
     } catch (err) {
       console.error('Failed to load profile')
     }
+  }
+
+  // Go back to friends list
+  const backToList = () => {
+    setViewingProfile(false)
+    setSelectedFriend(null)
   }
 
   if (loading) {
