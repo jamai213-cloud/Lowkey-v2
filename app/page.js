@@ -321,6 +321,73 @@ const MainLoungeInfo = ({ isOpen, onClose, onEnter }) => {
   )
 }
 
+// Blind Lowkey Info Modal
+// First-time explanation shown when user taps Blind Lowkey tile
+// Dismissible and non-blocking - only shown once per user
+const BlindLowkeyInfo = ({ isOpen, onClose, onStart }) => {
+  if (!isOpen) return null
+  
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4" onClick={onClose}>
+      <div className="max-w-sm w-full" onClick={e => e.stopPropagation()}>
+        {/* Subtle background glow */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute top-1/4 left-1/4 w-64 h-64 rounded-full bg-pink-500/10 blur-3xl" />
+          <div className="absolute bottom-1/4 right-1/4 w-64 h-64 rounded-full bg-purple-500/10 blur-3xl" />
+        </div>
+        
+        <div className="relative glass-card rounded-2xl p-6 border border-white/10">
+          {/* Icon */}
+          <div className="w-14 h-14 mx-auto mb-4 rounded-full bg-pink-500/20 flex items-center justify-center border border-pink-500/30">
+            <Heart className="w-7 h-7 text-pink-400" />
+          </div>
+          
+          {/* Content */}
+          <div className="text-center mb-6">
+            <h2 className="text-xl font-bold text-white mb-2">Blind Lowkey</h2>
+            <p className="text-pink-400 text-sm mb-4">No photos. Just vibes.</p>
+            
+            <div className="text-left space-y-2 text-sm">
+              <p className="text-gray-300 flex items-start gap-2">
+                <span className="text-pink-400 mt-0.5">•</span>
+                <span>Voice-first — no photos shown initially</span>
+              </p>
+              <p className="text-gray-300 flex items-start gap-2">
+                <span className="text-pink-400 mt-0.5">•</span>
+                <span>Each date lasts 10 minutes</span>
+              </p>
+              <p className="text-gray-300 flex items-start gap-2">
+                <span className="text-pink-400 mt-0.5">•</span>
+                <span>Photo reveal only with mutual consent</span>
+              </p>
+              <p className="text-gray-300 flex items-start gap-2">
+                <span className="text-pink-400 mt-0.5">•</span>
+                <span>End the date anytime</span>
+              </p>
+            </div>
+          </div>
+          
+          {/* Actions */}
+          <div className="space-y-2">
+            <button 
+              onClick={onStart}
+              className="w-full py-3 rounded-xl bg-gradient-to-r from-pink-500 to-purple-500 text-white font-semibold hover:opacity-90 transition-opacity"
+            >
+              Start Blind Lowkey
+            </button>
+            <button 
+              onClick={onClose}
+              className="w-full py-2 text-gray-400 text-sm hover:text-white transition-colors"
+            >
+              Not now
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 // Forgot Password Modal
 const ForgotPasswordModal = ({ isOpen, onClose }) => {
   const [email, setEmail] = useState('')
