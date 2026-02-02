@@ -996,6 +996,7 @@ const HomePage = ({ user, onLogout, setUser }) => {
       <OnboardingSlide isOpen={showOnboarding} onDismiss={dismissOnboarding} />
       <AfterDarkDisclaimer isOpen={showAfterDarkDisclaimer} onAccept={acceptAfterDarkDisclaimer} />
       <MainLoungeInfo isOpen={showLoungeInfo} onClose={closeLoungeInfo} onEnter={enterLounge} />
+      <BlindLowkeyInfo isOpen={showBlindLowkeyInfo} onClose={closeBlindLowkeyInfo} onStart={startBlindLowkey} />
     </div>
   )
 }
