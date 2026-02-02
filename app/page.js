@@ -682,6 +682,7 @@ const HomePage = ({ user, onLogout, setUser }) => {
   const [showOnboarding, setShowOnboarding] = useState(false)
   const [showAfterDarkDisclaimer, setShowAfterDarkDisclaimer] = useState(false)
   const [showLoungeInfo, setShowLoungeInfo] = useState(false)
+  const [showBlindLowkeyInfo, setShowBlindLowkeyInfo] = useState(false)
   const [notifications, setNotifications] = useState([])
   const [showNotifications, setShowNotifications] = useState(false)
   const [noticeUnreadCount, setNoticeUnreadCount] = useState(0)
