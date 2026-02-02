@@ -811,6 +811,12 @@ const HomePage = ({ user, onLogout, setUser }) => {
       return
     }
     
+    // Special handling for Blind Lowkey - show explanation on first visit
+    if (tileId === 'blinddate' && !hasSeenBlindLowkeyInfo()) {
+      setShowBlindLowkeyInfo(true)
+      return
+    }
+    
     router.push(path)
   }
 
