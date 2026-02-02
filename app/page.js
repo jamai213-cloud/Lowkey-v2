@@ -747,6 +747,27 @@ const HomePage = ({ user, onLogout, setUser }) => {
     setShowLoungeInfo(false)
   }
 
+  // Check if user has seen Blind Lowkey explanation (show once)
+  const hasSeenBlindLowkeyInfo = () => {
+    const key = `lowkey_blind_lowkey_explained_${user.id}`
+    return localStorage.getItem(key) === 'true'
+  }
+
+  // Start Blind Lowkey and mark explanation as seen
+  const startBlindLowkey = () => {
+    const key = `lowkey_blind_lowkey_explained_${user.id}`
+    localStorage.setItem(key, 'true')
+    setShowBlindLowkeyInfo(false)
+    router.push('/blinddate')
+  }
+
+  // Close Blind Lowkey info without entering
+  const closeBlindLowkeyInfo = () => {
+    const key = `lowkey_blind_lowkey_explained_${user.id}`
+    localStorage.setItem(key, 'true')
+    setShowBlindLowkeyInfo(false)
+  }
+
   const fetchNotifications = async () => {
     try {
       const res = await fetch(`/api/notifications/${user.id}`)
