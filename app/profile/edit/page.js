@@ -347,7 +347,7 @@ export default function EditProfilePage() {
       </header>
 
       <div className="p-4 space-y-6">
-        {/* Profile Picture Section */}
+        {/* Profile Picture Section - Single unified section */}
         <section>
           <h2 className="text-white font-semibold mb-3 flex items-center gap-2">
             <User className="w-5 h-5 text-amber-400" /> Profile Picture
@@ -373,13 +373,15 @@ export default function EditProfilePage() {
               </button>
             </div>
             <div className="flex-1">
-              <p className="text-gray-400 text-sm mb-2">Tap to upload from your phone</p>
-              <button 
-                onClick={() => setShowProfilePicUpload(true)}
-                className="px-4 py-2 rounded-lg bg-white/10 text-white text-sm flex items-center gap-2"
-              >
-                <Upload className="w-4 h-4" /> Change Photo
-              </button>
+              <p className="text-gray-400 text-sm mb-2">Tap the camera to upload from your phone</p>
+              {gallery.length > 0 && (
+                <button 
+                  onClick={() => setShowProfilePicUpload(true)}
+                  className="px-4 py-2 rounded-lg bg-white/10 text-white text-sm flex items-center gap-2"
+                >
+                  <ImageIcon className="w-4 h-4" /> Choose from Gallery
+                </button>
+              )}
             </div>
           </div>
         </section>
