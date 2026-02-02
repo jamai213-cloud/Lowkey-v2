@@ -124,6 +124,112 @@ export default function BlindDatePage() {
     }
   }, [stage])
 
+  // Initialize voice when entering active stage
+  useEffect(() => {
+    if (stage === 'active' && matchedUser && user) {
+      initializeVoice()
+    }
+    
+    return () => {
+      if (chatPollRef.current) {
+        clearInterval(chatPollRef.current)
+      }
+    }
+  }, [stage, matchedUser, user])
+
+  // Initialize WebRTC voice connection
+  const initializeVoice = async () => {
+    try {
+      voiceRef.current = createBlindDateVoice()
+      
+      const result = await voiceRef.current.init(
+        matchedUser.sessionId,
+        user.id,
+        matchedUser.id,
+        {
+          onConnectionChange: (state) => {
+            setVoiceConnected(state === 'connected')
+            if (state === 'connected') {
+              setVoiceError(null)
+            }
+          },
+          onError: (error) => {
+            console.error('Voice error:', error)
+            setVoiceError(error)
+            // Fall back to text chat on voice failure
+            if (error.type === 'permission_denied' || error.type === 'init_failed' || error.type === 'connection_failed') {
+              handleVoiceFallback()
+            }
+          },
+          onRemoteStream: (stream) => {
+            // Play remote audio
+            if (remoteAudioRef.current) {
+              remoteAudioRef.current.srcObject = stream
+              remoteAudioRef.current.play().catch(console.error)
+            }
+          }
+        }
+      )
+
+      if (!result.success) {
+        handleVoiceFallback()
+      }
+    } catch (error) {
+      console.error('Voice init failed:', error)
+      handleVoiceFallback()
+    }
+  }
+
+  // Fall back to text chat if voice fails
+  const handleVoiceFallback = () => {
+    setVoiceFallback(true)
+    setVoiceConnected(false)
+    
+    // Start polling for chat messages
+    chatPollRef.current = setInterval(async () => {
+      if (matchedUser?.sessionId) {
+        try {
+          const res = await fetch(`/api/blinddate/chat?sessionId=${matchedUser.sessionId}`)
+          if (res.ok) {
+            const messages = await res.json()
+            setChatMessages(messages)
+          }
+        } catch (err) {
+          console.error('Chat poll error:', err)
+        }
+      }
+    }, 2000)
+  }
+
+  // Send chat message (fallback mode)
+  const sendChatMessage = async () => {
+    if (!newMessage.trim() || !matchedUser?.sessionId) return
+    
+    try {
+      await fetch('/api/blinddate/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          sessionId: matchedUser.sessionId,
+          senderId: user.id,
+          senderAlias: user.displayName?.split(' ')[0] || 'Anonymous',
+          message: newMessage.trim()
+        })
+      })
+      setNewMessage('')
+    } catch (err) {
+      console.error('Send message error:', err)
+    }
+  }
+
+  // Toggle microphone mute
+  const toggleMute = () => {
+    if (voiceRef.current) {
+      const newMuteState = voiceRef.current.toggleMute()
+      setIsMuted(newMuteState)
+    }
+  }
+
   const showNewPrompt = () => {
     const randomPrompt = ICEBREAKER_PROMPTS[Math.floor(Math.random() * ICEBREAKER_PROMPTS.length)]
     setCurrentPrompt(randomPrompt)
