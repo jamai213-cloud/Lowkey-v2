@@ -733,6 +733,7 @@ const HomePage = ({ user, onLogout, setUser }) => {
     { id: 'lounge', icon: Sofa, label: 'Lounge', color: '#8B5CF6', path: '/lounge' },
     { id: 'search', icon: Search, label: 'Search', color: '#3B82F6', path: '/search' },
     { id: 'wallet', icon: Wallet, label: 'Wallet', color: '#10B981', path: '/wallet' },
+    { id: 'blinddate', icon: Heart, label: 'Blind Date', color: '#EC4899', path: '/blinddate' },
     { id: 'communities', icon: UserPlus, label: 'Groups', color: '#F59E0B', path: '/communities' },
     { id: 'notices', icon: Bell, label: 'Notices', color: '#EF4444', path: '/notices' },
     { id: 'quiet', icon: Volume2, label: 'Quiet', color: '#6366F1', path: '/quiet' },
