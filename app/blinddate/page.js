@@ -574,15 +574,26 @@ export default function BlindDatePage() {
   if (stage === 'active') {
     return (
       <div className="min-h-screen bg-[#0a0a0f] flex flex-col">
+        {/* Hidden audio element for remote stream */}
+        <audio ref={remoteAudioRef} autoPlay playsInline />
+        
         {/* Header with timer */}
         <header className="flex items-center justify-between p-4 border-b border-white/10">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-pink-500/20 flex items-center justify-center">
-              <Heart className="w-5 h-5 text-pink-400" />
+            <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+              voiceConnected ? 'bg-green-500/20' : voiceFallback ? 'bg-amber-500/20' : 'bg-pink-500/20'
+            }`}>
+              {voiceFallback ? (
+                <MessageSquare className="w-5 h-5 text-amber-400" />
+              ) : (
+                <Heart className={`w-5 h-5 ${voiceConnected ? 'text-green-400' : 'text-pink-400'}`} />
+              )}
             </div>
             <div>
               <h1 className="text-white font-semibold">Blind Date</h1>
-              <p className="text-gray-400 text-xs">Voice connection active</p>
+              <p className="text-gray-400 text-xs">
+                {voiceFallback ? 'Text mode' : voiceConnected ? 'Voice connected' : 'Connecting...'}
+              </p>
             </div>
           </div>
           <div className="flex items-center gap-3">
@@ -593,27 +604,88 @@ export default function BlindDatePage() {
           </div>
         </header>
 
+        {/* Voice error notice */}
+        {voiceError && !voiceFallback && (
+          <div className="mx-4 mt-4 p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center gap-3">
+            <AlertCircle className="w-5 h-5 text-amber-400 flex-shrink-0" />
+            <p className="text-amber-400 text-sm">
+              {voiceError.type === 'permission_denied' 
+                ? 'Microphone access denied. Switching to text chat...'
+                : 'Voice connection failed. Switching to text chat...'}
+            </p>
+          </div>
+        )}
+
         {/* Main content */}
-        <div className="flex-1 flex flex-col items-center justify-center p-6">
+        <div className={`flex-1 flex flex-col ${voiceFallback ? '' : 'items-center justify-center'} p-6`}>
           {/* Partner display - anonymous */}
-          <div className="text-center mb-8">
-            <div className="w-28 h-28 mx-auto mb-4 rounded-full bg-gradient-to-br from-pink-500/30 to-purple-500/30 flex items-center justify-center border border-white/20">
-              <User className="w-14 h-14 text-white/60" />
+          <div className={`text-center ${voiceFallback ? 'mb-4' : 'mb-8'}`}>
+            <div className={`${voiceFallback ? 'w-20 h-20' : 'w-28 h-28'} mx-auto mb-3 rounded-full bg-gradient-to-br from-pink-500/30 to-purple-500/30 flex items-center justify-center border border-white/20`}>
+              <User className={`${voiceFallback ? 'w-10 h-10' : 'w-14 h-14'} text-white/60`} />
             </div>
-            <h2 className="text-2xl font-bold text-white mb-1">{matchedUser?.alias || 'Anonymous'}</h2>
-            <p className="text-gray-400 text-sm mb-3">{matchedUser?.age || '?'} years old</p>
+            <h2 className={`${voiceFallback ? 'text-xl' : 'text-2xl'} font-bold text-white mb-1`}>{matchedUser?.alias || 'Anonymous'}</h2>
+            <p className="text-gray-400 text-sm mb-2">{matchedUser?.age || '?'} years old</p>
             
             {/* Vibe emojis */}
             <div className="flex items-center justify-center gap-2">
               {(matchedUser?.vibeEmojis || ['🌙', '💫', '✨']).map((emoji, i) => (
-                <span key={i} className="text-2xl">{emoji}</span>
+                <span key={i} className={voiceFallback ? 'text-xl' : 'text-2xl'}>{emoji}</span>
               ))}
             </div>
           </div>
 
+          {/* Fallback text chat */}
+          {voiceFallback && (
+            <div className="flex-1 flex flex-col min-h-0 mb-4">
+              {/* Chat messages */}
+              <div className="flex-1 overflow-y-auto space-y-3 mb-4">
+                {chatMessages.length === 0 ? (
+                  <div className="text-center py-8 text-gray-500 text-sm">
+                    <MessageSquare className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                    <p>Voice unavailable. Send a message to start chatting!</p>
+                  </div>
+                ) : (
+                  chatMessages.map((msg, i) => (
+                    <div
+                      key={i}
+                      className={`flex ${msg.senderId === user.id ? 'justify-end' : 'justify-start'}`}
+                    >
+                      <div className={`max-w-[80%] px-4 py-2 rounded-2xl ${
+                        msg.senderId === user.id
+                          ? 'bg-pink-500/20 text-white rounded-br-sm'
+                          : 'bg-white/10 text-white rounded-bl-sm'
+                      }`}>
+                        <p className="text-sm">{msg.message}</p>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+              
+              {/* Chat input */}
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={newMessage}
+                  onChange={(e) => setNewMessage(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && sendChatMessage()}
+                  placeholder="Type a message..."
+                  className="flex-1 px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-gray-500 focus:outline-none focus:border-pink-500/50"
+                />
+                <button
+                  onClick={sendChatMessage}
+                  disabled={!newMessage.trim()}
+                  className="px-4 py-3 rounded-xl bg-pink-500 text-white disabled:opacity-50"
+                >
+                  <Send className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+          )}
+
           {/* Icebreaker prompt */}
           {currentPrompt && (
-            <div className="w-full max-w-sm mb-8 p-4 rounded-2xl bg-gradient-to-r from-pink-500/10 to-purple-500/10 border border-white/10">
+            <div className="w-full max-w-sm mb-6 p-4 rounded-2xl bg-gradient-to-r from-pink-500/10 to-purple-500/10 border border-white/10">
               <div className="flex items-start gap-3">
                 <Sparkles className="w-5 h-5 text-pink-400 flex-shrink-0 mt-0.5" />
                 <div>
@@ -624,50 +696,83 @@ export default function BlindDatePage() {
             </div>
           )}
 
-          {/* Voice controls */}
-          <div className="flex items-center gap-6 mb-8">
-            <button
-              onClick={() => setIsMuted(!isMuted)}
-              className={`w-14 h-14 rounded-full flex items-center justify-center transition-all ${
-                isMuted ? 'bg-red-500/20 text-red-400' : 'bg-white/10 text-white'
-              }`}
-            >
-              {isMuted ? <VolumeX className="w-6 h-6" /> : <Volume2 className="w-6 h-6" />}
-            </button>
-            
-            <button
-              onClick={endDate}
-              className="w-16 h-16 rounded-full bg-red-500 flex items-center justify-center"
-            >
-              <PhoneOff className="w-7 h-7 text-white" />
-            </button>
+          {/* Voice controls - only show if not in fallback mode */}
+          {!voiceFallback && (
+            <>
+              <div className="flex items-center gap-6 mb-6">
+                <button
+                  onClick={toggleMute}
+                  className={`w-14 h-14 rounded-full flex items-center justify-center transition-all ${
+                    isMuted ? 'bg-red-500/20 text-red-400' : 'bg-white/10 text-white'
+                  }`}
+                >
+                  {isMuted ? <MicOff className="w-6 h-6" /> : <Mic className="w-6 h-6" />}
+                </button>
+                
+                <button
+                  onClick={endDate}
+                  className="w-16 h-16 rounded-full bg-red-500 flex items-center justify-center"
+                >
+                  <PhoneOff className="w-7 h-7 text-white" />
+                </button>
 
-            <button
-              onClick={() => setShowRevealModal(true)}
-              disabled={!minTimePassed && timeRemaining > 0}
-              className={`w-14 h-14 rounded-full flex items-center justify-center transition-all ${
-                minTimePassed ? 'bg-pink-500/20 text-pink-400' : 'bg-white/5 text-gray-600'
-              }`}
-            >
-              <Eye className="w-6 h-6" />
-            </button>
-          </div>
+                <button
+                  onClick={() => setShowRevealModal(true)}
+                  disabled={!minTimePassed && timeRemaining > 0}
+                  className={`w-14 h-14 rounded-full flex items-center justify-center transition-all ${
+                    minTimePassed ? 'bg-pink-500/20 text-pink-400' : 'bg-white/5 text-gray-600'
+                  }`}
+                >
+                  <Eye className="w-6 h-6" />
+                </button>
+              </div>
 
-          {/* Status */}
-          <p className="text-gray-500 text-xs text-center">
-            {minTimePassed 
-              ? 'Tap the eye to request a reveal when you\'re ready' 
-              : 'Reveal option available after 3 minutes'}
-          </p>
+              {/* Status */}
+              <p className="text-gray-500 text-xs text-center">
+                {minTimePassed 
+                  ? 'Tap the eye to request a reveal when you\'re ready' 
+                  : 'Reveal option available after 3 minutes'}
+              </p>
+            </>
+          )}
+
+          {/* Fallback mode controls */}
+          {voiceFallback && (
+            <div className="flex items-center justify-center gap-4">
+              <button
+                onClick={endDate}
+                className="px-6 py-3 rounded-xl bg-red-500/20 text-red-400 font-medium flex items-center gap-2"
+              >
+                <PhoneOff className="w-5 h-5" /> End Date
+              </button>
+              <button
+                onClick={() => setShowRevealModal(true)}
+                disabled={!minTimePassed && timeRemaining > 0}
+                className={`px-6 py-3 rounded-xl font-medium flex items-center gap-2 ${
+                  minTimePassed 
+                    ? 'bg-pink-500/20 text-pink-400' 
+                    : 'bg-white/5 text-gray-600'
+                }`}
+              >
+                <Eye className="w-5 h-5" /> Reveal
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Safety footer */}
         <div className="p-4 border-t border-white/10">
           <div className="flex items-center justify-center gap-4">
-            <button className="flex items-center gap-2 text-gray-500 text-sm hover:text-white transition-colors">
+            <button 
+              onClick={reportUser}
+              className="flex items-center gap-2 text-gray-500 text-sm hover:text-white transition-colors"
+            >
               <Flag className="w-4 h-4" /> Report
             </button>
-            <button className="flex items-center gap-2 text-gray-500 text-sm hover:text-white transition-colors">
+            <button 
+              onClick={blockUser}
+              className="flex items-center gap-2 text-gray-500 text-sm hover:text-white transition-colors"
+            >
               <Shield className="w-4 h-4" /> Block
             </button>
           </div>
