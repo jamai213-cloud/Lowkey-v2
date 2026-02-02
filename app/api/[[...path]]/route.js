@@ -2601,6 +2601,215 @@ async function handleRoute(request, { params }) {
       return handleCORS(NextResponse.json({ status: 'healthy' }))
     }
 
+    // ==================== BLIND DATE ====================
+    // Start matching for blind date
+    if (route === '/blinddate/match' && method === 'POST') {
+      const body = await safeParseJson(request)
+      const { userId, mood, duration, preferences } = body
+      
+      // Get user info
+      const user = await db.collection('users').findOne({ id: userId })
+      if (!user) {
+        return handleCORS(NextResponse.json({ error: 'User not found' }, { status: 404 }))
+      }
+      
+      // Generate anonymous alias and vibe emojis based on mood
+      const moodEmojis = {
+        'chill': ['😌', '🌙', '✨'],
+        'flirty': ['😏', '💫', '🔥'],
+        'deep': ['🤔', '💭', '🌌'],
+        'fun': ['😄', '🎉', '✨'],
+        'mysterious': ['🌙', '🔮', '✨'],
+        'romantic': ['💕', '🌹', '✨']
+      }
+      
+      // Create or update matching queue entry
+      const queueEntry = {
+        id: uuidv4(),
+        oderId: userId,
+        displayName: user.displayName,
+        alias: `${user.displayName?.split(' ')[0] || 'Anonymous'}`,
+        age: user.profileDetails?.age || null,
+        mood,
+        vibeEmojis: moodEmojis[mood] || ['✨', '💫', '🌙'],
+        duration,
+        preferences,
+        status: 'waiting',
+        createdAt: new Date(),
+        expiresAt: new Date(Date.now() + 3 * 60 * 1000) // 3 min expiry
+      }
+      
+      // Look for a compatible match in the queue
+      const compatibleQuery = {
+        userId: { $ne: userId },
+        mood: mood,
+        status: 'waiting',
+        expiresAt: { $gt: new Date() }
+      }
+      
+      // Apply gender preferences
+      if (preferences?.gender && preferences.gender !== 'any') {
+        // Would need user gender info to match properly
+      }
+      
+      const match = await db.collection('blinddate_queue').findOne(compatibleQuery)
+      
+      if (match) {
+        // Found a match! Create a session
+        const sessionId = uuidv4()
+        const session = {
+          id: sessionId,
+          user1Id: match.userId,
+          user1Alias: match.alias,
+          user1Age: match.age,
+          user1Emojis: match.vibeEmojis,
+          user2Id: userId,
+          user2Alias: queueEntry.alias,
+          user2Age: queueEntry.age,
+          user2Emojis: queueEntry.vibeEmojis,
+          mood,
+          duration,
+          user1Choice: null,
+          user2Choice: null,
+          status: 'active',
+          createdAt: new Date()
+        }
+        
+        await db.collection('blinddate_sessions').insertOne(session)
+        
+        // Remove both from queue
+        await db.collection('blinddate_queue').deleteOne({ id: match.id })
+        
+        // Return match info
+        return handleCORS(NextResponse.json({
+          matched: true,
+          sessionId,
+          partner: {
+            id: match.userId,
+            alias: match.alias,
+            age: match.age,
+            vibeEmojis: match.vibeEmojis,
+            sessionId
+          }
+        }))
+      } else {
+        // No match found, add to queue
+        await db.collection('blinddate_queue').insertOne(queueEntry)
+        return handleCORS(NextResponse.json({ matched: false, queueId: queueEntry.id }))
+      }
+    }
+
+    // Check blind date match status (polling)
+    if (route === '/blinddate/status' && method === 'GET') {
+      const url = new URL(request.url)
+      const userId = url.searchParams.get('userId')
+      
+      // Check if user has been matched in a session
+      const session = await db.collection('blinddate_sessions').findOne({
+        $or: [{ user1Id: userId }, { user2Id: userId }],
+        status: 'active'
+      })
+      
+      if (session) {
+        const isUser1 = session.user1Id === userId
+        return handleCORS(NextResponse.json({
+          matched: true,
+          sessionId: session.id,
+          partner: {
+            id: isUser1 ? session.user2Id : session.user1Id,
+            alias: isUser1 ? session.user2Alias : session.user1Alias,
+            age: isUser1 ? session.user2Age : session.user1Age,
+            vibeEmojis: isUser1 ? session.user2Emojis : session.user1Emojis,
+            sessionId: session.id
+          }
+        }))
+      }
+      
+      // Still waiting
+      return handleCORS(NextResponse.json({ matched: false }))
+    }
+
+    // Submit reveal choice
+    if (route === '/blinddate/reveal' && method === 'POST') {
+      const body = await safeParseJson(request)
+      const { sessionId, userId, choice } = body
+      
+      const session = await db.collection('blinddate_sessions').findOne({ id: sessionId })
+      if (!session) {
+        return handleCORS(NextResponse.json({ error: 'Session not found' }, { status: 404 }))
+      }
+      
+      const isUser1 = session.user1Id === userId
+      const updateField = isUser1 ? 'user1Choice' : 'user2Choice'
+      const partnerChoiceField = isUser1 ? 'user2Choice' : 'user1Choice'
+      
+      await db.collection('blinddate_sessions').updateOne(
+        { id: sessionId },
+        { $set: { [updateField]: choice } }
+      )
+      
+      // Get updated session
+      const updated = await db.collection('blinddate_sessions').findOne({ id: sessionId })
+      const partnerChoice = updated[partnerChoiceField]
+      
+      // Check if both have made choices
+      if (updated.user1Choice && updated.user2Choice) {
+        if (updated.user1Choice === 'reveal' && updated.user2Choice === 'reveal') {
+          // Mutual reveal - create a match/connection
+          await db.collection('blinddate_sessions').updateOne(
+            { id: sessionId },
+            { $set: { status: 'revealed' } }
+          )
+          
+          // Add each other as potential connections (could create a match record)
+          const matchRecord = {
+            id: uuidv4(),
+            user1Id: session.user1Id,
+            user2Id: session.user2Id,
+            blindDateSessionId: sessionId,
+            createdAt: new Date()
+          }
+          await db.collection('blinddate_matches').insertOne(matchRecord)
+        } else if (updated.user1Choice === 'extend' && updated.user2Choice === 'extend') {
+          // Both want to extend - keep session active
+        } else {
+          // One or both chose to end
+          await db.collection('blinddate_sessions').updateOne(
+            { id: sessionId },
+            { $set: { status: 'ended' } }
+          )
+        }
+      }
+      
+      return handleCORS(NextResponse.json({ partnerChoice }))
+    }
+
+    // End blind date session
+    if (route === '/blinddate/end' && method === 'POST') {
+      const body = await safeParseJson(request)
+      const { sessionId, userId } = body
+      
+      await db.collection('blinddate_sessions').updateOne(
+        { id: sessionId },
+        { $set: { status: 'ended', endedBy: userId, endedAt: new Date() } }
+      )
+      
+      // Remove from queue if still there
+      await db.collection('blinddate_queue').deleteOne({ oderId: userId })
+      
+      return handleCORS(NextResponse.json({ success: true }))
+    }
+
+    // Cancel blind date matching
+    if (route === '/blinddate/cancel' && method === 'POST') {
+      const body = await safeParseJson(request)
+      const { userId } = body
+      
+      await db.collection('blinddate_queue').deleteOne({ oderId: userId })
+      
+      return handleCORS(NextResponse.json({ success: true }))
+    }
+
     return handleCORS(NextResponse.json({ error: `Route ${route} not found` }, { status: 404 }))
 
   } catch (error) {
