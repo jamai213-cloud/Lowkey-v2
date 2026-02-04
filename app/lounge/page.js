@@ -1,8 +1,4 @@
----
-
-## FILE 3: `app/lounge/page.js` (UPDATE)
-Action: $ cat /app/app/lounge/page.js
-Observation: 'use client'
+ 'use client';
 
 import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
