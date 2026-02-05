@@ -1,8 +1,4 @@
----
-
-## FILE 4: `app/friends/page.js` (UPDATE)
-Action: $ cat /app/app/friends/page.js
-Observation: 'use client'
+'use client'
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
@@ -327,4 +323,4 @@ export default function FriendsPage() {
     </div>
   )
 }
-Exit code: 0
+
