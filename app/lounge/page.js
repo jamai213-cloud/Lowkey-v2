@@ -430,11 +430,27 @@ export default function LoungePage() {
                   className="w-full pl-12 pr-4 py-3 rounded-xl bg-black/40 border border-white/10 text-white placeholder-gray-500 focus:outline-none focus:border-pink-500/50"
                 />
               </div>
-              <p className="text-gray-400 text-xs">Your image will be blurred with the LowKey logo. Subscribers can view full content. LowKey takes 20%.</p>
-              <div className="flex gap-3">
-                <button type="button" onClick={() => { setShowPostForm(false); clearImage(); }} className="flex-1 py-3 rounded-xl bg-white/10 text-white">Cancel</button>
-                <button type="submit" disabled={!newPost.imageData} className="flex-1 py-3 rounded-xl bg-gradient-to-r from-pink-500 to-purple-500 text-white font-semibold disabled:opacity-50">Post</button>
-              </div>
+              <p className="text-gray-400 text-xs">
+  Your image will be blurred with the LowKey logo. Subscribers can view full content. LowKey takes 20%.
+</p>
+
+<div className="flex gap-3">
+  <button
+    type="button"
+    onClick={() => { setShowPostForm(false); clearImage(); }}
+    className="flex-1 py-3 rounded-xl bg-white/10 text-white"
+  >
+    Cancel
+  </button>
+
+  <button
+    type="submit"
+    disabled={!newPost.imageData}
+    className="flex-1 py-3 rounded-xl bg-gradient-to-r from-pink-500 to-purple-500 text-white disabled:opacity-50"
+  >
+    Post
+  </button>
+</div>
             </form>
           </div>
         </div>
