@@ -370,15 +370,33 @@ async function handleRoute(request, { params }) {
       // Full profile for friends, public profiles, or own profile
       const gallery = await db.collection('gallery').find({ userId: profileUserId }).limit(9).toArray()
       
+      // Get profile details from nested object (where PUT saves them)
+      const details = profileUser.profileDetails || {}
+      
       return handleCORS(NextResponse.json({
         ...baseProfile,
         isPublic: true,
-        kinks: profileUser.kinks || [],
+        // Read from profileDetails (where edit page saves)
+        kinks: details.kinks || profileUser.kinks || [],
+        kinksHard: details.kinksHard || profileUser.kinksHard || [],
         gallery: gallery.map(cleanMongoDoc),
-        location: profileUser.location,
-        age: profileUser.age,
-        gender: profileUser.gender,
-        lookingFor: profileUser.lookingFor,
+        location: details.location || profileUser.location,
+        age: details.age || profileUser.age,
+        gender: details.gender || profileUser.gender,
+        sexuality: details.sexuality || profileUser.sexuality,
+        relationshipStatus: details.relationshipStatus || profileUser.relationshipStatus,
+        height: details.height || profileUser.height,
+        bodyType: details.bodyType || profileUser.bodyType,
+        eyeColor: details.eyeColor || profileUser.eyeColor,
+        hairColor: details.hairColor || profileUser.hairColor,
+        ethnicity: details.ethnicity || profileUser.ethnicity,
+        smoking: details.smoking || profileUser.smoking,
+        drinking: details.drinking || profileUser.drinking,
+        willingToTravel: details.willingToTravel || profileUser.willingToTravel,
+        interestedIn: details.interestedIn || profileUser.interestedIn || [],
+        openTo: details.openTo || profileUser.openTo || [],
+        aboutMe: details.aboutMe || profileUser.aboutMe,
+        lookingFor: details.lookingFor || profileUser.lookingFor,
         createdAt: profileUser.createdAt
       }))
     }
