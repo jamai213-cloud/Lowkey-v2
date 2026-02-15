@@ -347,7 +347,7 @@ export default function EditProfilePage() {
       </header>
 
       <div className="p-4 space-y-6">
-        {/* Profile Picture Section */}
+        {/* Profile Picture Section - Single unified section */}
         <section>
           <h2 className="text-white font-semibold mb-3 flex items-center gap-2">
             <User className="w-5 h-5 text-amber-400" /> Profile Picture
@@ -373,13 +373,15 @@ export default function EditProfilePage() {
               </button>
             </div>
             <div className="flex-1">
-              <p className="text-gray-400 text-sm mb-2">Tap to upload from your phone</p>
-              <button 
-                onClick={() => setShowProfilePicUpload(true)}
-                className="px-4 py-2 rounded-lg bg-white/10 text-white text-sm flex items-center gap-2"
-              >
-                <Upload className="w-4 h-4" /> Change Photo
-              </button>
+              <p className="text-gray-400 text-sm mb-2">Tap the camera to upload from your phone</p>
+              {gallery.length > 0 && (
+                <button 
+                  onClick={() => setShowProfilePicUpload(true)}
+                  className="px-4 py-2 rounded-lg bg-white/10 text-white text-sm flex items-center gap-2"
+                >
+                  <ImageIcon className="w-4 h-4" /> Choose from Gallery
+                </button>
+              )}
             </div>
           </div>
         </section>
@@ -800,56 +802,40 @@ export default function EditProfilePage() {
         </section>
       </div>
 
-      {/* Profile Picture Upload Modal */}
+      {/* Profile Picture from Gallery Modal - Only shows gallery options */}
       {showProfilePicUpload && (
         <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/80 backdrop-blur-sm" onClick={() => setShowProfilePicUpload(false)}>
           <div className="w-full max-w-lg bg-[#1a1a2e] rounded-t-3xl p-6" onClick={e => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl text-white font-semibold">Profile Picture</h2>
+              <h2 className="text-xl text-white font-semibold">Choose from Gallery</h2>
               <button onClick={() => setShowProfilePicUpload(false)} className="p-2 rounded-full hover:bg-white/10">
                 <X className="w-5 h-5 text-gray-400" />
               </button>
             </div>
             
-            {/* Upload from phone */}
-            <button
-              onClick={() => {
-                profilePicInputRef.current?.click()
-              }}
-              className="w-full py-4 rounded-xl bg-gradient-to-r from-amber-400 to-yellow-500 text-black font-semibold flex items-center justify-center gap-2 mb-4"
-            >
-              <Camera className="w-5 h-5" /> Take Photo or Choose from Gallery
-            </button>
-
-            {/* Or select from existing gallery */}
-            {gallery.length > 0 && (
-              <>
-                <div className="relative my-4">
-                  <div className="absolute inset-0 flex items-center">
-                    <div className="w-full border-t border-white/10" />
-                  </div>
-                  <div className="relative flex justify-center">
-                    <span className="px-3 bg-[#1a1a2e] text-gray-500 text-sm">Or select from gallery</span>
-                  </div>
-                </div>
-                
-                <div className="grid grid-cols-3 gap-2 max-h-48 overflow-y-auto">
-                  {gallery.map(photo => (
-                    <button
-                      key={photo.id}
-                      onClick={() => {
-                        setProfile(p => ({ ...p, profilePicture: getImageSrc(photo) }))
-                        setShowProfilePicUpload(false)
-                      }}
-                      className={`aspect-square rounded-xl overflow-hidden border-2 ${
-                        profile.profilePicture === getImageSrc(photo) ? 'border-amber-500' : 'border-transparent'
-                      }`}
-                    >
-                      <img src={getImageSrc(photo)} alt="" className="w-full h-full object-cover" />
-                    </button>
-                  ))}
-                </div>
-              </>
+            {gallery.length > 0 ? (
+              <div className="grid grid-cols-3 gap-2 max-h-64 overflow-y-auto">
+                {gallery.map(photo => (
+                  <button
+                    key={photo.id}
+                    onClick={() => {
+                      setProfile(p => ({ ...p, profilePicture: getImageSrc(photo) }))
+                      setShowProfilePicUpload(false)
+                    }}
+                    className={`aspect-square rounded-xl overflow-hidden border-2 ${
+                      profile.profilePicture === getImageSrc(photo) ? 'border-amber-500' : 'border-transparent'
+                    }`}
+                  >
+                    <img src={getImageSrc(photo)} alt="" className="w-full h-full object-cover" />
+                  </button>
+                ))}
+              </div>
+            ) : (
+              <div className="py-8 text-center text-gray-400">
+                <Camera className="w-12 h-12 mx-auto mb-2 opacity-50" />
+                <p>No photos in gallery yet</p>
+                <p className="text-sm mt-1">Upload photos to your gallery first</p>
+              </div>
             )}
           </div>
         </div>

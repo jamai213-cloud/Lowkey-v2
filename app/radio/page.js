@@ -1,10 +1,10 @@
 'use client'
-
-import { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'      
 import { useRouter } from 'next/navigation'
 import { ArrowLeft, Play, Pause, Radio as RadioIcon, Volume2, VolumeX } from 'lucide-react'
 import { useRadio } from '@/app/contexts/RadioContext'
 
+export const dynamic = 'force-dynamic'
 export default function RadioPage() {
   const router = useRouter()
   const [user, setUser] = useState(null)
