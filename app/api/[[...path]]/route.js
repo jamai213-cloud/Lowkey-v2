@@ -1058,6 +1058,19 @@ async function handleRoute(request, { params }) {
       const user = await db.collection('users').findOne({ id: userId })
       if (!user) return handleCORS(NextResponse.json({ error: 'User not found' }, { status: 404 }))
       
+      // DEBUG LOG
+      console.log('=== GET /api/profile/details ===')
+      console.log('userId:', userId)
+      console.log('user.profileDetails exists:', !!user.profileDetails)
+      console.log('profileDetails keys:', Object.keys(user.profileDetails || {}))
+      console.log('Sample profileDetails:', {
+        aboutMe: user.profileDetails?.aboutMe?.substring(0, 50),
+        location: user.profileDetails?.location,
+        age: user.profileDetails?.age,
+        kinks: user.profileDetails?.kinks?.length
+      })
+      console.log('=== END GET /api/profile/details ===')
+      
       const isOwner = userId === viewerId
       const isFriend = user.friends?.includes(viewerId)
       
