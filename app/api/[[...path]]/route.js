@@ -311,109 +311,108 @@ async function handleRoute(request, { params }) {
     if (route.match(/^\/profile\/[^/]+$/) && method === 'GET') {
       const profileUserId = path[1]
       
-      // Skip if this is a special route (not a user ID)
-      if (['details', 'comments', 'avatar', 'picture', 'song', 'quiet-mode', 'music-status'].includes(profileUserId)) {
-        // Let it fall through to the specific handler
-      } else {
-      const url = new URL(request.url)
-      const viewerId = url.searchParams.get('viewerId')
-      
-      const profileUser = await db.collection('users').findOne({ id: profileUserId })
-      if (!profileUser) {
-        return handleCORS(NextResponse.json({ error: 'User not found' }, { status: 404 }))
-      }
-      
-      const viewer = viewerId ? await db.collection('users').findOne({ id: viewerId }) : null
-      const isFriend = viewer?.friends?.includes(profileUserId)
-      const isOwnProfile = viewerId === profileUserId
-      const isPublicProfile = profileUser.profilePrivacy === 'public' || !profileUser.profilePrivacy
-      
-      // Get gallery count
-      const galleryCount = await db.collection('gallery').countDocuments({ userId: profileUserId })
-      
-      // Get profile details (may be stored in nested object from edit page)
-      const profileDetails = profileUser.profileDetails || {}
-      
-      // Base profile info (always visible in search)
-      // Check both root level and profileDetails for backward compatibility
-      const baseProfile = {
-        id: profileUser.id,
-        displayName: profileUser.displayName,
-        avatar: profileUser.avatar || profileDetails.profilePicture,
-        profilePicture: profileDetails.profilePicture || profileUser.avatar,
-        verified: profileUser.verified,
-        isFounder: profileUser.isFounder,
-        isCreator: profileUser.isCreator,
-        verificationTier: profileUser.verificationTier,
-        profilePrivacy: profileDetails.profilePrivacy || profileUser.profilePrivacy || 'public',
-        bio: profileDetails.aboutMe || profileUser.bio,
-        galleryCount,
-        friends: profileUser.friends || []
-      }
-      
-      // Check privacy from both profileDetails and root level
-      const effectivePrivacy = profileDetails.profilePrivacy || profileUser.profilePrivacy
-      
-      // If private profile and not friend/owner, return limited info
-      if (effectivePrivacy === 'friends' && !isFriend && !isOwnProfile) {
-        return handleCORS(NextResponse.json({
-          ...baseProfile,
-          isPublic: false,
-          restricted: true,
-          message: 'Profile visible to friends only',
-          kinks: null,
-          gallery: null
-        }))
-      }
-      
-      // If creator with subscription requirement
-      if (profileUser.isCreator && profileUser.requiresSubscription && !isFriend && !isOwnProfile) {
-        // Check if viewer is subscribed
-        const isSubscribed = viewer?.subscriptions?.includes(profileUserId)
-        if (!isSubscribed) {
+      // Skip if this is a special route (not a user ID) - let it fall through to specific handlers
+      if (!['details', 'comments', 'avatar', 'picture', 'song', 'quiet-mode', 'music-status'].includes(profileUserId)) {
+        const url = new URL(request.url)
+        const viewerId = url.searchParams.get('viewerId')
+        
+        const profileUser = await db.collection('users').findOne({ id: profileUserId })
+        if (!profileUser) {
+          return handleCORS(NextResponse.json({ error: 'User not found' }, { status: 404 }))
+        }
+        
+        const viewer = viewerId ? await db.collection('users').findOne({ id: viewerId }) : null
+        const isFriend = viewer?.friends?.includes(profileUserId)
+        const isOwnProfile = viewerId === profileUserId
+        const isPublicProfile = profileUser.profilePrivacy === 'public' || !profileUser.profilePrivacy
+        
+        // Get gallery count
+        const galleryCount = await db.collection('gallery').countDocuments({ userId: profileUserId })
+        
+        // Get profile details (may be stored in nested object from edit page)
+        const profileDetails = profileUser.profileDetails || {}
+        
+        // Base profile info (always visible in search)
+        // Check both root level and profileDetails for backward compatibility
+        const baseProfile = {
+          id: profileUser.id,
+          displayName: profileUser.displayName,
+          avatar: profileUser.avatar || profileDetails.profilePicture,
+          profilePicture: profileDetails.profilePicture || profileUser.avatar,
+          verified: profileUser.verified,
+          isFounder: profileUser.isFounder,
+          isCreator: profileUser.isCreator,
+          verificationTier: profileUser.verificationTier,
+          profilePrivacy: profileDetails.profilePrivacy || profileUser.profilePrivacy || 'public',
+          bio: profileDetails.aboutMe || profileUser.bio,
+          galleryCount,
+          friends: profileUser.friends || []
+        }
+        
+        // Check privacy from both profileDetails and root level
+        const effectivePrivacy = profileDetails.profilePrivacy || profileUser.profilePrivacy
+        
+        // If private profile and not friend/owner, return limited info
+        if (effectivePrivacy === 'friends' && !isFriend && !isOwnProfile) {
           return handleCORS(NextResponse.json({
             ...baseProfile,
             isPublic: false,
-            requiresSubscription: true,
-            isSubscribed: false,
+            restricted: true,
+            message: 'Profile visible to friends only',
             kinks: null,
             gallery: null
           }))
         }
+        
+        // If creator with subscription requirement
+        if (profileUser.isCreator && profileUser.requiresSubscription && !isFriend && !isOwnProfile) {
+          // Check if viewer is subscribed
+          const isSubscribed = viewer?.subscriptions?.includes(profileUserId)
+          if (!isSubscribed) {
+            return handleCORS(NextResponse.json({
+              ...baseProfile,
+              isPublic: false,
+              requiresSubscription: true,
+              isSubscribed: false,
+              kinks: null,
+              gallery: null
+            }))
+          }
+        }
+        
+        // Full profile for friends, public profiles, or own profile
+        const gallery = await db.collection('gallery').find({ userId: profileUserId }).limit(9).toArray()
+        
+        // Get profile details from nested object (where PUT saves them)
+        const details = profileUser.profileDetails || {}
+        
+        return handleCORS(NextResponse.json({
+          ...baseProfile,
+          isPublic: true,
+          // Read from profileDetails (where edit page saves)
+          kinks: details.kinks || profileUser.kinks || [],
+          kinksHard: details.kinksHard || profileUser.kinksHard || [],
+          gallery: gallery.map(cleanMongoDoc),
+          location: details.location || profileUser.location,
+          age: details.age || profileUser.age,
+          gender: details.gender || profileUser.gender,
+          sexuality: details.sexuality || profileUser.sexuality,
+          relationshipStatus: details.relationshipStatus || profileUser.relationshipStatus,
+          height: details.height || profileUser.height,
+          bodyType: details.bodyType || profileUser.bodyType,
+          eyeColor: details.eyeColor || profileUser.eyeColor,
+          hairColor: details.hairColor || profileUser.hairColor,
+          ethnicity: details.ethnicity || profileUser.ethnicity,
+          smoking: details.smoking || profileUser.smoking,
+          drinking: details.drinking || profileUser.drinking,
+          willingToTravel: details.willingToTravel || profileUser.willingToTravel,
+          interestedIn: details.interestedIn || profileUser.interestedIn || [],
+          openTo: details.openTo || profileUser.openTo || [],
+          aboutMe: details.aboutMe || profileUser.aboutMe,
+          lookingFor: details.lookingFor || profileUser.lookingFor,
+          createdAt: profileUser.createdAt
+        }))
       }
-      
-      // Full profile for friends, public profiles, or own profile
-      const gallery = await db.collection('gallery').find({ userId: profileUserId }).limit(9).toArray()
-      
-      // Get profile details from nested object (where PUT saves them)
-      const details = profileUser.profileDetails || {}
-      
-      return handleCORS(NextResponse.json({
-        ...baseProfile,
-        isPublic: true,
-        // Read from profileDetails (where edit page saves)
-        kinks: details.kinks || profileUser.kinks || [],
-        kinksHard: details.kinksHard || profileUser.kinksHard || [],
-        gallery: gallery.map(cleanMongoDoc),
-        location: details.location || profileUser.location,
-        age: details.age || profileUser.age,
-        gender: details.gender || profileUser.gender,
-        sexuality: details.sexuality || profileUser.sexuality,
-        relationshipStatus: details.relationshipStatus || profileUser.relationshipStatus,
-        height: details.height || profileUser.height,
-        bodyType: details.bodyType || profileUser.bodyType,
-        eyeColor: details.eyeColor || profileUser.eyeColor,
-        hairColor: details.hairColor || profileUser.hairColor,
-        ethnicity: details.ethnicity || profileUser.ethnicity,
-        smoking: details.smoking || profileUser.smoking,
-        drinking: details.drinking || profileUser.drinking,
-        willingToTravel: details.willingToTravel || profileUser.willingToTravel,
-        interestedIn: details.interestedIn || profileUser.interestedIn || [],
-        openTo: details.openTo || profileUser.openTo || [],
-        aboutMe: details.aboutMe || profileUser.aboutMe,
-        lookingFor: details.lookingFor || profileUser.lookingFor,
-        createdAt: profileUser.createdAt
-      }))
     }
 
     if (route.match(/^\/users\/[^/]+$/) && method === 'GET') {
