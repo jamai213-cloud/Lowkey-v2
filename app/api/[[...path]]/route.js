@@ -326,17 +326,22 @@ async function handleRoute(request, { params }) {
       // Get gallery count
       const galleryCount = await db.collection('gallery').countDocuments({ userId: profileUserId })
       
+      // Get profile details (may be stored in nested object from edit page)
+      const profileDetails = profileUser.profileDetails || {}
+      
       // Base profile info (always visible in search)
+      // Check both root level and profileDetails for backward compatibility
       const baseProfile = {
         id: profileUser.id,
         displayName: profileUser.displayName,
-        avatar: profileUser.avatar,
+        avatar: profileUser.avatar || profileDetails.profilePicture,
+        profilePicture: profileDetails.profilePicture || profileUser.avatar,
         verified: profileUser.verified,
         isFounder: profileUser.isFounder,
         isCreator: profileUser.isCreator,
         verificationTier: profileUser.verificationTier,
-        profilePrivacy: profileUser.profilePrivacy || 'public',
-        bio: profileUser.bio,
+        profilePrivacy: profileDetails.profilePrivacy || profileUser.profilePrivacy || 'public',
+        bio: profileDetails.aboutMe || profileUser.bio,
         galleryCount,
         friends: profileUser.friends || []
       }
