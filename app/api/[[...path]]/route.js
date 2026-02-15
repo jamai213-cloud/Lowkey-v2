@@ -346,11 +346,16 @@ async function handleRoute(request, { params }) {
         friends: profileUser.friends || []
       }
       
+      // Check privacy from both profileDetails and root level
+      const effectivePrivacy = profileDetails.profilePrivacy || profileUser.profilePrivacy
+      
       // If private profile and not friend/owner, return limited info
-      if (profileUser.profilePrivacy === 'private' && !isFriend && !isOwnProfile) {
+      if (effectivePrivacy === 'friends' && !isFriend && !isOwnProfile) {
         return handleCORS(NextResponse.json({
           ...baseProfile,
           isPublic: false,
+          restricted: true,
+          message: 'Profile visible to friends only',
           kinks: null,
           gallery: null
         }))
