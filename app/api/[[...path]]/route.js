@@ -310,6 +310,11 @@ async function handleRoute(request, { params }) {
     // Profile view with privacy settings
     if (route.match(/^\/profile\/[^/]+$/) && method === 'GET') {
       const profileUserId = path[1]
+      
+      // Skip if this is a special route (not a user ID)
+      if (['details', 'comments', 'avatar', 'picture', 'song', 'quiet-mode', 'music-status'].includes(profileUserId)) {
+        // Let it fall through to the specific handler
+      } else {
       const url = new URL(request.url)
       const viewerId = url.searchParams.get('viewerId')
       
