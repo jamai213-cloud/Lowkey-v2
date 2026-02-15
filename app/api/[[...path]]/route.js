@@ -1105,31 +1105,12 @@ async function handleRoute(request, { params }) {
       const body = await safeParseJson(request)
       const { userId, ...details } = body
       
-      // DEBUG LOG - Remove after testing
-      console.log('=== PUT /api/profile/details ===')
-      console.log('userId:', userId)
-      console.log('Received fields:', Object.keys(details))
-      console.log('Sample values:', {
-        aboutMe: details.aboutMe?.substring(0, 50),
-        location: details.location,
-        age: details.age,
-        kinks: details.kinks?.length,
-        profilePrivacy: details.profilePrivacy
-      })
-      
       const result = await db.collection('users').updateOne(
         { id: userId },
         { $set: { profileDetails: details, updatedAt: new Date() } }
       )
       
-      console.log('MongoDB update result:', { matchedCount: result.matchedCount, modifiedCount: result.modifiedCount })
-      
-      // Verify the save by reading back
-      const savedUser = await db.collection('users').findOne({ id: userId })
-      console.log('Saved profileDetails keys:', Object.keys(savedUser?.profileDetails || {}))
-      console.log('=== END PUT /api/profile/details ===')
-      
-      return handleCORS(NextResponse.json({ success: true, debug: { matched: result.matchedCount, modified: result.modifiedCount } }))
+      return handleCORS(NextResponse.json({ success: true }))
     }
 
     // ==================== STORIES / STATUS (24hr) ====================
