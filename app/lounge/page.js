@@ -113,29 +113,53 @@ export default function LoungePage() {
     }
   }
 
+  // Handle file selection for post
+  const handlePostFileSelect = (e) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    if (!file.type.startsWith('image/')) {
+      alert('Please select an image file')
+      return
+    }
+
+    if (file.size > 10 * 1024 * 1024) {
+      alert('Image too large. Max 10MB allowed.')
+      return
+    }
+
+    const reader = new FileReader()
+    reader.onloadend = () => {
+      setNewPost({ ...newPost, imageData: reader.result, preview: reader.result })
+    }
+    reader.readAsDataURL(file)
+  }
+
   const createPost = async (e) => {
     e.preventDefault()
-    if (!newPost.imageUrl) return
+    if (!newPost.imageData) return
 
+    setUploading(true)
     try {
       const res = await fetch('/api/main-lounge/posts', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           creatorId: user.id,
-          imageUrl: newPost.imageUrl,
+          imageUrl: newPost.imageData, // Send base64 data
           caption: newPost.caption,
           price: parseFloat(newPost.price) || 0
         })
       })
       if (res.ok) {
-        setNewPost({ imageUrl: '', caption: '', price: '' })
+        setNewPost({ imageData: '', caption: '', price: '', preview: null })
         setShowPostForm(false)
         fetchPosts()
       }
     } catch (err) {
       console.error('Failed to create post')
     }
+    setUploading(false)
   }
 
   useEffect(() => {
