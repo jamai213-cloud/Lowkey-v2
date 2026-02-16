@@ -563,7 +563,11 @@ export default function SearchPage() {
                       <h3 className="text-white font-medium mb-2 text-sm">Gallery</h3>
                       <div className="grid grid-cols-3 gap-1">
                         {selectedUser.gallery.slice(0, 6).map((img, i) => (
-                          <div key={i} className="aspect-square rounded-lg overflow-hidden bg-white/5">
+                          <div 
+                            key={i} 
+                            className="aspect-square rounded-lg overflow-hidden bg-white/5 cursor-pointer hover:opacity-80 transition-opacity"
+                            onClick={() => { setLightboxImage(img); setLightboxIndex(i); }}
+                          >
                             <img src={img.imageData || img.url} alt="" className="w-full h-full object-cover" />
                           </div>
                         ))}
