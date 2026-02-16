@@ -603,14 +603,18 @@ export default function ProfilePage() {
               </div>
             ) : (
               <div className="grid grid-cols-3 gap-2">
-                {gallery.map(item => {
+                {gallery.map((item, index) => {
                   // Get filter CSS for displaying
                   const filterCss = FILTERS.find(f => f.id === item.filter)?.css || ''
                   const blurCss = item.blur ? `blur(${item.blur}px)` : ''
                   const combinedFilter = [filterCss, blurCss].filter(Boolean).join(' ')
                   
                   return (
-                    <div key={item.id} className="relative aspect-square rounded-lg overflow-hidden bg-white/10 group">
+                    <div 
+                      key={item.id} 
+                      className="relative aspect-square rounded-lg overflow-hidden bg-white/10 group cursor-pointer"
+                      onClick={() => { setLightboxImage(item); setLightboxIndex(index); }}
+                    >
                       {item.type === 'video' ? (
                         <video 
                           src={item.url || item.imageData} 
@@ -627,7 +631,7 @@ export default function ProfilePage() {
                       )}
                       {/* Delete button on hover/tap */}
                       <button 
-                        onClick={() => deleteGalleryItem(item.id)}
+                        onClick={(e) => { e.stopPropagation(); deleteGalleryItem(item.id); }}
                         className="absolute top-1 right-1 p-1.5 rounded-full bg-red-500/80 text-white opacity-0 group-hover:opacity-100 transition-opacity"
                       >
                         <X className="w-4 h-4" />
