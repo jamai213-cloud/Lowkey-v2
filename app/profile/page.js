@@ -52,6 +52,8 @@ export default function ProfilePage() {
   const [uploading, setUploading] = useState(false)
   const [storyData, setStoryData] = useState({ type: 'photo', file: null, preview: null, text: '', privacy: 'everyone', backgroundColor: '#1a1a2e', filter: 'none', blur: 0 })
   const [galleryPrivacy, setGalleryPrivacy] = useState('public')
+  const [lightboxImage, setLightboxImage] = useState(null)
+  const [lightboxIndex, setLightboxIndex] = useState(0)
   const fileInputRef = useRef(null)
   const storyFileInputRef = useRef(null)
   const profilePicInputRef = useRef(null)
