@@ -11,7 +11,7 @@ export default function RadioMiniPlayer() {
   if (!currentStation) return null
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-50 bg-gradient-to-r from-purple-900/95 to-pink-900/95 backdrop-blur-lg border-t border-white/10 safe-area-bottom">
+    <div className="fixed bottom-0 left-0 right-0 z-50 bg-gradient-to-r from-purple-900/95 to-pink-900/95 backdrop-blur-lg border-t border-white/10" style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
       <div className="flex items-center gap-3 p-3 max-w-screen-xl mx-auto">
         {/* Station info */}
         <div 
