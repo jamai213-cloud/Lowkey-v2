@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { ArrowLeft, Search as SearchIcon, User, Users, Calendar, UserPlus, Check, Crown, Sparkles, X, Clock, Eye, Lock, Heart } from 'lucide-react'
+import { ArrowLeft, Search as SearchIcon, User, Users, Calendar, UserPlus, Check, Crown, Sparkles, X, Clock, Eye, Lock, Heart, ChevronLeft, ChevronRight } from 'lucide-react'
 
 export default function SearchPage() {
   const router = useRouter()
@@ -14,6 +14,8 @@ export default function SearchPage() {
   const [sentRequests, setSentRequests] = useState([])
   const [selectedUser, setSelectedUser] = useState(null)
   const [showProfileModal, setShowProfileModal] = useState(false)
+  const [lightboxImage, setLightboxImage] = useState(null)
+  const [lightboxIndex, setLightboxIndex] = useState(0)
 
   useEffect(() => {
     const storedUser = localStorage.getItem('lowkey_user')
