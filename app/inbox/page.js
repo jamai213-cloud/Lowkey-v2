@@ -126,9 +126,20 @@ function InboxContent() {
         <button onClick={() => selectedConvo ? setSelectedConvo(null) : router.push('/')} className="p-2 rounded-full hover:bg-white/10">
           <ArrowLeft className="w-5 h-5 text-white" />
         </button>
-        <h1 className="text-xl font-semibold text-white">
-          {selectedConvo && selectedConversation?.otherUser ? selectedConversation.otherUser.displayName : 'Inbox'}
-        </h1>
+        {selectedConvo && selectedConversation?.otherUser ? (
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center overflow-hidden">
+              {selectedConversation.otherUser.avatar ? (
+                <img src={selectedConversation.otherUser.avatar} alt="" className="w-full h-full object-cover" />
+              ) : (
+                <User className="w-5 h-5 text-white" />
+              )}
+            </div>
+            <h1 className="text-xl font-semibold text-white">{selectedConversation.otherUser.displayName}</h1>
+          </div>
+        ) : (
+          <h1 className="text-xl font-semibold text-white">Inbox</h1>
+        )}
       </header>
 
       {!selectedConvo ? (
