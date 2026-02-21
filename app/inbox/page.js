@@ -147,8 +147,12 @@ function InboxContent() {
                 onClick={() => loadConversation(convo.id, user.id)}
                 className="w-full flex items-center gap-3 p-4 border-b border-white/5 hover:bg-white/5 transition-colors"
               >
-                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
-                  <User className="w-6 h-6 text-white" />
+                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center overflow-hidden">
+                  {convo.otherUser?.avatar ? (
+                    <img src={convo.otherUser.avatar} alt="" className="w-full h-full object-cover" />
+                  ) : (
+                    <User className="w-6 h-6 text-white" />
+                  )}
                 </div>
                 <div className="flex-1 text-left">
                   <div className="flex justify-between items-center">
