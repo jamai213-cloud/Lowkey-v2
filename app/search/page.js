@@ -603,6 +603,67 @@ export default function SearchPage() {
           </div>
         </div>
       )}
+
+      {/* Gallery Lightbox Modal */}
+      {lightboxImage && selectedUser?.gallery && (
+        <div 
+          className="fixed inset-0 z-[60] flex items-center justify-center bg-black/95 backdrop-blur-sm"
+          onClick={() => setLightboxImage(null)}
+        >
+          {/* Close button */}
+          <button 
+            onClick={() => setLightboxImage(null)}
+            className="absolute top-4 right-4 p-3 rounded-full bg-white/10 text-white z-10 hover:bg-white/20"
+          >
+            <X className="w-6 h-6" />
+          </button>
+
+          {/* Navigation arrows */}
+          {selectedUser.gallery.length > 1 && (
+            <>
+              <button 
+                onClick={(e) => { 
+                  e.stopPropagation(); 
+                  const newIndex = lightboxIndex > 0 ? lightboxIndex - 1 : selectedUser.gallery.length - 1;
+                  setLightboxIndex(newIndex);
+                  setLightboxImage(selectedUser.gallery[newIndex]);
+                }}
+                className="absolute left-4 p-3 rounded-full bg-white/10 text-white z-10 hover:bg-white/20"
+              >
+                <ChevronLeft className="w-6 h-6" />
+              </button>
+              <button 
+                onClick={(e) => { 
+                  e.stopPropagation(); 
+                  const newIndex = lightboxIndex < selectedUser.gallery.length - 1 ? lightboxIndex + 1 : 0;
+                  setLightboxIndex(newIndex);
+                  setLightboxImage(selectedUser.gallery[newIndex]);
+                }}
+                className="absolute right-4 p-3 rounded-full bg-white/10 text-white z-10 hover:bg-white/20"
+              >
+                <ChevronRight className="w-6 h-6" />
+              </button>
+            </>
+          )}
+
+          {/* Image container */}
+          <div 
+            className="max-w-[90vw] max-h-[85vh] flex items-center justify-center"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <img 
+              src={lightboxImage.imageData || lightboxImage.url}
+              alt=""
+              className="max-w-full max-h-[85vh] object-contain rounded-lg"
+            />
+          </div>
+
+          {/* Image counter */}
+          <div className="absolute top-4 left-4 text-white text-sm bg-black/50 px-3 py-1 rounded-full">
+            {lightboxIndex + 1} / {selectedUser.gallery.length}
+          </div>
+        </div>
+      )}
     </div>
   )
 }
