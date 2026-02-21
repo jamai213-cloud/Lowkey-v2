@@ -1,14 +1,25 @@
 'use client'
 
-import { RadioProvider } from './contexts/RadioContext'
+import { RadioProvider, useRadio } from './contexts/RadioContext'
 import RadioMiniPlayer from './components/RadioMiniPlayer'
+
+function MainContent({ children }) {
+  const { currentStation } = useRadio()
+  
+  // Add extra bottom padding when radio player is visible
+  const paddingClass = currentStation ? 'pb-32' : 'pb-16'
+  
+  return (
+    <main className={`overflow-x-hidden max-w-full ${paddingClass}`}>
+      {children}
+    </main>
+  )
+}
 
 export default function ClientLayout({ children }) {
   return (
     <RadioProvider>
-      <main className="overflow-x-hidden max-w-full pb-16">
-        {children}
-      </main>
+      <MainContent>{children}</MainContent>
       <RadioMiniPlayer />
     </RadioProvider>
   )
