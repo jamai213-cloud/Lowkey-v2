@@ -1,4 +1,8 @@
-'use client'
+---
+
+## 4. `app/profile/edit/page.js`
+Action: $ cat /app/app/profile/edit/page.js
+Observation: 'use client'
 
 import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
@@ -724,21 +728,25 @@ export default function EditProfilePage() {
             Tap to select (green = into it). Tap again to mark as hard limit (red = won't do).
           </p>
           
-          {/* Category tabs */}
-          <div className="flex gap-2 overflow-x-auto pb-3 mb-4">
-            {Object.keys(KINK_CATEGORIES).map(cat => (
-              <button
-                key={cat}
-                onClick={() => setActiveKinkCategory(cat)}
-                className={`px-4 py-2 rounded-full text-sm whitespace-nowrap transition-colors ${
-                  activeKinkCategory === cat
-                    ? 'bg-orange-500 text-black font-semibold'
-                    : 'bg-white/10 text-gray-300'
-                }`}
-              >
-                {cat}
-              </button>
-            ))}
+          {/* Category tabs - horizontally scrollable with snap */}
+          <div className="relative -mx-4 px-4 mb-4">
+            <div className="flex gap-2 overflow-x-auto pb-3 snap-x snap-mandatory scrollbar-hide" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', WebkitOverflowScrolling: 'touch' }}>
+              {Object.keys(KINK_CATEGORIES).map(cat => (
+                <button
+                  key={cat}
+                  onClick={() => setActiveKinkCategory(cat)}
+                  className={`flex-shrink-0 px-4 py-2 rounded-full text-sm whitespace-nowrap transition-colors snap-start ${
+                    activeKinkCategory === cat
+                      ? 'bg-orange-500 text-black font-semibold'
+                      : 'bg-white/10 text-gray-300'
+                  }`}
+                >
+                  {cat}
+                </button>
+              ))}
+              {/* Extra padding at end for scroll */}
+              <div className="flex-shrink-0 w-4" aria-hidden="true"></div>
+            </div>
           </div>
 
           {/* Kink checkboxes */}
@@ -898,125 +906,6 @@ export default function EditProfilePage() {
                 <button
                   onClick={() => setUploadPrivacy('friends')}
                   className={`flex-1 py-2 rounded-lg text-sm flex items-center justify-center gap-1 ${
-                    uploadPrivacy === 'friends' ? 'bg-amber-500 text-black' : 'bg-white/10 text-gray-400'
-                  }`}
-                >
-                  <Lock className="w-4 h-4" /> Friends Only
-                </button>
-              </div>
-            </div>
-
-            {/* Upload Button */}
-            <button
-              onClick={uploadPhoto}
-              disabled={uploading}
-              className="w-full py-3 rounded-xl bg-gradient-to-r from-pink-500 to-purple-500 text-white font-semibold disabled:opacity-50 flex items-center justify-center gap-2"
-            >
-              {uploading ? (
-                <>
-                  <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  Uploading...
-                </>
-              ) : (
-                <>
-                  <Upload className="w-5 h-5" /> Upload Photo
-                </>
-              )}
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Photo Editor Modal */}
-      {selectedPhoto && (
-        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/90" onClick={() => setSelectedPhoto(null)}>
-          <div className="w-full max-w-lg bg-[#1a1a2e] rounded-t-3xl p-6 max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-white text-lg font-semibold">Edit Photo</h3>
-              <button onClick={() => setSelectedPhoto(null)} className="p-2 rounded-full hover:bg-white/10">
-                <X className="w-5 h-5 text-gray-400" />
-              </button>
-            </div>
-            
-            {/* Photo Preview */}
-            <div className="relative aspect-square rounded-xl overflow-hidden mb-4">
-              <img 
-                src={getImageSrc(selectedPhoto)} 
-                alt="" 
-                className="w-full h-full object-cover"
-                style={{ filter: FILTERS.find(f => f.id === selectedPhoto.filter)?.css || '' }}
-              />
-            </div>
-
-            {/* Set as Profile Picture */}
-            <button
-              onClick={() => setAsProfilePicture(getImageSrc(selectedPhoto))}
-              className="w-full mb-4 py-3 rounded-xl bg-amber-500 text-black font-semibold flex items-center justify-center gap-2"
-            >
-              <User className="w-5 h-5" /> Set as Profile Picture
-            </button>
-
-            {/* Filters */}
-            <div className="mb-4">
-              <h4 className="text-white text-sm font-semibold mb-2 flex items-center gap-2">
-                <Sliders className="w-4 h-4" /> Filters
-              </h4>
-              <div className="flex gap-2 overflow-x-auto pb-2">
-                {FILTERS.map(filter => (
-                  <button
-                    key={filter.id}
-                    onClick={() => updatePhotoFilter(selectedPhoto.id, filter.id)}
-                    className={`flex-shrink-0 flex flex-col items-center gap-1 ${
-                      selectedPhoto.filter === filter.id ? 'opacity-100' : 'opacity-60'
-                    }`}
-                  >
-                    <div className={`w-16 h-16 rounded-lg overflow-hidden border-2 ${selectedPhoto.filter === filter.id ? 'border-amber-500' : 'border-transparent'}`}>
-                      <img 
-                        src={getImageSrc(selectedPhoto)} 
-                        alt="" 
-                        className="w-full h-full object-cover"
-                        style={{ filter: filter.css }}
-                      />
-                    </div>
-                    <span className="text-xs text-gray-400">{filter.name}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Privacy */}
-            <div className="mb-4">
-              <h4 className="text-white text-sm font-semibold mb-2">Visibility</h4>
-              <div className="flex gap-2">
-                <button
-                  onClick={() => updatePhotoPrivacy(selectedPhoto.id, 'public')}
-                  className={`flex-1 py-2 rounded-lg text-sm flex items-center justify-center gap-1 ${
-                    selectedPhoto.privacy === 'public' ? 'bg-green-500 text-black' : 'bg-white/10 text-gray-400'
-                  }`}
-                >
-                  <Globe className="w-4 h-4" /> Public
-                </button>
-                <button
-                  onClick={() => updatePhotoPrivacy(selectedPhoto.id, 'friends')}
-                  className={`flex-1 py-2 rounded-lg text-sm flex items-center justify-center gap-1 ${
-                    selectedPhoto.privacy === 'friends' ? 'bg-amber-500 text-black' : 'bg-white/10 text-gray-400'
-                  }`}
-                >
-                  <Lock className="w-4 h-4" /> Friends Only
-                </button>
-              </div>
-            </div>
-
-            {/* Delete Button */}
-            <button
-              onClick={() => deletePhoto(selectedPhoto.id)}
-              className="w-full py-3 rounded-xl bg-red-500/20 border border-red-500/30 text-red-400 font-semibold flex items-center justify-center gap-2"
-            >
-              <Trash2 className="w-5 h-5" /> Delete Photo
-            </button>
-          </div>
-        </div>
-      )}
-    </div>
-  )
-}
+     
+... [stdout truncated]
+Exit code: 0
