@@ -1,4 +1,43 @@
+Here are all 6 files to update on GitHub:
+
+---
+
+## 1. `app/ClientLayout.js`
+
+```javascript
 'use client'
+
+import { RadioProvider, useRadio } from './contexts/RadioContext'
+import RadioMiniPlayer from './components/RadioMiniPlayer'
+
+function MainContent({ children }) {
+  const { currentStation } = useRadio()
+  
+  // Add extra bottom padding when radio player is visible
+  const paddingClass = currentStation ? 'pb-32' : 'pb-16'
+  
+  return (
+    <main className={`overflow-x-hidden max-w-full ${paddingClass}`}>
+      {children}
+    </main>
+  )
+}
+
+export default function ClientLayout({ children }) {
+  return (
+    <RadioProvider>
+      <MainContent>{children}</MainContent>
+      <RadioMiniPlayer />
+    </RadioProvider>
+  )
+}
+```
+
+---
+
+## 2. `app/inbox/page.js`
+Action: $ cat /app/app/inbox/page.js
+Observation: 'use client'
 
 import { useState, useEffect, useRef, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
@@ -126,9 +165,20 @@ function InboxContent() {
         <button onClick={() => selectedConvo ? setSelectedConvo(null) : router.push('/')} className="p-2 rounded-full hover:bg-white/10">
           <ArrowLeft className="w-5 h-5 text-white" />
         </button>
-        <h1 className="text-xl font-semibold text-white">
-          {selectedConvo && selectedConversation?.otherUser ? selectedConversation.otherUser.displayName : 'Inbox'}
-        </h1>
+        {selectedConvo && selectedConversation?.otherUser ? (
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center overflow-hidden">
+              {selectedConversation.otherUser.avatar ? (
+                <img src={selectedConversation.otherUser.avatar} alt="" className="w-full h-full object-cover" />
+              ) : (
+                <User className="w-5 h-5 text-white" />
+              )}
+            </div>
+            <h1 className="text-xl font-semibold text-white">{selectedConversation.otherUser.displayName}</h1>
+          </div>
+        ) : (
+          <h1 className="text-xl font-semibold text-white">Inbox</h1>
+        )}
       </header>
 
       {!selectedConvo ? (
@@ -147,8 +197,12 @@ function InboxContent() {
                 onClick={() => loadConversation(convo.id, user.id)}
                 className="w-full flex items-center gap-3 p-4 border-b border-white/5 hover:bg-white/5 transition-colors"
               >
-                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
-                  <User className="w-6 h-6 text-white" />
+                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center overflow-hidden">
+                  {convo.otherUser?.avatar ? (
+                    <img src={convo.otherUser.avatar} alt="" className="w-full h-full object-cover" />
+                  ) : (
+                    <User className="w-6 h-6 text-white" />
+                  )}
                 </div>
                 <div className="flex-1 text-left">
                   <div className="flex justify-between items-center">
@@ -226,3 +280,4 @@ export default function InboxPage() {
     </Suspense>
   )
 }
+Exit code: 0
