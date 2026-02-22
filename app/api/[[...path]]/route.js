@@ -1760,7 +1760,12 @@ async function handleRoute(request, { params }) {
     }
 
     if (route === '/main-lounge/messages' && method === 'GET') {
-      const msgs = await db.collection('lounge_messages').find({ loungeId: 'main-lounge' }).sort({ createdAt: -1 }).limit(100).toArray()
+      // Filter messages to only show those from last 12 hours (auto-expire)
+      const twelveHoursAgo = new Date(Date.now() - 12 * 60 * 60 * 1000)
+      const msgs = await db.collection('lounge_messages').find({ 
+        loungeId: 'main-lounge',
+        createdAt: { $gte: twelveHoursAgo }
+      }).sort({ createdAt: -1 }).limit(100).toArray()
       // Enrich messages with sender avatar
       const enrichedMsgs = await Promise.all(msgs.map(async (msg) => {
         const sender = await db.collection('users').findOne({ id: msg.senderId })
