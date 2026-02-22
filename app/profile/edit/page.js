@@ -881,24 +881,7 @@ export default function EditProfilePage() {
               <input
                 type="text"
                 value={uploadCaption}
-The search.js file is shown above. Now for the last file - profile/edit/page.js - this is the largest file and was corrupted. Let me get a working version:
 
----
-
-## FILE 4: `app/profile/edit/page.js`
-
-This file is 1000+ lines long. The issue is it was truncated at line 907. I'll provide the missing ending that needs to be added after where the file currently cuts off.
-Action: file_editor view /app/app/profile/edit/page.js
-Observation: /app/app/profile/edit/page.js:
-900|                  <Globe className="w-4 h-4" /> Public
-901|                </button>
-902|                <button
-903|                  onClick={() => setUploadPrivacy('friends')}
-904|                  className={`flex-1 py-2 rounded-lg text-sm flex items-center justify-center gap-1 ${
-905|     
-906|... [stdout truncated]
-907|
-908|
                 onChange={(e) => setUploadCaption(e.target.value)}
                 placeholder="Add a caption..."
                 className="w-full px-4 py-3 rounded-xl bg-black/40 border border-white/10 text-white placeholder-gray-500 focus:outline-none focus:border-amber-500/50"
@@ -917,9 +900,90 @@ Observation: /app/app/profile/edit/page.js:
                 >
                   <Globe className="w-4 h-4" /> Public
                 </button>
-                <button
+                       <button
                   onClick={() => setUploadPrivacy('friends')}
                   className={`flex-1 py-2 rounded-lg text-sm flex items-center justify-center gap-1 ${
+                    uploadPrivacy === 'friends' ? 'bg-amber-500 text-black' : 'bg-white/10 text-gray-400'
+                  }`}
+                >
+                  <Lock className="w-4 h-4" /> Friends Only
+                </button>
+              </div>
+            </div>
+
+            <button
+              onClick={uploadPhoto}
+              disabled={uploading}
+              className="w-full py-3 rounded-xl bg-gradient-to-r from-pink-500 to-purple-500 text-white font-semibold disabled:opacity-50 flex items-center justify-center gap-2"
+            >
+              {uploading ? (
+                <>
+                  <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  Uploading...
+                </>
+              ) : (
+                <>
+                  <Upload className="w-5 h-5" /> Upload Photo
+                </>
+              )}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {selectedPhoto && (
+        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/90" onClick={() => setSelectedPhoto(null)}>
+          <div className="w-full max-w-lg bg-[#1a1a2e] rounded-t-3xl p-6 max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-white text-lg font-semibold">Edit Photo</h3>
+              <button onClick={() => setSelectedPhoto(null)} className="p-2 rounded-full hover:bg-white/10">
+                <X className="w-5 h-5 text-gray-400" />
+              </button>
+            </div>
+            
+            <div className="relative aspect-square rounded-xl overflow-hidden mb-4">
+              <img src={getImageSrc(selectedPhoto)} alt="" className="w-full h-full object-cover" style={{ filter: FILTERS.find(f => f.id === selectedPhoto.filter)?.css || '' }} />
+            </div>
+
+            <button onClick={() => setAsProfilePicture(getImageSrc(selectedPhoto))} className="w-full mb-4 py-3 rounded-xl bg-amber-500 text-black font-semibold flex items-center justify-center gap-2">
+              <User className="w-5 h-5" /> Set as Profile Picture
+            </button>
+
+            <div className="mb-4">
+              <h4 className="text-white text-sm font-semibold mb-2 flex items-center gap-2"><Sliders className="w-4 h-4" /> Filters</h4>
+              <div className="flex gap-2 overflow-x-auto pb-2">
+                {FILTERS.map(filter => (
+                  <button key={filter.id} onClick={() => updatePhotoFilter(selectedPhoto.id, filter.id)} className={`flex-shrink-0 flex flex-col items-center gap-1 ${selectedPhoto.filter === filter.id ? 'opacity-100' : 'opacity-60'}`}>
+                    <div className={`w-16 h-16 rounded-lg overflow-hidden border-2 ${selectedPhoto.filter === filter.id ? 'border-amber-500' : 'border-transparent'}`}>
+                      <img src={getImageSrc(selectedPhoto)} alt="" className="w-full h-full object-cover" style={{ filter: filter.css }} />
+                    </div>
+                    <span className="text-xs text-gray-400">{filter.name}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="mb-4">
+              <h4 className="text-white text-sm font-semibold mb-2">Visibility</h4>
+              <div className="flex gap-2">
+                <button onClick={() => updatePhotoPrivacy(selectedPhoto.id, 'public')} className={`flex-1 py-2 rounded-lg text-sm flex items-center justify-center gap-1 ${selectedPhoto.privacy === 'public' ? 'bg-green-500 text-black' : 'bg-white/10 text-gray-400'}`}>
+                  <Globe className="w-4 h-4" /> Public
+                </button>
+                <button onClick={() => updatePhotoPrivacy(selectedPhoto.id, 'friends')} className={`flex-1 py-2 rounded-lg text-sm flex items-center justify-center gap-1 ${selectedPhoto.privacy === 'friends' ? 'bg-amber-500 text-black' : 'bg-white/10 text-gray-400'}`}>
+                  <Lock className="w-4 h-4" /> Friends Only
+                </button>
+              </div>
+            </div>
+
+            <button onClick={() => deletePhoto(selectedPhoto.id)} className="w-full py-3 rounded-xl bg-red-500/20 border border-red-500/30 text-red-400 font-semibold flex items-center justify-center gap-2">
+              <Trash2 className="w-5 h-5" /> Delete Photo
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
      
-... [stdout truncated]
+
 
