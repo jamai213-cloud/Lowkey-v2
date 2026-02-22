@@ -2,11 +2,13 @@
 
 import { useState, useEffect, useRef, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { ArrowLeft, Send, User, MessageSquare, Check, CheckCheck } from 'lucide-react'
+import { ArrowLeft, Send, User, MessageSquare, Check, CheckCheck, Volume2, VolumeX } from 'lucide-react'
+import { useNotifications } from './contexts/NotificationContext'
 
 function InboxContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
+  const { soundEnabled, toggleSound, requestPermission, notifyMessage } = useNotifications()
   const [user, setUser] = useState(null)
   const [conversations, setConversations] = useState([])
   const [selectedConvo, setSelectedConvo] = useState(null)
@@ -15,6 +17,7 @@ function InboxContent() {
   const [loading, setLoading] = useState(true)
   const messagesEndRef = useRef(null)
   const pollRef = useRef(null)
+  const prevMessageCount = useRef(0)
 
   useEffect(() => {
     const storedUser = localStorage.getItem('lowkey_user')
