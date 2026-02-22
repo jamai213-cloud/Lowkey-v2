@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { ArrowLeft, Search as SearchIcon, User, Users, Calendar, UserPlus, Check, Crown, Sparkles, X, Clock, Eye, Lock, Heart, ChevronLeft, ChevronRight } from 'lucide-react'
+import { ArrowLeft, Search as SearchIcon, User, Users, Calendar, UserPlus, Check, Crown, Sparkles, X, Clock, Eye, Lock, Heart } from 'lucide-react'
 
 export default function SearchPage() {
   const router = useRouter()
@@ -14,8 +14,6 @@ export default function SearchPage() {
   const [sentRequests, setSentRequests] = useState([])
   const [selectedUser, setSelectedUser] = useState(null)
   const [showProfileModal, setShowProfileModal] = useState(false)
-  const [lightboxImage, setLightboxImage] = useState(null)
-  const [lightboxIndex, setLightboxIndex] = useState(0)
 
   useEffect(() => {
     const storedUser = localStorage.getItem('lowkey_user')
@@ -394,127 +392,9 @@ export default function SearchPage() {
               {/* Full Profile - Shown to friends or public profiles */}
               {(isFriend(selectedUser.id) || selectedUser.profilePrivacy === 'public' || selectedUser.isPublic) && (
                 <>
-                  {/* About Me */}
-                  {(selectedUser.aboutMe || selectedUser.bio) && (
-                    <div className="mt-4">
-                      <h3 className="text-white font-medium mb-2 text-sm">About Me</h3>
-                      <p className="text-gray-400 text-sm">{selectedUser.aboutMe || selectedUser.bio}</p>
-                    </div>
-                  )}
-
-                  {/* Basic Info: Age, Location, Gender */}
-                  <div className="mt-4 grid grid-cols-3 gap-2">
-                    {selectedUser.age && (
-                      <div className="p-2 rounded-lg bg-white/5 text-center">
-                        <p className="text-white font-bold text-sm">{selectedUser.age}</p>
-                        <p className="text-gray-400 text-xs">Age</p>
-                      </div>
-                    )}
-                    {selectedUser.location && (
-                      <div className="p-2 rounded-lg bg-white/5 text-center">
-                        <p className="text-white font-bold text-sm truncate">{selectedUser.location}</p>
-                        <p className="text-gray-400 text-xs">Location</p>
-                      </div>
-                    )}
-                    {selectedUser.gender && (
-                      <div className="p-2 rounded-lg bg-white/5 text-center">
-                        <p className="text-white font-bold text-sm truncate">{selectedUser.gender}</p>
-                        <p className="text-gray-400 text-xs">Gender</p>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Looking For */}
-                  {selectedUser.lookingFor && (
-                    <div className="mt-4">
-                      <h3 className="text-white font-medium mb-2 text-sm">Looking For</h3>
-                      <p className="text-gray-400 text-sm">{selectedUser.lookingFor}</p>
-                    </div>
-                  )}
-
-                  {/* Relationship Status & Sexuality */}
-                  {(selectedUser.relationshipStatus || selectedUser.sexuality) && (
-                    <div className="mt-4 grid grid-cols-2 gap-2">
-                      {selectedUser.relationshipStatus && (
-                        <div className="p-2 rounded-lg bg-white/5">
-                          <p className="text-gray-400 text-xs">Status</p>
-                          <p className="text-white text-sm">{selectedUser.relationshipStatus}</p>
-                        </div>
-                      )}
-                      {selectedUser.sexuality && (
-                        <div className="p-2 rounded-lg bg-white/5">
-                          <p className="text-gray-400 text-xs">Sexuality</p>
-                          <p className="text-white text-sm">{selectedUser.sexuality}</p>
-                        </div>
-                      )}
-                    </div>
-                  )}
-
-                  {/* Physical Attributes */}
-                  {(selectedUser.height || selectedUser.bodyType || selectedUser.eyeColor || selectedUser.hairColor || selectedUser.ethnicity) && (
-                    <div className="mt-4">
-                      <h3 className="text-white font-medium mb-2 text-sm">Physical</h3>
-                      <div className="flex flex-wrap gap-2">
-                        {selectedUser.height && (
-                          <span className="px-2 py-1 rounded-full bg-green-500/20 text-green-400 text-xs">{selectedUser.height}</span>
-                        )}
-                        {selectedUser.bodyType && (
-                          <span className="px-2 py-1 rounded-full bg-green-500/20 text-green-400 text-xs">{selectedUser.bodyType}</span>
-                        )}
-                        {selectedUser.eyeColor && (
-                          <span className="px-2 py-1 rounded-full bg-blue-500/20 text-blue-400 text-xs">{selectedUser.eyeColor} eyes</span>
-                        )}
-                        {selectedUser.hairColor && (
-                          <span className="px-2 py-1 rounded-full bg-amber-500/20 text-amber-400 text-xs">{selectedUser.hairColor} hair</span>
-                        )}
-                        {selectedUser.ethnicity && (
-                          <span className="px-2 py-1 rounded-full bg-purple-500/20 text-purple-400 text-xs">{selectedUser.ethnicity}</span>
-                        )}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Lifestyle */}
-                  {(selectedUser.smoking || selectedUser.drinking) && (
-                    <div className="mt-4">
-                      <h3 className="text-white font-medium mb-2 text-sm">Lifestyle</h3>
-                      <div className="flex flex-wrap gap-2">
-                        {selectedUser.smoking && (
-                          <span className="px-2 py-1 rounded-full bg-gray-500/20 text-gray-400 text-xs">{selectedUser.smoking}</span>
-                        )}
-                        {selectedUser.drinking && (
-                          <span className="px-2 py-1 rounded-full bg-gray-500/20 text-gray-400 text-xs">{selectedUser.drinking}</span>
-                        )}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Interested In */}
-                  {selectedUser.interestedIn && selectedUser.interestedIn.length > 0 && (
-                    <div className="mt-4">
-                      <h3 className="text-white font-medium mb-2 text-sm">Interested In</h3>
-                      <div className="flex flex-wrap gap-2">
-                        {selectedUser.interestedIn.map((item, i) => (
-                          <span key={i} className="px-2 py-1 rounded-full bg-amber-500/20 text-amber-400 text-xs">
-                            {item}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Open To */}
-                  {selectedUser.openTo && selectedUser.openTo.length > 0 && (
-                    <div className="mt-4">
-                      <h3 className="text-white font-medium mb-2 text-sm">Open To</h3>
-                      <div className="flex flex-wrap gap-2">
-                        {selectedUser.openTo.map((item, i) => (
-                          <span key={i} className="px-2 py-1 rounded-full bg-cyan-500/20 text-cyan-400 text-xs">
-                            {item}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
+                  {/* Bio */}
+                  {selectedUser.bio && (
+                    <p className="text-gray-400 text-sm mt-2">{selectedUser.bio}</p>
                   )}
                   
                   {/* Stats */}
@@ -529,27 +409,13 @@ export default function SearchPage() {
                     </div>
                   </div>
                   
-                  {/* Kinks & Preferences */}
+                  {/* Kink Form / Interests */}
                   {selectedUser.kinks && selectedUser.kinks.length > 0 && (
                     <div className="mt-4">
-                      <h3 className="text-white font-medium mb-2 text-sm">Kinks & Preferences</h3>
+                      <h3 className="text-white font-medium mb-2 text-sm">Interests</h3>
                       <div className="flex flex-wrap gap-2">
                         {selectedUser.kinks.map((kink, i) => (
-                          <span key={i} className="px-2 py-1 rounded-full bg-pink-500/20 text-pink-400 text-xs">
-                            {kink}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Hard Limits */}
-                  {selectedUser.kinksHard && selectedUser.kinksHard.length > 0 && (
-                    <div className="mt-4">
-                      <h3 className="text-white font-medium mb-2 text-sm">Hard Limits</h3>
-                      <div className="flex flex-wrap gap-2">
-                        {selectedUser.kinksHard.map((kink, i) => (
-                          <span key={i} className="px-2 py-1 rounded-full bg-red-500/20 text-red-400 text-xs">
+                          <span key={i} className="px-2 py-1 rounded-full bg-purple-500/20 text-purple-400 text-xs">
                             {kink}
                           </span>
                         ))}
@@ -563,11 +429,7 @@ export default function SearchPage() {
                       <h3 className="text-white font-medium mb-2 text-sm">Gallery</h3>
                       <div className="grid grid-cols-3 gap-1">
                         {selectedUser.gallery.slice(0, 6).map((img, i) => (
-                          <div 
-                            key={i} 
-                            className="aspect-square rounded-lg overflow-hidden bg-white/5 cursor-pointer hover:opacity-80 transition-opacity"
-                            onClick={() => { setLightboxImage(img); setLightboxIndex(i); }}
-                          >
+                          <div key={i} className="aspect-square rounded-lg overflow-hidden bg-white/5">
                             <img src={img.imageData || img.url} alt="" className="w-full h-full object-cover" />
                           </div>
                         ))}
@@ -600,67 +462,6 @@ export default function SearchPage() {
                 )}
               </div>
             </div>
-          </div>
-        </div>
-      )}
-
-      {/* Gallery Lightbox Modal */}
-      {lightboxImage && selectedUser?.gallery && (
-        <div 
-          className="fixed inset-0 z-[60] flex items-center justify-center bg-black/95 backdrop-blur-sm"
-          onClick={() => setLightboxImage(null)}
-        >
-          {/* Close button */}
-          <button 
-            onClick={() => setLightboxImage(null)}
-            className="absolute top-4 right-4 p-3 rounded-full bg-white/10 text-white z-10 hover:bg-white/20"
-          >
-            <X className="w-6 h-6" />
-          </button>
-
-          {/* Navigation arrows */}
-          {selectedUser.gallery.length > 1 && (
-            <>
-              <button 
-                onClick={(e) => { 
-                  e.stopPropagation(); 
-                  const newIndex = lightboxIndex > 0 ? lightboxIndex - 1 : selectedUser.gallery.length - 1;
-                  setLightboxIndex(newIndex);
-                  setLightboxImage(selectedUser.gallery[newIndex]);
-                }}
-                className="absolute left-4 p-3 rounded-full bg-white/10 text-white z-10 hover:bg-white/20"
-              >
-                <ChevronLeft className="w-6 h-6" />
-              </button>
-              <button 
-                onClick={(e) => { 
-                  e.stopPropagation(); 
-                  const newIndex = lightboxIndex < selectedUser.gallery.length - 1 ? lightboxIndex + 1 : 0;
-                  setLightboxIndex(newIndex);
-                  setLightboxImage(selectedUser.gallery[newIndex]);
-                }}
-                className="absolute right-4 p-3 rounded-full bg-white/10 text-white z-10 hover:bg-white/20"
-              >
-                <ChevronRight className="w-6 h-6" />
-              </button>
-            </>
-          )}
-
-          {/* Image container */}
-          <div 
-            className="max-w-[90vw] max-h-[85vh] flex items-center justify-center"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <img 
-              src={lightboxImage.imageData || lightboxImage.url}
-              alt=""
-              className="max-w-full max-h-[85vh] object-contain rounded-lg"
-            />
-          </div>
-
-          {/* Image counter */}
-          <div className="absolute top-4 left-4 text-white text-sm bg-black/50 px-3 py-1 rounded-full">
-            {lightboxIndex + 1} / {selectedUser.gallery.length}
           </div>
         </div>
       )}
