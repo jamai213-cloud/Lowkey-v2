@@ -2053,6 +2053,26 @@ async function handleRoute(request, { params }) {
       return handleCORS(NextResponse.json({ success: true }))
     }
 
+    // Delete event (creator only)
+    if (route.match(/^\/events\/[^/]+$/) && method === 'DELETE') {
+      const eventId = path[1]
+      const body = await safeParseJson(request)
+      const { userId } = body
+      
+      // Find the event and verify ownership
+      const event = await db.collection('events').findOne({ id: eventId })
+      if (!event) {
+        return handleCORS(NextResponse.json({ error: 'Event not found' }, { status: 404 }))
+      }
+      
+      if (event.creatorId !== userId) {
+        return handleCORS(NextResponse.json({ error: 'Only the event creator can delete this event' }, { status: 403 }))
+      }
+      
+      await db.collection('events').deleteOne({ id: eventId })
+      return handleCORS(NextResponse.json({ success: true, message: 'Event deleted successfully' }))
+    }
+
     // ==================== NOTICES ====================
     if (route === '/notices' && method === 'GET') {
       const notices = await db.collection('notices').find({}).sort({ createdAt: -1 }).toArray()
