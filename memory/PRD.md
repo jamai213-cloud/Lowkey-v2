@@ -44,29 +44,41 @@ Lowkey is a Next.js-based social/dating application deployed on Vercel with Mong
    - Verified `/stories` GET endpoint already filters by 24 hours
    - Uses `createdAt: { $gte: oneDayAgo }` filter
 
-5. **Notification Sound System (P2)**
+5. **Notification Sound System (P2) - ENHANCED**
    - Created `app/contexts/NotificationContext.js` with:
+     - Web Audio API for reliable cross-browser sound (pleasant chime tones)
      - Sound on/off toggle (persisted to localStorage)
      - Browser notification permission handling
      - Sound throttling (1 second minimum between sounds)
      - Helper methods: `notifyFriendRequest`, `notifyMessage`, `notifyInteraction`
    - Updated `app/ClientLayout.js` to wrap app in NotificationProvider
+   - **ENHANCED `app/page.js` with fully professional notification bell:**
+     - Polls for new notifications every 10 seconds
+     - Plays sound when new notifications arrive
+     - Animated bell icon when new notifications received
+     - Sound toggle button in header (Volume2/VolumeX icons)
+     - Friend requests section with Accept/Decline buttons in dropdown
+     - Different icons for notification types (friend request, message, tip, comment)
+     - Mark individual or all notifications as read
+     - Navigate to relevant page when clicking notification
+     - Unread count badge includes pending friend requests
    - Updated `app/search/page.js` with notification sound for new friend requests
    - Updated `app/inbox/page.js` with notification sound for new messages
-   - Added sound toggle button (Volume2/VolumeX icons) to Search and Inbox headers
 
 6. **Friend Request System (Verified Working)**
    - Accept/decline flow in `app/api/[[...path]]/route.js` confirmed correct
    - Frontend properly refreshes state after accept/decline
    - Notifications sent to requester on acceptance
+   - Friend requests now visible in main notification dropdown
 
 ## Key Files Modified
 - `app/ClientLayout.js` - Layout wrapper with providers
 - `app/components/RadioMiniPlayer.js` - Radio player component
-- `app/contexts/NotificationContext.js` - NEW - Notification sound system
+- `app/contexts/NotificationContext.js` - NEW - Notification sound system with Web Audio API
 - `app/events/page.js` - Events page with delete functionality
 - `app/inbox/page.js` - Inbox with notification sounds
 - `app/search/page.js` - Search page with notification sounds
+- `app/page.js` - Main page with enhanced notification bell
 - `app/api/[[...path]]/route.js` - API routes (event delete, message expiry)
 
 ## Key API Endpoints
