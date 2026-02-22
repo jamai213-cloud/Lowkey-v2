@@ -51,13 +51,27 @@ export default function SearchPage() {
       const res = await fetch(`/api/friends/requests/${userId}`)
       if (res.ok) {
         const data = await res.json()
-        setPendingRequests(data.pending || [])
+        const newPending = data.pending || []
+        
+        // Play notification sound if new requests arrived
+        if (newPending.length > prevPendingCount && prevPendingCount > 0) {
+          const newRequest = newPending[0]
+          notifyFriendRequest(newRequest?.fromName || 'Someone')
+        }
+        setPrevPendingCount(newPending.length)
+        
+        setPendingRequests(newPending)
         setSentRequests(data.sent || [])
       }
     } catch (err) {
       console.error('Failed to load friend requests')
     }
   }
+
+  // Request notification permission on mount
+  useEffect(() => {
+    requestPermission()
+  }, [requestPermission])
 
   const search = async (e) => {
     e?.preventDefault()
