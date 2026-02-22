@@ -600,12 +600,18 @@ const Tile = ({ icon: Icon, label, colorClass, isLocked, onClick }) => {
   )
 }
 
-// Notification Bell Component
-const NotificationBell = ({ count, onClick }) => (
-  <button onClick={onClick} className="relative p-2 rounded-full hover:bg-white/10 transition-colors">
-    <Bell className="w-5 h-5 text-gray-300" />
+// Notification Bell Component - Enhanced with animation
+const NotificationBell = ({ count, onClick, hasNew }) => (
+  <button 
+    onClick={onClick} 
+    className={`relative p-2 rounded-full hover:bg-white/10 transition-all duration-300 ${hasNew ? 'animate-pulse' : ''}`}
+    data-testid="notification-bell"
+  >
+    <Bell className={`w-5 h-5 transition-colors ${count > 0 ? 'text-amber-400' : 'text-gray-300'}`} />
     {count > 0 && (
-      <span className="notification-badge">{count > 9 ? '9+' : count}</span>
+      <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] rounded-full bg-red-500 flex items-center justify-center text-white text-xs font-bold px-1 animate-bounce">
+        {count > 99 ? '99+' : count}
+      </span>
     )}
   </button>
 )
