@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { ArrowLeft, Plus, Calendar, MapPin, Clock, Users, Check, X } from 'lucide-react'
+import { ArrowLeft, Plus, Calendar, MapPin, Clock, Users, Check, X, Trash2 } from 'lucide-react'
 
 export default function EventsPage() {
   const router = useRouter()
@@ -10,6 +10,7 @@ export default function EventsPage() {
   const [events, setEvents] = useState([])
   const [showCreate, setShowCreate] = useState(false)
   const [loading, setLoading] = useState(true)
+  const [deleting, setDeleting] = useState(null)
   const [newEvent, setNewEvent] = useState({
     title: '',
     date: '',
