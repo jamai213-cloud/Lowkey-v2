@@ -4,20 +4,27 @@ import { createContext, useContext, useState, useEffect, useCallback, useRef } f
 
 const NotificationContext = createContext({})
 
-// Simple notification sound (base64 encoded short beep)
-const NOTIFICATION_SOUND_URL = 'data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2teleGRkk8HWu4FJIA1IjtLcmk0hFVuKwN+rbzkPOnLS55N0PiM4gtjiqVkWJGqLz+KnVBEkbpjN3pt9TCs/l9jgpF8nK5DM28l0aDY6idDenVIkJHao09aZUxAfZpHO2KB3TCgvhM3bn1YuL5jS2KBRICyGvduheWpCN4HI2J9aIiqI1NahSTsgbqLT05FBMyuDxdeTPDI2i9bZjTUyRIrT05FCJDN8wNWKMzBMnNHTjDonVJ7P0Hg3Rm6a0M18Lk+W0NN6Mkmb0tJ1M1qc0NF3LFqe0NJ7LlyZzdB5LmOa0M53MWaZ0Ml2NmyZ0Md0OnOW0MNwPoOW0L5rQ46Sz7pnSpeQzbdkTp6OzLJhU6WMy65cWqyJyqhYYLKHyaRVZriDyZ5QbbyAyZhNc8B9yZJIeMV6yYxFfsZ2yYdBhMhzyIE9is1uxno5kM9qxHQ1ltVmwG0xnNdjvGYtn99gumApsONduVorufZbtkQov/VZsjop/wZYrS4mDxxWqCImIzFVoyEdQUlToB0bU1JRnRoZZFhQmhcYdF1OlxQXgWJMlBEWjWVLkQ4WmWhJjgwVpWpIiwsUr2xGiAkTuG5FhQcTwHBEggYSyHFDfwURz3NDfQQQ1HRDfAMP2nVCewIO33dCegIO4XdCeQEN4nhBdwEM4npBdwEM43pBdwEM43pAdwEL4npBdgEL4npBdgEL4XpAdgEL4HpAdgEL33lAdgEL3nlAdQEL3XlAdQEM23hAdQEM2XhAdAEM2HdAdAEM13dAdAAM1ndAdAAM1XZAdAAM1HZAdAAM03VAdAAM0nVAdAAM0XRAdAAMz3RAdAAMznRAdAAMzXRAdAAMyHRAdAAMx3NAdAAMxnNAdAAMxXNAdAAMxHNAdAAMwXNAdAAMv3NAdAAMvXJAdAAMu3JAdAAMuXJAdAAMt3JAdAAMs3JAdAAMsXJAdAAMr3JAdAAMrXJAdAAMq3JAdAAMp3JAdAAMo3JAdAAMn3JAdAAMmXJAdAAMlnJAdAAMkXJAdAAMjXJAdAAMiXJAdAAMhXJAdAAMgXJAdAAMfXJAdAAMeXJAdAAMdXJAdAAMcXJAdAAMbXJAdAAMaXJAdAAMZXJAdAAMYXJAdAAMXXJAdAAMWXJAdAAMVXJAdAAMUXJAdAAMTXJAdAAMSXJAdAAMRXJAdAAMQXJAdAAMPXJAdAAMOXJAdAAMNXJAdAAMMXJAdAAMLXJAdAAMKXJAdAAMJXJAdAAMIXJAdAAMHXJAdAAMGXJAdAAMFXJAdAAMEXJAdAAMDXJAdAAMCXJAdAAMBXJAdAAMAXJAdAAL/XJAdAAL+XJAdAAL9XJAdAAL8XJAdAAL7XJAdAAL6XJAdAAL5XJAdAAL4XJAdAAL3XJAdAAL2XJAdAAL1XJAdAAL0XJAdAALzXJAdAALyXJAdAALxXJAdAALwXJAdAALvXJAdAALuXJAdAALtXJAdAALsXJAdAALrXJAdAALqXJAdAALpXJAdAALoXJAdAALnXJAdAALmXJAdAALlXJAdAALkXJAdAALjXJAdAALiXJAdAALhXJAdAALgXJAdAALfXJAdAALeXJAdAALdXJAdAALcXJAdAALbXJAdAALaXJAdAALZXJAdAALYXJAdAALXXJAdAALWXJAdAALVXJAdAALUXJAdAALTXJAdAALSXJAdAALRXJAdAALQXJAdAALPXJAdAALOXJAdAALNXJAdAALMXJAdAALLXJAdAALKXJAdAALJXJAdAALIXJAdAALHXJAdAALGXJAdAALFXJAdAALEXJAdAALDXJAdAALCXJAdAALBXJAdAALAXJAdAAK/XJAdAAK+XJAdAAK9XJAdAAK8XJAdAAK7XJAdAAK6XJAdAAK5XJAdAAK4XJAdAAK3XJAdAAK2XJAdAAK1XJAdAAK0XJAdAAKzXJAdAAKyXJAdAAKxXJAdAAKwXJAdAAKvXJAdAAKuXJAdAAKtXJAdAAKsXJAdAAKrXJAdAAKqXJAdAAKpXJAdAAKoXJAdAAKnXJAdAAKmXJAdAAKlXJAdAAKkXJAdAAKjXJAdAAKiXJAdAAKhXJAdAAKgXJAdAAKfXJAdAAKeXJAdAAKdXJAdAAKcXJAdAAKbXJAdAAKaXJAdAAKZXJAdAAKYXJAdAAKXXJAdAAKWXJAdAAKVXJAdAAKUXJAdAAKTXJAdAAKSXJAdAAKRXJAdAAKQXJAdAAKPXJAdAAKOXJAdAAKNXJAdAAKMXJAdAAKLXJAdAAKKXJAdAAKJXJAdAAKIXJAdAAKHXJAdAAKGXJAdAAKFXJAdAAKEXJAdAAKDXJAdAAKCXJAdAAKBXJAdAAKAXJAdAAJ/XJAdAAJ+XJAdAAJ9XJAdAAJ8XJAdAAJ7XJAdAAJ6XJAdAAJ5XJAdAAJ4XJAdAAJ3XJAdAAJ2XJAdAAJ1XJAdAAJ0XJAdAAJzXJAdAAJyXJAdAAJxXJAdAAJwXJAdAAJvXJAdAAJuXJAdAAJtXJAdAAJsXJAdAAJrXJAdAAJqXJAdAAJpXJAdAAJoXJAdAAJnXJAdAAJmXJAdAAJlXJAdAAJkXJAdAAJjXJAdAAJiXJAdAAJhXJAdAAJgXJAdAAJfXJAdAAJeXJAdAAJdXJAdAAJcXJAdAAJbXJAdAAJaXJAdAAJZXJAdAAJYXJAdAAJXXJAdAAJWXJAdAAJVXJAdAAJUXJAdAAJTXJAdAAJSXJAdAAJRXJAdAAJQXJAdAAJPXJAdAAJOXJAdAAJNXJAdAAJMXJAdAAJLXJAdAAJKXJAdAAJJXJAdAAJIXJAdAAJHXJAdAAJGXJAdAAJFXJAdAAJEXJA='
+// Web Audio API notification sound generator
+const createNotificationSound = () => {
+  if (typeof window === 'undefined') return null
+  
+  try {
+    const audioContext = new (window.AudioContext || window.webkitAudioContext)()
+    return audioContext
+  } catch (e) {
+    console.log('Web Audio API not supported')
+    return null
+  }
+}
 
 export function NotificationProvider({ children }) {
   const [soundEnabled, setSoundEnabled] = useState(true)
   const [permissionGranted, setPermissionGranted] = useState(false)
-  const audioRef = useRef(null)
+  const audioContextRef = useRef(null)
   const lastNotificationTime = useRef(0)
 
-  // Initialize audio element
+  // Initialize audio context on first user interaction
   useEffect(() => {
-    audioRef.current = new Audio(NOTIFICATION_SOUND_URL)
-    audioRef.current.volume = 0.5
-    
     // Check localStorage for sound preference
     const savedPref = localStorage.getItem('lowkey_notification_sound')
     if (savedPref !== null) {
@@ -27,6 +34,23 @@ export function NotificationProvider({ children }) {
     // Check if browser supports notifications
     if ('Notification' in window) {
       setPermissionGranted(Notification.permission === 'granted')
+    }
+
+    // Initialize audio context on user interaction
+    const initAudio = () => {
+      if (!audioContextRef.current) {
+        audioContextRef.current = createNotificationSound()
+      }
+      document.removeEventListener('click', initAudio)
+      document.removeEventListener('touchstart', initAudio)
+    }
+    
+    document.addEventListener('click', initAudio)
+    document.addEventListener('touchstart', initAudio)
+    
+    return () => {
+      document.removeEventListener('click', initAudio)
+      document.removeEventListener('touchstart', initAudio)
     }
   }, [])
 
@@ -52,9 +76,9 @@ export function NotificationProvider({ children }) {
     return false
   }, [])
 
-  // Play notification sound
+  // Play notification sound using Web Audio API
   const playSound = useCallback(() => {
-    if (!soundEnabled || !audioRef.current) return
+    if (!soundEnabled) return
     
     // Throttle sounds to prevent spam (minimum 1 second between sounds)
     const now = Date.now()
@@ -62,13 +86,49 @@ export function NotificationProvider({ children }) {
     lastNotificationTime.current = now
 
     try {
-      audioRef.current.currentTime = 0
-      audioRef.current.play().catch(err => {
-        // Autoplay might be blocked, need user interaction
-        console.log('Could not play notification sound:', err.message)
-      })
+      // Initialize audio context if not done yet
+      if (!audioContextRef.current) {
+        audioContextRef.current = createNotificationSound()
+      }
+      
+      const audioContext = audioContextRef.current
+      if (!audioContext) return
+
+      // Resume audio context if suspended (required for some browsers)
+      if (audioContext.state === 'suspended') {
+        audioContext.resume()
+      }
+
+      // Create a pleasant notification chime
+      const time = audioContext.currentTime
+      
+      // First tone (higher)
+      const osc1 = audioContext.createOscillator()
+      const gain1 = audioContext.createGain()
+      osc1.connect(gain1)
+      gain1.connect(audioContext.destination)
+      osc1.frequency.setValueAtTime(880, time) // A5
+      osc1.type = 'sine'
+      gain1.gain.setValueAtTime(0.3, time)
+      gain1.gain.exponentialRampToValueAtTime(0.01, time + 0.3)
+      osc1.start(time)
+      osc1.stop(time + 0.3)
+
+      // Second tone (lower, slightly delayed)
+      const osc2 = audioContext.createOscillator()
+      const gain2 = audioContext.createGain()
+      osc2.connect(gain2)
+      gain2.connect(audioContext.destination)
+      osc2.frequency.setValueAtTime(1320, time + 0.1) // E6
+      osc2.type = 'sine'
+      gain2.gain.setValueAtTime(0, time)
+      gain2.gain.setValueAtTime(0.25, time + 0.1)
+      gain2.gain.exponentialRampToValueAtTime(0.01, time + 0.4)
+      osc2.start(time + 0.1)
+      osc2.stop(time + 0.4)
+      
     } catch (err) {
-      console.error('Error playing notification sound:', err)
+      console.log('Could not play notification sound:', err.message)
     }
   }, [soundEnabled])
 
@@ -79,11 +139,14 @@ export function NotificationProvider({ children }) {
     localStorage.setItem('lowkey_notification_sound', String(newValue))
     
     // Play test sound when enabling
-    if (newValue && audioRef.current) {
-      audioRef.current.currentTime = 0
-      audioRef.current.play().catch(() => {})
+    if (newValue) {
+      // Initialize audio context on toggle
+      if (!audioContextRef.current) {
+        audioContextRef.current = createNotificationSound()
+      }
+      setTimeout(playSound, 100)
     }
-  }, [soundEnabled])
+  }, [soundEnabled, playSound])
 
   // Send notification with sound
   const notify = useCallback((title, options = {}) => {
@@ -96,6 +159,7 @@ export function NotificationProvider({ children }) {
         new Notification(title, {
           icon: '/favicon.ico',
           badge: '/favicon.ico',
+          silent: true, // We handle sound ourselves
           ...options
         })
       } catch (err) {
