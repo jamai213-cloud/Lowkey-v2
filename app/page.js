@@ -1,12 +1,13 @@
 'use client'
 
-import { useState, useEffect, createContext, useContext } from 'react'
+import { useState, useEffect, useRef, createContext, useContext } from 'react'
 import { useRouter } from 'next/navigation'
 import { 
   Users, MessageSquare, Sofa, Search, Wallet, Moon, Gamepad2, Radio, Music, 
-  Calendar, Bell, Lock, X, Eye, EyeOff, Volume2, UserPlus, CheckCircle, 
-  LogOut, Settings, Sparkles, Home, User, ChevronRight, Send
+  Calendar, Bell, Lock, X, Eye, EyeOff, Volume2, VolumeX, UserPlus, CheckCircle, 
+  LogOut, Settings, Sparkles, Home, User, ChevronRight, Send, Heart, Check, Trash2
 } from 'lucide-react'
+import { useNotifications } from './contexts/NotificationContext'
 
 // Auth Context
 const AuthContext = createContext(null)
