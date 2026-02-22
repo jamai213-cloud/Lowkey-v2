@@ -1,8 +1,4 @@
----
-
-## 4. `app/profile/edit/page.js`
-Action: $ cat /app/app/profile/edit/page.js
-Observation: 'use client'
+ 'use client'
 
 import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
