@@ -213,11 +213,24 @@ export default function SearchPage() {
   return (
     <div className="min-h-screen bg-[#0a0a0f]">
       {/* Header */}
-      <header className="flex items-center gap-3 p-4 border-b border-white/10">
-        <button onClick={() => router.push('/')} className="p-2 rounded-full hover:bg-white/10">
-          <ArrowLeft className="w-5 h-5 text-white" />
+      <header className="flex items-center justify-between p-4 border-b border-white/10">
+        <div className="flex items-center gap-3">
+          <button onClick={() => router.push('/')} className="p-2 rounded-full hover:bg-white/10">
+            <ArrowLeft className="w-5 h-5 text-white" />
+          </button>
+          <h1 className="text-xl font-semibold text-white">Search</h1>
+        </div>
+        <button
+          onClick={toggleSound}
+          className="p-2 rounded-full hover:bg-white/10"
+          title={soundEnabled ? 'Mute notifications' : 'Enable notification sounds'}
+        >
+          {soundEnabled ? (
+            <Volume2 className="w-5 h-5 text-amber-400" />
+          ) : (
+            <VolumeX className="w-5 h-5 text-gray-400" />
+          )}
         </button>
-        <h1 className="text-xl font-semibold text-white">Search</h1>
       </header>
 
       <div className="p-4">
