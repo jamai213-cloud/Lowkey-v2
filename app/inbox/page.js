@@ -75,10 +75,23 @@ function InboxContent() {
       const res = await fetch(`/api/messages/${convoId}`)
       if (res.ok) {
         const data = await res.json()
+        // Check for new messages and notify
+        if (data.length > prevMessageCount.current) {
+          const latestMsg = data[data.length - 1]
+          if (latestMsg && latestMsg.senderId !== userId) {
+            notifyMessage(selectedConversation?.otherUser?.displayName || 'Someone', latestMsg.content)
+          }
+        }
+        prevMessageCount.current = data.length
         setMessages(data)
       }
     }, 3000)
   }
+
+  // Request notification permission on mount
+  useEffect(() => {
+    requestPermission()
+  }, [requestPermission])
 
   const sendMessage = async (e) => {
     e.preventDefault()
