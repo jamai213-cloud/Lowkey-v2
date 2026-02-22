@@ -153,10 +153,23 @@ export default function EventsPage() {
             {events.map(event => {
               const userRsvp = getUserRsvp(event)
               const yesCount = event.rsvps?.filter(r => r.status === 'yes').length || 0
+              const isCreator = event.creatorId === user?.id
               
               return (
                 <div key={event.id} className="p-4 rounded-xl bg-white/5 border border-white/10">
-                  <h3 className="text-white font-semibold text-lg">{event.title}</h3>
+                  <div className="flex justify-between items-start">
+                    <h3 className="text-white font-semibold text-lg">{event.title}</h3>
+                    {isCreator && (
+                      <button
+                        onClick={() => deleteEvent(event.id)}
+                        disabled={deleting === event.id}
+                        className="p-2 rounded-lg bg-red-500/20 text-red-400 hover:bg-red-500/30 transition-colors disabled:opacity-50"
+                        title="Delete event"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    )}
+                  </div>
                   
                   <div className="flex flex-wrap gap-3 mt-3 text-gray-400 text-sm">
                     <span className="flex items-center gap-1">
