@@ -234,25 +234,5 @@ export default function InboxPage() {
     </Suspense>
   )
 }
-## FILE 2: `app/friends/page.js`
-Created
-/tmp/friends_page.js
-Feb 22, 01:06 PM
 
-Rollback
-Rollback
-
-Copy
-Scroll to bottom
-Agent is waiting...
-Message Agent
-Attach
-GitHub
-Save
-Fork
-Fork
-
-Ultra
-
-send
 
