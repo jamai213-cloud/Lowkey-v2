@@ -1,10 +1,3 @@
-Here are all 6 files to update on GitHub:
-
----
-
-## 1. `app/ClientLayout.js`
-
-```javascript
 'use client'
 
 import { RadioProvider, useRadio } from './contexts/RadioContext'
