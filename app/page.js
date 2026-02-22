@@ -625,14 +625,31 @@ const HomePage = ({ user, onLogout, setUser }) => {
   const [notifications, setNotifications] = useState([])
   const [showNotifications, setShowNotifications] = useState(false)
   const [noticeUnreadCount, setNoticeUnreadCount] = useState(0)
+  const [hasNewNotification, setHasNewNotification] = useState(false)
+  const [pendingFriendRequests, setPendingFriendRequests] = useState([])
   const router = useRouter()
+  const pollRef = useRef(null)
+  const prevNotificationCount = useRef(0)
+  const { soundEnabled, toggleSound, playSound, requestPermission, notifyFriendRequest, notifyMessage } = useNotifications()
   
   const lockedFeatures = ['radio', 'music', 'afterdark']
   
   useEffect(() => {
     fetchNotifications()
     fetchNoticeUnreadCount()
+    fetchPendingFriendRequests()
     checkOnboarding()
+    requestPermission()
+    
+    // Start polling for notifications every 10 seconds
+    pollRef.current = setInterval(() => {
+      fetchNotifications()
+      fetchPendingFriendRequests()
+    }, 10000)
+    
+    return () => {
+      if (pollRef.current) clearInterval(pollRef.current)
+    }
   }, [])
 
   // Check if user has seen onboarding
