@@ -847,7 +847,7 @@ const HomePage = ({ user, onLogout, setUser }) => {
     router.push(path)
   }
 
-  const unreadCount = notifications.filter(n => !n.read).length
+  const unreadCount = notifications.filter(n => !n.read).length + pendingFriendRequests.length
 
   const tiles = [
     { id: 'friends', icon: Users, label: 'Friends', color: '#EC4899', path: '/friends' },
