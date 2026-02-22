@@ -2,10 +2,12 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { ArrowLeft, Search as SearchIcon, User, Users, Calendar, UserPlus, Check, Crown, Sparkles, X, Clock, Eye, Lock, Heart, ChevronLeft, ChevronRight } from 'lucide-react'
+import { ArrowLeft, Search as SearchIcon, User, Users, Calendar, UserPlus, Check, Crown, Sparkles, X, Clock, Eye, Lock, Heart, ChevronLeft, ChevronRight, Volume2, VolumeX } from 'lucide-react'
+import { useNotifications } from './contexts/NotificationContext'
 
 export default function SearchPage() {
   const router = useRouter()
+  const { soundEnabled, toggleSound, requestPermission, notifyFriendRequest } = useNotifications()
   const [user, setUser] = useState(null)
   const [query, setQuery] = useState('')
   const [results, setResults] = useState({ users: [], lounges: [], events: [] })
@@ -16,6 +18,7 @@ export default function SearchPage() {
   const [showProfileModal, setShowProfileModal] = useState(false)
   const [lightboxImage, setLightboxImage] = useState(null)
   const [lightboxIndex, setLightboxIndex] = useState(0)
+  const [prevPendingCount, setPrevPendingCount] = useState(0)
 
   useEffect(() => {
     const storedUser = localStorage.getItem('lowkey_user')
