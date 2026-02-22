@@ -708,10 +708,108 @@ const HomePage = ({ user, onLogout, setUser }) => {
       const res = await fetch(`/api/notifications/${user.id}`)
       if (res.ok) {
         const data = await res.json()
+        
+        // Check for new notifications and play sound
+        const unreadCount = data.filter(n => !n.read).length
+        if (unreadCount > prevNotificationCount.current && prevNotificationCount.current > 0) {
+          // New notification arrived
+          setHasNewNotification(true)
+          playSound()
+          
+          // Find the newest notification for specific sound
+          const newest = data[0]
+          if (newest && !newest.read) {
+            if (newest.type === 'friend_request') {
+              notifyFriendRequest(newest.fromName || 'Someone')
+            } else if (newest.type === 'message' || newest.type === 'dm') {
+              notifyMessage(newest.fromName || 'Someone', newest.content || newest.message)
+            }
+          }
+          
+          // Reset animation after 3 seconds
+          setTimeout(() => setHasNewNotification(false), 3000)
+        }
+        prevNotificationCount.current = unreadCount
+        
         setNotifications(data)
       }
     } catch (err) {
       console.error('Failed to fetch notifications')
+    }
+  }
+
+  const fetchPendingFriendRequests = async () => {
+    try {
+      const res = await fetch(`/api/friends/requests/${user.id}`)
+      if (res.ok) {
+        const data = await res.json()
+        setPendingFriendRequests(data.pending || [])
+      }
+    } catch (err) {
+      console.error('Failed to fetch friend requests')
+    }
+  }
+
+  const acceptFriendRequest = async (friendId) => {
+    try {
+      const res = await fetch('/api/friends/accept', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: user.id, friendId })
+      })
+      if (res.ok) {
+        setPendingFriendRequests(prev => prev.filter(r => r.fromUserId !== friendId))
+        // Update user's friend list
+        const updatedUser = { ...user, friends: [...(user.friends || []), friendId] }
+        setUser(updatedUser)
+        localStorage.setItem('lowkey_user', JSON.stringify(updatedUser))
+        fetchNotifications()
+      }
+    } catch (err) {
+      console.error('Failed to accept friend request')
+    }
+  }
+
+  const declineFriendRequest = async (friendId) => {
+    try {
+      const res = await fetch('/api/friends/decline', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: user.id, friendId })
+      })
+      if (res.ok) {
+        setPendingFriendRequests(prev => prev.filter(r => r.fromUserId !== friendId))
+      }
+    } catch (err) {
+      console.error('Failed to decline friend request')
+    }
+  }
+
+  const markNotificationRead = async (notificationId) => {
+    try {
+      await fetch('/api/notifications/mark-read', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: user.id, notificationId })
+      })
+      setNotifications(prev => prev.map(n => 
+        n.id === notificationId ? { ...n, read: true } : n
+      ))
+    } catch (err) {
+      console.error('Failed to mark notification as read')
+    }
+  }
+
+  const markAllNotificationsRead = async () => {
+    try {
+      await fetch('/api/notifications/mark-read', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: user.id })
+      })
+      setNotifications(prev => prev.map(n => ({ ...n, read: true })))
+    } catch (err) {
+      console.error('Failed to mark all notifications as read')
     }
   }
 
