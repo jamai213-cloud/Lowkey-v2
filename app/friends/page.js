@@ -231,17 +231,7 @@ export default function InboxPage() {
   return (
     <Suspense fallback={<div className="min-h-screen bg-[#0a0a0f] flex items-center justify-center"><div className="text-white">Loading...</div></div>}>
       <InboxContent />
-    </Suspense>
-  )
-}
-```
 
----
-
-## FILE 2: `app/friends/page.js`
-Action: file_editor create /tmp/friends_page.js --file-text "'use client'
-
-import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { ArrowLeft, User, UserPlus, UserMinus, MessageSquare, X, Crown, Check, Sparkles, Image, Heart, ChevronLeft, ChevronRight } from 'lucide-react'
 
