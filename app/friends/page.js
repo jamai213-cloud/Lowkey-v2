@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { ArrowLeft, User, UserPlus, UserMinus, MessageSquare, X, Crown, Check, Sparkles, Image, Heart } from 'lucide-react'
+import { ArrowLeft, User, UserPlus, UserMinus, MessageSquare, X, Crown, Check, Sparkles, Image, Heart, ChevronLeft, ChevronRight } from 'lucide-react'
 
 export default function FriendsPage() {
   const router = useRouter()
@@ -11,6 +11,8 @@ export default function FriendsPage() {
   const [loading, setLoading] = useState(true)
   const [selectedFriend, setSelectedFriend] = useState(null)
   const [showProfileModal, setShowProfileModal] = useState(false)
+  const [lightboxImage, setLightboxImage] = useState(null)
+  const [lightboxIndex, setLightboxIndex] = useState(0)
 
   useEffect(() => {
     const storedUser = localStorage.getItem('lowkey_user')
@@ -129,7 +131,7 @@ export default function FriendsPage() {
                 onClick={() => viewProfile(friend.id)}
                 className="flex items-center gap-4 p-4 rounded-xl bg-white/5 border border-white/10 cursor-pointer hover:bg-white/10 transition-colors"
               >
-                {/* Profile Picture - Always visible for friends */}
+                {/* Profile Picture */}
                 <div className="w-14 h-14 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex-shrink-0 overflow-hidden">
                   {(friend.avatar || friend.profilePicture) ? (
                     <img src={friend.avatar || friend.profilePicture} alt="" className="w-full h-full object-cover" />
@@ -162,85 +164,197 @@ export default function FriendsPage() {
         )}
       </div>
 
-      {/* Full Profile Modal */}
+      {/* Full Profile Modal - Same as Search Page */}
       {showProfileModal && selectedFriend && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4" onClick={() => setShowProfileModal(false)}>
           <div className="bg-[#1a1a2e] rounded-2xl max-w-md w-full max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
-            {/* Profile Header with Cover */}
+            {/* Profile Header */}
             <div className="relative">
-              <div className="h-28 bg-gradient-to-br from-purple-500/40 to-pink-500/40" />
+              <div className="h-24 bg-gradient-to-br from-purple-500/30 to-pink-500/30" />
               <button 
                 onClick={() => setShowProfileModal(false)}
                 className="absolute top-3 right-3 p-2 rounded-full bg-black/50 text-white"
               >
                 <X className="w-5 h-5" />
               </button>
-              {/* Large Profile Picture */}
-              <div className="absolute -bottom-14 left-1/2 -translate-x-1/2">
-                <div className="w-28 h-28 rounded-full border-4 border-[#1a1a2e] overflow-hidden bg-gradient-to-br from-purple-500 to-pink-500">
+              <div className="absolute -bottom-12 left-4">
+                <div className="w-24 h-24 rounded-full border-4 border-[#1a1a2e] overflow-hidden bg-gradient-to-br from-purple-500 to-pink-500">
                   {(selectedFriend.avatar || selectedFriend.profilePicture) ? (
                     <img src={selectedFriend.avatar || selectedFriend.profilePicture} alt="" className="w-full h-full object-cover" />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center">
-                      <User className="w-12 h-12 text-white" />
+                      <User className="w-10 h-10 text-white" />
                     </div>
                   )}
                 </div>
               </div>
             </div>
             
-            <div className="pt-16 px-4 pb-6">
-              {/* Name & Badges */}
-              <div className="text-center mb-4">
-                <div className="flex items-center justify-center gap-2">
-                  <h2 className="text-2xl font-bold text-white">{selectedFriend.displayName}</h2>
-                  {selectedFriend.isFounder && <Crown className="w-5 h-5 text-amber-400" />}
-                  {selectedFriend.verified && <Check className="w-5 h-5 text-green-400" />}
+            <div className="pt-14 px-4 pb-4">
+              {/* Name & Badge */}
+              <div className="flex items-center gap-2 mb-1">
+                <h2 className="text-xl font-bold text-white">{selectedFriend.displayName}</h2>
+                {selectedFriend.isFounder && <Crown className="w-5 h-5 text-amber-400" />}
+                {selectedFriend.verified && <Check className="w-5 h-5 text-green-400" />}
+                {selectedFriend.isCreator && <span className="text-xs px-2 py-0.5 rounded bg-pink-500/20 text-pink-400">Creator</span>}
+              </div>
+
+              {/* About Me */}
+              {(selectedFriend.aboutMe || selectedFriend.bio) && (
+                <div className="mt-4">
+                  <h3 className="text-white font-medium mb-2 text-sm">About Me</h3>
+                  <p className="text-gray-400 text-sm">{selectedFriend.aboutMe || selectedFriend.bio}</p>
                 </div>
-                {selectedFriend.isCreator && (
-                  <span className="inline-block mt-1 text-xs px-2 py-0.5 rounded bg-pink-500/20 text-pink-400">Content Creator</span>
+              )}
+
+              {/* Basic Info: Age, Location, Gender */}
+              <div className="mt-4 grid grid-cols-3 gap-2">
+                {selectedFriend.age && (
+                  <div className="p-2 rounded-lg bg-white/5 text-center">
+                    <p className="text-white font-bold text-sm">{selectedFriend.age}</p>
+                    <p className="text-gray-400 text-xs">Age</p>
+                  </div>
                 )}
-                {selectedFriend.bio && (
-                  <p className="text-gray-400 text-sm mt-2">{selectedFriend.bio}</p>
+                {selectedFriend.location && (
+                  <div className="p-2 rounded-lg bg-white/5 text-center">
+                    <p className="text-white font-bold text-sm truncate">{selectedFriend.location}</p>
+                    <p className="text-gray-400 text-xs">Location</p>
+                  </div>
+                )}
+                {selectedFriend.gender && (
+                  <div className="p-2 rounded-lg bg-white/5 text-center">
+                    <p className="text-white font-bold text-sm truncate">{selectedFriend.gender}</p>
+                    <p className="text-gray-400 text-xs">Gender</p>
+                  </div>
                 )}
               </div>
+
+              {/* Looking For */}
+              {selectedFriend.lookingFor && (
+                <div className="mt-4">
+                  <h3 className="text-white font-medium mb-2 text-sm">Looking For</h3>
+                  <p className="text-gray-400 text-sm">{selectedFriend.lookingFor}</p>
+                </div>
+              )}
+
+              {/* Relationship Status & Sexuality */}
+              {(selectedFriend.relationshipStatus || selectedFriend.sexuality) && (
+                <div className="mt-4 grid grid-cols-2 gap-2">
+                  {selectedFriend.relationshipStatus && (
+                    <div className="p-2 rounded-lg bg-white/5">
+                      <p className="text-gray-400 text-xs">Status</p>
+                      <p className="text-white text-sm">{selectedFriend.relationshipStatus}</p>
+                    </div>
+                  )}
+                  {selectedFriend.sexuality && (
+                    <div className="p-2 rounded-lg bg-white/5">
+                      <p className="text-gray-400 text-xs">Sexuality</p>
+                      <p className="text-white text-sm">{selectedFriend.sexuality}</p>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Physical Attributes */}
+              {(selectedFriend.height || selectedFriend.bodyType || selectedFriend.eyeColor || selectedFriend.hairColor || selectedFriend.ethnicity) && (
+                <div className="mt-4">
+                  <h3 className="text-white font-medium mb-2 text-sm">Physical</h3>
+                  <div className="flex flex-wrap gap-2">
+                    {selectedFriend.height && (
+                      <span className="px-2 py-1 rounded-full bg-green-500/20 text-green-400 text-xs">{selectedFriend.height}</span>
+                    )}
+                    {selectedFriend.bodyType && (
+                      <span className="px-2 py-1 rounded-full bg-green-500/20 text-green-400 text-xs">{selectedFriend.bodyType}</span>
+                    )}
+                    {selectedFriend.eyeColor && (
+                      <span className="px-2 py-1 rounded-full bg-blue-500/20 text-blue-400 text-xs">{selectedFriend.eyeColor} eyes</span>
+                    )}
+                    {selectedFriend.hairColor && (
+                      <span className="px-2 py-1 rounded-full bg-amber-500/20 text-amber-400 text-xs">{selectedFriend.hairColor} hair</span>
+                    )}
+                    {selectedFriend.ethnicity && (
+                      <span className="px-2 py-1 rounded-full bg-purple-500/20 text-purple-400 text-xs">{selectedFriend.ethnicity}</span>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Lifestyle */}
+              {(selectedFriend.smoking || selectedFriend.drinking) && (
+                <div className="mt-4">
+                  <h3 className="text-white font-medium mb-2 text-sm">Lifestyle</h3>
+                  <div className="flex flex-wrap gap-2">
+                    {selectedFriend.smoking && (
+                      <span className="px-2 py-1 rounded-full bg-gray-500/20 text-gray-400 text-xs">{selectedFriend.smoking}</span>
+                    )}
+                    {selectedFriend.drinking && (
+                      <span className="px-2 py-1 rounded-full bg-gray-500/20 text-gray-400 text-xs">{selectedFriend.drinking}</span>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Interested In */}
+              {selectedFriend.interestedIn && selectedFriend.interestedIn.length > 0 && (
+                <div className="mt-4">
+                  <h3 className="text-white font-medium mb-2 text-sm">Interested In</h3>
+                  <div className="flex flex-wrap gap-2">
+                    {selectedFriend.interestedIn.map((item, i) => (
+                      <span key={i} className="px-2 py-1 rounded-full bg-amber-500/20 text-amber-400 text-xs">
+                        {item}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Open To */}
+              {selectedFriend.openTo && selectedFriend.openTo.length > 0 && (
+                <div className="mt-4">
+                  <h3 className="text-white font-medium mb-2 text-sm">Open To</h3>
+                  <div className="flex flex-wrap gap-2">
+                    {selectedFriend.openTo.map((item, i) => (
+                      <span key={i} className="px-2 py-1 rounded-full bg-cyan-500/20 text-cyan-400 text-xs">
+                        {item}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
               
               {/* Stats */}
-              <div className="flex gap-4 mb-4">
-                <div className="flex-1 p-3 rounded-xl bg-white/5 text-center">
-                  <p className="text-white font-bold text-lg">{selectedFriend.friends?.length || 0}</p>
+              <div className="flex gap-4 mt-4 text-center">
+                <div className="flex-1 p-3 rounded-xl bg-white/5">
+                  <p className="text-white font-bold">{selectedFriend.friends?.length || 0}</p>
                   <p className="text-gray-400 text-xs">Friends</p>
                 </div>
-                <div className="flex-1 p-3 rounded-xl bg-white/5 text-center">
-                  <p className="text-white font-bold text-lg">{selectedFriend.galleryCount || 0}</p>
+                <div className="flex-1 p-3 rounded-xl bg-white/5">
+                  <p className="text-white font-bold">{selectedFriend.galleryCount || 0}</p>
                   <p className="text-gray-400 text-xs">Photos</p>
                 </div>
               </div>
               
-              {/* Info */}
-              {(selectedFriend.location || selectedFriend.age) && (
-                <div className="mb-4 p-3 rounded-xl bg-white/5">
-                  {selectedFriend.age && (
-                    <p className="text-gray-300 text-sm"><span className="text-gray-500">Age:</span> {selectedFriend.age}</p>
-                  )}
-                  {selectedFriend.location && (
-                    <p className="text-gray-300 text-sm"><span className="text-gray-500">Location:</span> {selectedFriend.location}</p>
-                  )}
-                  {selectedFriend.gender && (
-                    <p className="text-gray-300 text-sm"><span className="text-gray-500">Gender:</span> {selectedFriend.gender}</p>
-                  )}
-                </div>
-              )}
-              
-              {/* Kinks/Interests - Full access for friends */}
+              {/* Kinks & Preferences */}
               {selectedFriend.kinks && selectedFriend.kinks.length > 0 && (
-                <div className="mb-4">
-                  <h3 className="text-white font-medium mb-2 text-sm flex items-center gap-2">
-                    <Heart className="w-4 h-4 text-pink-400" /> Interests
-                  </h3>
+                <div className="mt-4">
+                  <h3 className="text-white font-medium mb-2 text-sm">Kinks & Preferences</h3>
                   <div className="flex flex-wrap gap-2">
                     {selectedFriend.kinks.map((kink, i) => (
-                      <span key={i} className="px-3 py-1 rounded-full bg-purple-500/20 text-purple-400 text-xs">
+                      <span key={i} className="px-2 py-1 rounded-full bg-pink-500/20 text-pink-400 text-xs">
+                        {kink}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Hard Limits */}
+              {selectedFriend.kinksHard && selectedFriend.kinksHard.length > 0 && (
+                <div className="mt-4">
+                  <h3 className="text-white font-medium mb-2 text-sm">Hard Limits</h3>
+                  <div className="flex flex-wrap gap-2">
+                    {selectedFriend.kinksHard.map((kink, i) => (
+                      <span key={i} className="px-2 py-1 rounded-full bg-red-500/20 text-red-400 text-xs">
                         {kink}
                       </span>
                     ))}
@@ -248,26 +362,21 @@ export default function FriendsPage() {
                 </div>
               )}
               
-              {/* Gallery Preview - Full access for friends */}
+              {/* Gallery Preview */}
               {selectedFriend.gallery && selectedFriend.gallery.length > 0 && (
-                <div className="mb-4">
-                  <h3 className="text-white font-medium mb-2 text-sm flex items-center gap-2">
-                    <Image className="w-4 h-4 text-amber-400" /> Gallery
-                  </h3>
-                  <div className="grid grid-cols-3 gap-1 rounded-xl overflow-hidden">
+                <div className="mt-4">
+                  <h3 className="text-white font-medium mb-2 text-sm">Gallery</h3>
+                  <div className="grid grid-cols-3 gap-1">
                     {selectedFriend.gallery.slice(0, 6).map((img, i) => (
-                      <div key={i} className="aspect-square bg-white/5">
-                        <img 
-                          src={img.imageData || img.url} 
-                          alt="" 
-                          className="w-full h-full object-cover" 
-                        />
+                      <div 
+                        key={i} 
+                        className="aspect-square rounded-lg overflow-hidden bg-white/5 cursor-pointer hover:opacity-80 transition-opacity"
+                        onClick={() => { setLightboxImage(img); setLightboxIndex(i); }}
+                      >
+                        <img src={img.imageData || img.url} alt="" className="w-full h-full object-cover" />
                       </div>
                     ))}
                   </div>
-                  {selectedFriend.galleryCount > 6 && (
-                    <p className="text-gray-500 text-xs text-center mt-2">+{selectedFriend.galleryCount - 6} more photos</p>
-                  )}
                 </div>
               )}
               
@@ -287,6 +396,67 @@ export default function FriendsPage() {
                 </button>
               </div>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Gallery Lightbox Modal */}
+      {lightboxImage && selectedFriend?.gallery && (
+        <div 
+          className="fixed inset-0 z-[60] flex items-center justify-center bg-black/95 backdrop-blur-sm"
+          onClick={() => setLightboxImage(null)}
+        >
+          {/* Close button */}
+          <button 
+            onClick={() => setLightboxImage(null)}
+            className="absolute top-4 right-4 p-3 rounded-full bg-white/10 text-white z-10 hover:bg-white/20"
+          >
+            <X className="w-6 h-6" />
+          </button>
+
+          {/* Navigation arrows */}
+          {selectedFriend.gallery.length > 1 && (
+            <>
+              <button 
+                onClick={(e) => { 
+                  e.stopPropagation(); 
+                  const newIndex = lightboxIndex > 0 ? lightboxIndex - 1 : selectedFriend.gallery.length - 1;
+                  setLightboxIndex(newIndex);
+                  setLightboxImage(selectedFriend.gallery[newIndex]);
+                }}
+                className="absolute left-4 p-3 rounded-full bg-white/10 text-white z-10 hover:bg-white/20"
+              >
+                <ChevronLeft className="w-6 h-6" />
+              </button>
+              <button 
+                onClick={(e) => { 
+                  e.stopPropagation(); 
+                  const newIndex = lightboxIndex < selectedFriend.gallery.length - 1 ? lightboxIndex + 1 : 0;
+                  setLightboxIndex(newIndex);
+                  setLightboxImage(selectedFriend.gallery[newIndex]);
+                }}
+                className="absolute right-4 p-3 rounded-full bg-white/10 text-white z-10 hover:bg-white/20"
+              >
+                <ChevronRight className="w-6 h-6" />
+              </button>
+            </>
+          )}
+
+          {/* Image container */}
+          <div 
+            className="max-w-[90vw] max-h-[85vh] flex items-center justify-center"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <img 
+              src={lightboxImage.imageData || lightboxImage.url}
+              alt=""
+              className="max-w-full max-h-[85vh] object-contain rounded-lg"
+            />
+          </div>
+
+          {/* Image counter */}
+          <div className="absolute top-4 left-4 text-white text-sm bg-black/50 px-3 py-1 rounded-full">
+            {lightboxIndex + 1} / {selectedFriend.gallery.length}
           </div>
         </div>
       )}
