@@ -134,24 +134,37 @@ function InboxContent() {
 
   return (
     <div className="min-h-screen bg-[#0a0a0f] flex flex-col">
-      <header className="flex items-center gap-3 p-4 border-b border-white/10">
-        <button onClick={() => selectedConvo ? setSelectedConvo(null) : router.push('/')} className="p-2 rounded-full hover:bg-white/10">
-          <ArrowLeft className="w-5 h-5 text-white" />
-        </button>
-        {selectedConvo && selectedConversation?.otherUser ? (
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center overflow-hidden">
-              {selectedConversation.otherUser.avatar ? (
-                <img src={selectedConversation.otherUser.avatar} alt="" className="w-full h-full object-cover" />
-              ) : (
-                <User className="w-5 h-5 text-white" />
-              )}
+      <header className="flex items-center justify-between p-4 border-b border-white/10">
+        <div className="flex items-center gap-3">
+          <button onClick={() => selectedConvo ? setSelectedConvo(null) : router.push('/')} className="p-2 rounded-full hover:bg-white/10">
+            <ArrowLeft className="w-5 h-5 text-white" />
+          </button>
+          {selectedConvo && selectedConversation?.otherUser ? (
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center overflow-hidden">
+                {selectedConversation.otherUser.avatar ? (
+                  <img src={selectedConversation.otherUser.avatar} alt="" className="w-full h-full object-cover" />
+                ) : (
+                  <User className="w-5 h-5 text-white" />
+                )}
+              </div>
+              <h1 className="text-xl font-semibold text-white">{selectedConversation.otherUser.displayName}</h1>
             </div>
-            <h1 className="text-xl font-semibold text-white">{selectedConversation.otherUser.displayName}</h1>
-          </div>
-        ) : (
-          <h1 className="text-xl font-semibold text-white">Inbox</h1>
-        )}
+          ) : (
+            <h1 className="text-xl font-semibold text-white">Inbox</h1>
+          )}
+        </div>
+        <button
+          onClick={toggleSound}
+          className="p-2 rounded-full hover:bg-white/10"
+          title={soundEnabled ? 'Mute notifications' : 'Enable notification sounds'}
+        >
+          {soundEnabled ? (
+            <Volume2 className="w-5 h-5 text-amber-400" />
+          ) : (
+            <VolumeX className="w-5 h-5 text-gray-400" />
+          )}
+        </button>
       </header>
 
       {!selectedConvo ? (
