@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { ArrowLeft, Send, User, MessageSquare, Check, CheckCheck, Volume2, VolumeX } from 'lucide-react'
-import { useNotifications } from './contexts/NotificationContext'
+import { useNotifications } from '../contexts/NotificationContext'
 
 function InboxContent() {
   const router = useRouter()

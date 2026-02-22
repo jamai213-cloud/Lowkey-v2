@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { ArrowLeft, Search as SearchIcon, User, Users, Calendar, UserPlus, Check, Crown, Sparkles, X, Clock, Eye, Lock, Heart, ChevronLeft, ChevronRight, Volume2, VolumeX } from 'lucide-react'
-import { useNotifications } from './contexts/NotificationContext'
+import { useNotifications } from '../contexts/NotificationContext'
 
 export default function SearchPage() {
   const router = useRouter()
