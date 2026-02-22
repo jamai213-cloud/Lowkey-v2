@@ -881,6 +881,24 @@ export default function EditProfilePage() {
               <input
                 type="text"
                 value={uploadCaption}
+The search.js file is shown above. Now for the last file - profile/edit/page.js - this is the largest file and was corrupted. Let me get a working version:
+
+---
+
+## FILE 4: `app/profile/edit/page.js`
+
+This file is 1000+ lines long. The issue is it was truncated at line 907. I'll provide the missing ending that needs to be added after where the file currently cuts off.
+Action: file_editor view /app/app/profile/edit/page.js
+Observation: /app/app/profile/edit/page.js:
+900|                  <Globe className="w-4 h-4" /> Public
+901|                </button>
+902|                <button
+903|                  onClick={() => setUploadPrivacy('friends')}
+904|                  className={`flex-1 py-2 rounded-lg text-sm flex items-center justify-center gap-1 ${
+905|     
+906|... [stdout truncated]
+907|
+908|
                 onChange={(e) => setUploadCaption(e.target.value)}
                 placeholder="Add a caption..."
                 className="w-full px-4 py-3 rounded-xl bg-black/40 border border-white/10 text-white placeholder-gray-500 focus:outline-none focus:border-amber-500/50"
