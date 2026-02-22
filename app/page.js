@@ -890,7 +890,23 @@ const HomePage = ({ user, onLogout, setUser }) => {
               Verified
             </span>
           )}
-          <NotificationBell count={unreadCount} onClick={() => setShowNotifications(!showNotifications)} />
+          <button
+            onClick={toggleSound}
+            className="p-2 rounded-full hover:bg-white/10 transition-colors"
+            title={soundEnabled ? 'Mute notification sounds' : 'Enable notification sounds'}
+            data-testid="sound-toggle"
+          >
+            {soundEnabled ? (
+              <Volume2 className="w-5 h-5 text-amber-400" />
+            ) : (
+              <VolumeX className="w-5 h-5 text-gray-500" />
+            )}
+          </button>
+          <NotificationBell 
+            count={unreadCount} 
+            onClick={() => setShowNotifications(!showNotifications)} 
+            hasNew={hasNewNotification}
+          />
           <button onClick={() => router.push('/admin')} className="p-2 rounded-full hover:bg-white/10 transition-colors">
             <Settings className="w-5 h-5 text-gray-400" />
           </button>
