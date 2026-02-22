@@ -83,6 +83,28 @@ export default function EventsPage() {
     }
   }
 
+  const deleteEvent = async (eventId) => {
+    if (!confirm('Are you sure you want to delete this event?')) return
+    
+    setDeleting(eventId)
+    try {
+      const res = await fetch(`/api/events/${eventId}`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: user.id })
+      })
+      if (res.ok) {
+        fetchEvents()
+      } else {
+        const data = await res.json()
+        alert(data.error || 'Failed to delete event')
+      }
+    } catch (err) {
+      console.error('Failed to delete event')
+    }
+    setDeleting(null)
+  }
+
   const getUserRsvp = (event) => {
     return event.rsvps?.find(r => r.userId === user?.id)?.status
   }
