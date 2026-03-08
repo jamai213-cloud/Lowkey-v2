@@ -1131,6 +1131,7 @@ async function handleRoute(request, { params }) {
           grouped[story.userId] = {
             userId: story.userId,
             displayName: user?.displayName || 'Unknown',
+            avatar: user?.avatar || user?.profilePicture || null,
             verificationTier: user?.verificationTier || 'new',
             stories: []
           }

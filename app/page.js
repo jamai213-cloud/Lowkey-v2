@@ -791,21 +791,10 @@ const HomePage = ({ user, onLogout, setUser }) => {
 
   const fetchStories = async () => {
     try {
-      const res = await fetch('/api/stories')
+      const res = await fetch(`/api/stories?viewerId=${user.id}`)
       if (res.ok) {
         const data = await res.json()
-        // Filter to show friends' stories and public stories only
-        const friendIds = user.friends || []
-        const filteredStories = data.filter(storyGroup => {
-          // Show own stories
-          if (storyGroup.userId === user.id) return true
-          // Show friends' stories
-          if (friendIds.includes(storyGroup.userId)) return true
-          // Show public stories (non-private)
-          if (storyGroup.stories?.some(s => s.privacy !== 'private')) return true
-          return false
-        })
-        setStories(filteredStories)
+        setStories(data)
       }
     } catch (err) {
       console.error('Failed to fetch stories')
