@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { ArrowLeft, Plus, Calendar, MapPin, Clock, Users, Check, X } from 'lucide-react'
+import { ArrowLeft, Plus, Calendar, MapPin, Clock, Users, Check, X, Trash2 } from 'lucide-react'
 
 export default function EventsPage() {
   const router = useRouter()
@@ -55,7 +55,7 @@ export default function EventsPage() {
           date: new Date(`${newEvent.date}T${newEvent.time || '12:00'}`),
           location: newEvent.isOnline ? 'Online' : newEvent.location,
           description: newEvent.description,
-          creatorId: user.id,
+          createdBy: user.id,
           isOnline: newEvent.isOnline
         })
       })
@@ -84,6 +84,23 @@ export default function EventsPage() {
 
   const getUserRsvp = (event) => {
     return event.rsvps?.find(r => r.userId === user?.id)?.status
+  }
+
+  const deleteEvent = async (eventId) => {
+    if (!confirm('Are you sure you want to delete this event?')) return
+    try {
+      const res = await fetch(`/api/events/${eventId}?userId=${user.id}`, {
+        method: 'DELETE'
+      })
+      if (res.ok) {
+        fetchEvents()
+      } else {
+        const data = await res.json()
+        alert(data.error || 'Failed to delete event')
+      }
+    } catch (err) {
+      console.error('Failed to delete event')
+    }
   }
 
   if (loading) {
@@ -130,10 +147,22 @@ export default function EventsPage() {
             {events.map(event => {
               const userRsvp = getUserRsvp(event)
               const yesCount = event.rsvps?.filter(r => r.status === 'yes').length || 0
+              const isCreator = event.createdBy === user?.id
               
               return (
                 <div key={event.id} className="p-4 rounded-xl bg-white/5 border border-white/10">
-                  <h3 className="text-white font-semibold text-lg">{event.title}</h3>
+                  <div className="flex items-start justify-between">
+                    <h3 className="text-white font-semibold text-lg">{event.title}</h3>
+                    {isCreator && (
+                      <button 
+                        onClick={() => deleteEvent(event.id)}
+                        className="p-2 rounded-lg hover:bg-red-500/20 text-gray-400 hover:text-red-400 transition-colors"
+                        title="Delete event"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    )}
+                  </div>
                   
                   <div className="flex flex-wrap gap-3 mt-3 text-gray-400 text-sm">
                     <span className="flex items-center gap-1">

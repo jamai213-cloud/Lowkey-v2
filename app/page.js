@@ -5,8 +5,10 @@ import { useRouter } from 'next/navigation'
 import { 
   Users, MessageSquare, Sofa, Search, Wallet, Moon, Gamepad2, Radio, Music, 
   Calendar, Bell, Lock, X, Eye, EyeOff, Volume2, UserPlus, CheckCircle, 
-  LogOut, Settings, Sparkles, Home, User, ChevronRight, Send
+  LogOut, Settings, Sparkles, Home, User, ChevronRight, Send, VolumeX
 } from 'lucide-react'
+import { useRadio } from './contexts/RadioContext'
+import { useNotificationSound } from './contexts/NotificationSoundContext'
 
 // Auth Context
 const AuthContext = createContext(null)
@@ -620,12 +622,31 @@ const HomePage = ({ user, onLogout, setUser }) => {
   const [noticeUnreadCount, setNoticeUnreadCount] = useState(0)
   const router = useRouter()
   
+  // Get radio state to adjust bottom nav position
+  let radioState = { currentStation: null }
+  try {
+    radioState = useRadio()
+  } catch (e) {
+    // useRadio may fail if not wrapped in RadioProvider - fallback gracefully
+  }
+  const isRadioActive = !!radioState.currentStation
+  
+  // Get notification sound hooks
+  const { soundEnabled, toggleSound, checkNewNotifications } = useNotificationSound()
+  
   const lockedFeatures = ['radio', 'music', 'afterdark']
   
   useEffect(() => {
     fetchNotifications()
     fetchNoticeUnreadCount()
     checkOnboarding()
+    
+    // Poll for new notifications every 30 seconds
+    const pollInterval = setInterval(() => {
+      fetchNotifications()
+    }, 30000)
+    
+    return () => clearInterval(pollInterval)
   }, [])
 
   // Check if user has seen onboarding
@@ -684,6 +705,9 @@ const HomePage = ({ user, onLogout, setUser }) => {
       const res = await fetch(`/api/notifications/${user.id}`)
       if (res.ok) {
         const data = await res.json()
+        // Check for new unread notifications and play sound
+        const unreadCount = data.filter(n => !n.read).length
+        checkNewNotifications(unreadCount)
         setNotifications(data)
       }
     } catch (err) {
@@ -768,6 +792,17 @@ const HomePage = ({ user, onLogout, setUser }) => {
               Verified
             </span>
           )}
+          <button 
+            onClick={toggleSound} 
+            className="p-2 rounded-full hover:bg-white/10 transition-colors"
+            title={soundEnabled ? 'Mute notifications' : 'Unmute notifications'}
+          >
+            {soundEnabled ? (
+              <Volume2 className="w-5 h-5 text-gray-400" />
+            ) : (
+              <VolumeX className="w-5 h-5 text-gray-500" />
+            )}
+          </button>
           <NotificationBell count={unreadCount} onClick={() => setShowNotifications(!showNotifications)} />
           <button onClick={() => router.push('/admin')} className="p-2 rounded-full hover:bg-white/10 transition-colors">
             <Settings className="w-5 h-5 text-gray-400" />
@@ -806,8 +841,8 @@ const HomePage = ({ user, onLogout, setUser }) => {
         </div>
       )}
 
-      {/* Main Content */}
-      <main className="relative z-10 p-4 pb-24">
+      {/* Main Content - extra padding when radio is active */}
+      <main className={`relative z-10 p-4 ${isRadioActive ? 'pb-40' : 'pb-24'}`}>
         {/* Tiles Grid - 3 columns with consistent styling */}
         <div className="grid grid-cols-3 gap-3 mb-6">
           {tiles.map((tile) => {
@@ -874,8 +909,8 @@ const HomePage = ({ user, onLogout, setUser }) => {
         </div>
       </main>
 
-      {/* Bottom Navigation */}
-      <nav className="fixed bottom-0 left-0 right-0 z-20 bg-[#0a0a0f]/95 backdrop-blur-lg border-t border-white/5">
+      {/* Bottom Navigation - moves up when radio is active */}
+      <nav className={`fixed left-0 right-0 z-20 bg-[#0a0a0f]/95 backdrop-blur-lg border-t border-white/5 transition-all duration-300 ${isRadioActive ? 'bottom-[72px]' : 'bottom-0'}`}>
         <div className="flex items-center justify-around py-3">
           <button className="flex flex-col items-center gap-1 px-4 py-1 text-white">
             <Home className="w-5 h-5" />

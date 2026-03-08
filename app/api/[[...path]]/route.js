@@ -1562,14 +1562,14 @@ async function handleRoute(request, { params }) {
       }
       
       // Create friend request
-      const request = {
+      const friendRequest = {
         id: uuidv4(),
         fromUserId: userId,
         toUserId: friendId,
         status: 'pending',
         createdAt: new Date()
       }
-      await db.collection('friend_requests').insertOne(request)
+      await db.collection('friend_requests').insertOne(friendRequest)
       
       // Create notification for the recipient
       await db.collection('notifications').insertOne({
@@ -1616,18 +1616,18 @@ async function handleRoute(request, { params }) {
       const { userId, friendId } = body
       
       // Find and update the request
-      const request = await db.collection('friend_requests').findOne({
+      const friendRequest = await db.collection('friend_requests').findOne({
         fromUserId: friendId,
         toUserId: userId,
         status: 'pending'
       })
       
-      if (!request) {
+      if (!friendRequest) {
         return handleCORS(NextResponse.json({ error: 'Request not found' }, { status: 404 }))
       }
       
       // Update request status
-      await db.collection('friend_requests').updateOne({ id: request.id }, { $set: { status: 'accepted' } })
+      await db.collection('friend_requests').updateOne({ id: friendRequest.id }, { $set: { status: 'accepted' } })
       
       // Add each other as friends
       await db.collection('users').updateOne({ id: userId }, { $addToSet: { friends: friendId } })
@@ -1714,7 +1714,12 @@ async function handleRoute(request, { params }) {
 
     if (route.match(/^\/messages\/[^/]+$/) && method === 'GET') {
       const convoId = path[1]
-      const msgs = await db.collection('messages').find({ conversationId: convoId }).sort({ createdAt: 1 }).toArray()
+      // Filter out messages older than 12 hours
+      const twelveHoursAgo = new Date(Date.now() - 12 * 60 * 60 * 1000)
+      const msgs = await db.collection('messages').find({ 
+        conversationId: convoId,
+        createdAt: { $gte: twelveHoursAgo }
+      }).sort({ createdAt: 1 }).toArray()
       return handleCORS(NextResponse.json(msgs.map(cleanMongoDoc)))
     }
 
@@ -1760,7 +1765,12 @@ async function handleRoute(request, { params }) {
     }
 
     if (route === '/main-lounge/messages' && method === 'GET') {
-      const msgs = await db.collection('lounge_messages').find({ loungeId: 'main-lounge' }).sort({ createdAt: -1 }).limit(100).toArray()
+      // Filter out messages older than 12 hours
+      const twelveHoursAgo = new Date(Date.now() - 12 * 60 * 60 * 1000)
+      const msgs = await db.collection('lounge_messages').find({ 
+        loungeId: 'main-lounge',
+        createdAt: { $gte: twelveHoursAgo }
+      }).sort({ createdAt: -1 }).limit(100).toArray()
       // Enrich messages with sender avatar
       const enrichedMsgs = await Promise.all(msgs.map(async (msg) => {
         const sender = await db.collection('users').findOne({ id: msg.senderId })
@@ -2040,6 +2050,26 @@ async function handleRoute(request, { params }) {
       const event = { id: uuidv4(), ...body, rsvps: [], createdAt: new Date() }
       await db.collection('events').insertOne(event)
       return handleCORS(NextResponse.json(cleanMongoDoc(event)))
+    }
+
+    // Delete event (only creator can delete)
+    if (route.match(/^\/events\/[^/]+$/) && method === 'DELETE') {
+      const eventId = path[1]
+      const { searchParams } = new URL(request.url)
+      const userId = searchParams.get('userId')
+      
+      const event = await db.collection('events').findOne({ id: eventId })
+      if (!event) {
+        return handleCORS(NextResponse.json({ error: 'Event not found' }, { status: 404 }))
+      }
+      
+      // Only creator can delete
+      if (event.createdBy !== userId) {
+        return handleCORS(NextResponse.json({ error: 'Only the creator can delete this event' }, { status: 403 }))
+      }
+      
+      await db.collection('events').deleteOne({ id: eventId })
+      return handleCORS(NextResponse.json({ success: true }))
     }
 
     if (route.match(/^\/events\/[^/]+\/rsvp$/) && method === 'POST') {
