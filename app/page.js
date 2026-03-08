@@ -627,6 +627,8 @@ const HomePage = ({ user, onLogout, setUser }) => {
   const [noticeUnreadCount, setNoticeUnreadCount] = useState(0)
   const [hasNewNotification, setHasNewNotification] = useState(false)
   const [pendingFriendRequests, setPendingFriendRequests] = useState([])
+  const [stories, setStories] = useState([])
+  const [selectedStory, setSelectedStory] = useState(null)
   const router = useRouter()
   const pollRef = useRef(null)
   const prevNotificationCount = useRef(0)
@@ -638,6 +640,7 @@ const HomePage = ({ user, onLogout, setUser }) => {
     fetchNotifications()
     fetchNoticeUnreadCount()
     fetchPendingFriendRequests()
+    fetchStories()
     checkOnboarding()
     requestPermission()
     
@@ -645,6 +648,7 @@ const HomePage = ({ user, onLogout, setUser }) => {
     pollRef.current = setInterval(() => {
       fetchNotifications()
       fetchPendingFriendRequests()
+      fetchStories()
     }, 10000)
     
     return () => {
@@ -782,6 +786,47 @@ const HomePage = ({ user, onLogout, setUser }) => {
       }
     } catch (err) {
       console.error('Failed to decline friend request')
+    }
+  }
+
+  const fetchStories = async () => {
+    try {
+      const res = await fetch('/api/stories')
+      if (res.ok) {
+        const data = await res.json()
+        // Filter to show friends' stories and public stories only
+        const friendIds = user.friends || []
+        const filteredStories = data.filter(storyGroup => {
+          // Show own stories
+          if (storyGroup.userId === user.id) return true
+          // Show friends' stories
+          if (friendIds.includes(storyGroup.userId)) return true
+          // Show public stories (non-private)
+          if (storyGroup.stories?.some(s => s.privacy !== 'private')) return true
+          return false
+        })
+        setStories(filteredStories)
+      }
+    } catch (err) {
+      console.error('Failed to fetch stories')
+    }
+  }
+
+  const viewStory = async (storyGroup) => {
+    setSelectedStory(storyGroup)
+    // Mark stories as viewed
+    for (const story of storyGroup.stories) {
+      if (!story.viewedBy?.includes(user.id)) {
+        try {
+          await fetch(`/api/stories/${story.id}/view`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ userId: user.id })
+          })
+        } catch (err) {
+          console.error('Failed to mark story as viewed')
+        }
+      }
     }
   }
 
@@ -1064,6 +1109,95 @@ const HomePage = ({ user, onLogout, setUser }) => {
         </div>
       )}
 
+      {/* Stories Panel */}
+      {stories.length > 0 && (
+        <div className="relative z-10 px-4 pt-4">
+          <div className="flex gap-3 overflow-x-auto pb-2" style={{ WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+            {stories.map((storyGroup) => {
+              const hasUnviewed = storyGroup.stories?.some(s => !s.viewedBy?.includes(user.id))
+              const isOwn = storyGroup.userId === user.id
+              
+              return (
+                <button
+                  key={storyGroup.userId}
+                  onClick={() => viewStory(storyGroup)}
+                  className="flex-none flex flex-col items-center gap-1"
+                >
+                  <div className={`w-16 h-16 rounded-full p-0.5 ${hasUnviewed ? 'bg-gradient-to-br from-pink-500 via-purple-500 to-amber-500' : 'bg-white/20'}`}>
+                    <div className="w-full h-full rounded-full bg-[#0a0a0f] p-0.5">
+                      <div className="w-full h-full rounded-full overflow-hidden bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
+                        {storyGroup.avatar ? (
+                          <img src={storyGroup.avatar} alt="" className="w-full h-full object-cover" />
+                        ) : (
+                          <User className="w-6 h-6 text-white" />
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                  <span className="text-white text-xs truncate w-16 text-center">
+                    {isOwn ? 'You' : storyGroup.displayName?.split(' ')[0] || 'User'}
+                  </span>
+                </button>
+              )
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Story Viewer Modal */}
+      {selectedStory && (
+        <div className="fixed inset-0 z-50 bg-black flex items-center justify-center" onClick={() => setSelectedStory(null)}>
+          <button 
+            onClick={() => setSelectedStory(null)}
+            className="absolute top-4 right-4 z-10 p-2 rounded-full bg-white/10 hover:bg-white/20"
+          >
+            <X className="w-6 h-6 text-white" />
+          </button>
+          
+          <div className="absolute top-4 left-4 z-10 flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full overflow-hidden bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
+              {selectedStory.avatar ? (
+                <img src={selectedStory.avatar} alt="" className="w-full h-full object-cover" />
+              ) : (
+                <User className="w-5 h-5 text-white" />
+              )}
+            </div>
+            <div>
+              <p className="text-white font-medium text-sm">{selectedStory.displayName || 'User'}</p>
+              <p className="text-gray-400 text-xs">
+                {selectedStory.stories?.[0]?.createdAt && 
+                  new Date(selectedStory.stories[0].createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                }
+              </p>
+            </div>
+          </div>
+          
+          {selectedStory.stories?.[0] && (
+            <div className="max-w-lg w-full max-h-[80vh]" onClick={e => e.stopPropagation()}>
+              {selectedStory.stories[0].mediaType === 'video' ? (
+                <video 
+                  src={selectedStory.stories[0].mediaUrl} 
+                  className="w-full h-full object-contain"
+                  autoPlay
+                  controls
+                />
+              ) : (
+                <img 
+                  src={selectedStory.stories[0].mediaUrl} 
+                  alt="" 
+                  className="w-full h-full object-contain"
+                />
+              )}
+              {selectedStory.stories[0].caption && (
+                <div className="absolute bottom-4 left-4 right-4 p-3 bg-black/60 rounded-xl">
+                  <p className="text-white text-sm">{selectedStory.stories[0].caption}</p>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Main Content */}
       <main className="relative z-10 p-4 pb-24">
         {/* Tiles Grid - 3 columns with consistent styling */}
@@ -1110,25 +1244,6 @@ const HomePage = ({ user, onLogout, setUser }) => {
         <div className="mb-6">
           <p className="text-gray-400 text-sm">A private space for adults. Connection happens at your own pace.</p>
           <p className="text-gray-500 text-xs mt-1">Share what you want • Say what you feel • Respect boundaries</p>
-        </div>
-
-        {/* Featured Spotlight */}
-        <div className="glass-card rounded-2xl p-4 mb-6">
-          <div className="flex items-start gap-3">
-            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-amber-500 flex items-center justify-center">
-              <Sparkles className="w-5 h-5 text-white" />
-            </div>
-            <div className="flex-1">
-              <h3 className="text-white font-semibold">Featured Spotlight</h3>
-              <p className="text-gray-400 text-sm mt-1">
-                Get calm visibility + Browse. Create personal traction and earn subtly. Optional, never aggressive.
-              </p>
-              <div className="flex items-center gap-4 mt-2">
-                <span className="text-amber-400 text-sm font-medium">From $5/hour</span>
-                <span className="text-gray-500 text-sm">• Neutral placement</span>
-              </div>
-            </div>
-          </div>
         </div>
       </main>
 

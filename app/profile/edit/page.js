@@ -726,14 +726,22 @@ export default function EditProfilePage() {
             Tap to select (green = into it). Tap again to mark as hard limit (red = won't do).
           </p>
           
-          {/* Category tabs - horizontally scrollable with snap */}
-          <div className="relative -mx-4 px-4 mb-4">
-            <div className="flex gap-2 overflow-x-auto pb-3 snap-x snap-mandatory scrollbar-hide" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', WebkitOverflowScrolling: 'touch' }}>
+          {/* Category tabs - horizontally scrollable with touch support */}
+          <div className="relative mb-4 -mx-4">
+            <div 
+              className="flex gap-2 px-4 pb-3 overflow-x-auto"
+              style={{ 
+                WebkitOverflowScrolling: 'touch',
+                scrollbarWidth: 'none',
+                msOverflowStyle: 'none'
+              }}
+            >
+              <style jsx>{`div::-webkit-scrollbar { display: none; }`}</style>
               {Object.keys(KINK_CATEGORIES).map(cat => (
                 <button
                   key={cat}
                   onClick={() => setActiveKinkCategory(cat)}
-                  className={`flex-shrink-0 px-4 py-2 rounded-full text-sm whitespace-nowrap transition-colors snap-start ${
+                  className={`flex-none px-4 py-2 rounded-full text-sm whitespace-nowrap transition-colors ${
                     activeKinkCategory === cat
                       ? 'bg-orange-500 text-black font-semibold'
                       : 'bg-white/10 text-gray-300'
@@ -742,8 +750,7 @@ export default function EditProfilePage() {
                   {cat}
                 </button>
               ))}
-              {/* Extra padding at end for scroll */}
-              <div className="flex-shrink-0 w-4" aria-hidden="true"></div>
+              <div className="flex-none w-4" aria-hidden="true"></div>
             </div>
           </div>
 
