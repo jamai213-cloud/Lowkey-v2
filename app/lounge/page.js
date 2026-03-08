@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
-import { ArrowLeft, Send, Users, Image, Lock, MessageSquare, PoundSterling, Star, Upload, X } from 'lucide-react'
+import { ArrowLeft, Send, Users, Image, Lock, MessageSquare, PoundSterling, Star, Upload, X, Loader2 } from 'lucide-react'
 
 export default function LoungePage() {
   const router = useRouter()
@@ -13,12 +13,12 @@ export default function LoungePage() {
   const [newMessage, setNewMessage] = useState('')
   const [loading, setLoading] = useState(true)
   const [showPostForm, setShowPostForm] = useState(false)
-  const [newPost, setNewPost] = useState({ imageData: '', caption: '', price: '' })
-  const [imagePreview, setImagePreview] = useState(null)
-  const fileInputRef = useRef(null)
+  const [newPost, setNewPost] = useState({ imageData: '', caption: '', price: '', preview: null })
+  const [uploading, setUploading] = useState(false)
   const [activeTab, setActiveTab] = useState('chat') // chat, posts
   const messagesEndRef = useRef(null)
   const pollRef = useRef(null)
+  const fileInputRef = useRef(null)
 
   useEffect(() => {
     const storedUser = localStorage.getItem('lowkey_user')
@@ -113,65 +113,53 @@ export default function LoungePage() {
     }
   }
 
-  // Handle file selection for tease post
-  const handleFileSelect = (e) => {
+  // Handle file selection for post
+  const handlePostFileSelect = (e) => {
     const file = e.target.files?.[0]
     if (!file) return
 
-    // Check file size (max 10MB)
-    if (file.size > 10 * 1024 * 1024) {
-      alert('File too large. Max size is 10MB')
-      return
-    }
-
-    // Check file type
     if (!file.type.startsWith('image/')) {
       alert('Please select an image file')
       return
     }
 
+    if (file.size > 10 * 1024 * 1024) {
+      alert('Image too large. Max 10MB allowed.')
+      return
+    }
+
     const reader = new FileReader()
-    reader.onload = (event) => {
-      const base64 = event.target.result
-      setNewPost({ ...newPost, imageData: base64 })
-      setImagePreview(base64)
+    reader.onloadend = () => {
+      setNewPost({ ...newPost, imageData: reader.result, preview: reader.result })
     }
     reader.readAsDataURL(file)
-  }
-
-  // Clear selected image
-  const clearImage = () => {
-    setNewPost({ ...newPost, imageData: '' })
-    setImagePreview(null)
-    if (fileInputRef.current) {
-      fileInputRef.current.value = ''
-    }
   }
 
   const createPost = async (e) => {
     e.preventDefault()
     if (!newPost.imageData) return
 
+    setUploading(true)
     try {
       const res = await fetch('/api/main-lounge/posts', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           creatorId: user.id,
-          imageData: newPost.imageData,
+          imageUrl: newPost.imageData,
           caption: newPost.caption,
           price: parseFloat(newPost.price) || 0
         })
       })
       if (res.ok) {
-        setNewPost({ imageData: '', caption: '', price: '' })
-        setImagePreview(null)
+        setNewPost({ imageData: '', caption: '', price: '', preview: null })
         setShowPostForm(false)
         fetchPosts()
       }
     } catch (err) {
       console.error('Failed to create post')
     }
+    setUploading(false)
   }
 
   useEffect(() => {
@@ -374,44 +362,50 @@ export default function LoungePage() {
         </>
       )}
 
-      {/* Post Form Modal */}
+      {/* Hidden file input for post upload */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        onChange={handlePostFileSelect}
+        className="hidden"
+      />
+
+      {/* Post Form Modal - Device Upload Only */}
       {showPostForm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm" onClick={() => setShowPostForm(false)}>
-          <div className="bg-[#1a1a2e] rounded-2xl p-6 max-w-sm mx-4 w-full" onClick={e => e.stopPropagation()}>
-            <h2 className="text-xl text-white font-semibold mb-4">Create Tease Post</h2>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm" onClick={() => { setShowPostForm(false); setNewPost({ imageData: '', caption: '', price: '', preview: null }); }}>
+          <div className="bg-[#1a1a2e] rounded-2xl p-6 max-w-sm mx-4 w-full max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl text-white font-semibold">Create Tease Post</h2>
+              <button onClick={() => { setShowPostForm(false); setNewPost({ imageData: '', caption: '', price: '', preview: null }); }} className="p-2 rounded-full hover:bg-white/10">
+                <X className="w-5 h-5 text-gray-400" />
+              </button>
+            </div>
             <form onSubmit={createPost} className="space-y-4">
-              {/* File Upload */}
-              <input
-                type="file"
-                ref={fileInputRef}
-                accept="image/*"
-                onChange={handleFileSelect}
-                className="hidden"
-              />
-              
-              {imagePreview ? (
-                <div className="relative aspect-video rounded-xl overflow-hidden bg-black/40 border border-white/10">
-                  <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
+              {/* Image Upload - Device Only */}
+              {newPost.preview ? (
+                <div className="relative">
+                  <img src={newPost.preview} alt="Preview" className="w-full h-48 object-cover rounded-xl" />
                   <button 
                     type="button"
-                    onClick={clearImage}
-                    className="absolute top-2 right-2 p-1.5 rounded-full bg-black/60 hover:bg-black/80 transition-colors"
+                    onClick={() => setNewPost({ ...newPost, imageData: '', preview: null })}
+                    className="absolute top-2 right-2 p-1.5 rounded-full bg-black/60 text-white"
                   >
-                    <X className="w-4 h-4 text-white" />
+                    <X className="w-4 h-4" />
                   </button>
                 </div>
               ) : (
                 <button
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
-                  className="w-full aspect-video rounded-xl bg-black/40 border border-dashed border-white/20 flex flex-col items-center justify-center gap-2 hover:border-pink-500/50 transition-colors"
+                  className="w-full h-48 rounded-xl border-2 border-dashed border-white/20 flex flex-col items-center justify-center gap-3 hover:border-pink-500/50 hover:bg-white/5 transition-colors"
                 >
-                  <Upload className="w-8 h-8 text-gray-400" />
-                  <span className="text-gray-400 text-sm">Tap to upload image</span>
-                  <span className="text-gray-500 text-xs">Max 10MB • JPG, PNG, GIF</span>
+                  <Upload className="w-10 h-10 text-gray-400" />
+                  <span className="text-gray-400">Tap to upload from device</span>
+                  <span className="text-gray-500 text-sm">Images only</span>
                 </button>
               )}
-              
+
               <textarea
                 value={newPost.caption}
                 onChange={(e) => setNewPost({ ...newPost, caption: e.target.value })}
@@ -430,27 +424,18 @@ export default function LoungePage() {
                   className="w-full pl-12 pr-4 py-3 rounded-xl bg-black/40 border border-white/10 text-white placeholder-gray-500 focus:outline-none focus:border-pink-500/50"
                 />
               </div>
-              <p className="text-gray-400 text-xs">
-  Your image will be blurred with the LowKey logo. Subscribers can view full content. LowKey takes 20%.
-</p>
-
-<div className="flex gap-3">
-  <button
-    type="button"
-    onClick={() => { setShowPostForm(false); clearImage(); }}
-    className="flex-1 py-3 rounded-xl bg-white/10 text-white"
-  >
-    Cancel
-  </button>
-
-  <button
-    type="submit"
-    disabled={!newPost.imageData}
-    className="flex-1 py-3 rounded-xl bg-gradient-to-r from-pink-500 to-purple-500 text-white disabled:opacity-50"
-  >
-    Post
-  </button>
-</div>
+              <p className="text-gray-400 text-xs">Your image will be blurred with the LowKey logo. Subscribers can view full content. LowKey takes 20%.</p>
+              <div className="flex gap-3">
+                <button type="button" onClick={() => { setShowPostForm(false); setNewPost({ imageData: '', caption: '', price: '', preview: null }); }} className="flex-1 py-3 rounded-xl bg-white/10 text-white">Cancel</button>
+                <button 
+                  type="submit" 
+                  disabled={!newPost.imageData || uploading}
+                  className="flex-1 py-3 rounded-xl bg-gradient-to-r from-pink-500 to-purple-500 text-white font-semibold disabled:opacity-50 flex items-center justify-center gap-2"
+                >
+                  {uploading ? <Loader2 className="w-5 h-5 animate-spin" /> : null}
+                  {uploading ? 'Posting...' : 'Post'}
+                </button>
+              </div>
             </form>
           </div>
         </div>

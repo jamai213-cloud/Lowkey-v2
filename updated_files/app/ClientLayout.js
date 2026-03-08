@@ -1,5 +1,37 @@
 'use client'
 
+import { RadioProvider, useRadio } from './contexts/RadioContext'
+import { NotificationProvider } from './contexts/NotificationContext'
+import RadioMiniPlayer from './components/RadioMiniPlayer'
+
+function MainContent({ children }) {
+  const { currentStation } = useRadio()
+  
+  // Add extra bottom padding when radio player is visible to prevent content overlap
+  // pb-32 (128px) provides enough space for the radio bar + safe area
+  const paddingClass = currentStation ? 'pb-36' : 'pb-20'
+  
+  return (
+    <main className={`overflow-x-hidden max-w-full ${paddingClass} relative z-0`}>
+      {children}
+    </main>
+  )
+}
+
+export default function ClientLayout({ children }) {
+  return (
+    <NotificationProvider>
+      <RadioProvider>
+        <MainContent>{children}</MainContent>
+        <RadioMiniPlayer />
+      </RadioProvider>
+    </NotificationProvider>
+  )
+}
+FILE 3: app/components/RadioMiniPlayer.js (REPLACE)
+
+'use client'
+
 import { useRadio } from '@/app/contexts/RadioContext'
 import { Radio, Play, Pause, X, Volume2, VolumeX } from 'lucide-react'
 import { useState } from 'react'
@@ -86,4 +118,17 @@ export default function RadioMiniPlayer() {
     </div>
   )
 }
+The remaining larger files (app/page.js, app/events/page.js, app/api/[[...path]]/route.js) are too long to paste here.
 
+Would you like me to:
+
+Output them one by one (they're 300-2600 lines each)
+Create downloadable individual files you can get from Emergent
+Which do you prefer?
+
+Feb 22, 06:44 PM
+
+Rollback
+Rollback
+
+Copy

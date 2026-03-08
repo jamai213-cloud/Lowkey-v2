@@ -38,7 +38,6 @@ export default function FriendsPage() {
 
   const removeFriend = async (friendId) => {
     if (!confirm('Remove this friend?')) return
-    
     try {
       await fetch('/api/friends/remove', {
         method: 'POST',
@@ -69,7 +68,6 @@ export default function FriendsPage() {
     }
   }
 
-  // View full profile
   const viewProfile = async (friendId) => {
     try {
       const res = await fetch(`/api/profile/${friendId}?viewerId=${user.id}`)
@@ -251,7 +249,6 @@ export default function FriendsPage() {
   // FRIENDS LIST VIEW
   return (
     <div className="min-h-screen bg-[#0a0a0f]">
-      {/* Header */}
       <header className="flex items-center justify-between p-4 border-b border-white/10">
         <div className="flex items-center gap-3">
           <button onClick={() => router.push('/')} className="p-2 rounded-full hover:bg-white/10">
@@ -259,10 +256,7 @@ export default function FriendsPage() {
           </button>
           <h1 className="text-xl font-semibold text-white">Friends</h1>
         </div>
-        <button 
-          onClick={() => router.push('/search')}
-          className="p-2 rounded-full bg-amber-500/20 hover:bg-amber-500/30"
-        >
+        <button onClick={() => router.push('/search')} className="p-2 rounded-full bg-amber-500/20 hover:bg-amber-500/30">
           <UserPlus className="w-5 h-5 text-amber-400" />
         </button>
       </header>
@@ -273,22 +267,14 @@ export default function FriendsPage() {
             <User className="w-16 h-16 mb-4 opacity-50" />
             <p className="text-lg">No friends yet</p>
             <p className="text-sm mt-1">Search for people to add as friends!</p>
-            <button 
-              onClick={() => router.push('/search')}
-              className="mt-4 px-6 py-3 rounded-xl bg-gradient-to-r from-amber-400 to-yellow-500 text-black font-semibold"
-            >
+            <button onClick={() => router.push('/search')} className="mt-4 px-6 py-3 rounded-xl bg-gradient-to-r from-amber-400 to-yellow-500 text-black font-semibold">
               Find Friends
             </button>
           </div>
         ) : (
           <div className="space-y-3">
             {friends.map(friend => (
-              <div 
-                key={friend.id}
-                onClick={() => viewProfile(friend.id)}
-                className="flex items-center gap-4 p-4 rounded-xl bg-white/5 border border-white/10 cursor-pointer hover:bg-white/10 transition-colors"
-              >
-                {/* Profile Picture - Always visible for friends */}
+              <div key={friend.id} onClick={() => viewProfile(friend.id)} className="flex items-center gap-4 p-4 rounded-xl bg-white/5 border border-white/10 cursor-pointer hover:bg-white/10 transition-colors">
                 <div className="w-14 h-14 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex-shrink-0 overflow-hidden">
                   {(friend.avatar || friend.profilePicture) ? (
                     <img src={friend.avatar || friend.profilePicture} alt="" className="w-full h-full object-cover" />
@@ -308,10 +294,7 @@ export default function FriendsPage() {
                   <p className="text-gray-400 text-sm truncate">{friend.bio || 'Tap to view profile'}</p>
                 </div>
                 <div className="flex gap-2 flex-shrink-0" onClick={e => e.stopPropagation()}>
-                  <button 
-                    onClick={() => startDM(friend.id)}
-                    className="p-2 rounded-full bg-white/10 hover:bg-amber-500/30"
-                  >
+                  <button onClick={() => startDM(friend.id)} className="p-2 rounded-full bg-white/10 hover:bg-amber-500/30">
                     <MessageSquare className="w-5 h-5 text-amber-400" />
                   </button>
                 </div>
