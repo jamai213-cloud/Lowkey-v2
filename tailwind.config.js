@@ -100,3 +100,4 @@ module.exports = {
     },
     plugins: [require("tailwindcss-animate")],
   }
+// v2
