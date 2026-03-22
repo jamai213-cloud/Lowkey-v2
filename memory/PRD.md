@@ -45,31 +45,54 @@ Lowkey is a Next.js-based social/dating application deployed on Vercel with Mong
    - Uses `createdAt: { $gte: oneDayAgo }` filter
 
 5. **Notification Sound System (P2) - ENHANCED**
-   - Created `app/contexts/NotificationContext.js` with:
-     - Web Audio API for reliable cross-browser sound (pleasant chime tones)
-     - Sound on/off toggle (persisted to localStorage)
-     - Browser notification permission handling
-     - Sound throttling (1 second minimum between sounds)
-     - Helper methods: `notifyFriendRequest`, `notifyMessage`, `notifyInteraction`
-   - Updated `app/ClientLayout.js` to wrap app in NotificationProvider
-   - **ENHANCED `app/page.js` with fully professional notification bell:**
-     - Polls for new notifications every 10 seconds
-     - Plays sound when new notifications arrive
-     - Animated bell icon when new notifications received
-     - Sound toggle button in header (Volume2/VolumeX icons)
-     - Friend requests section with Accept/Decline buttons in dropdown
-     - Different icons for notification types (friend request, message, tip, comment)
-     - Mark individual or all notifications as read
-     - Navigate to relevant page when clicking notification
-     - Unread count badge includes pending friend requests
-   - Updated `app/search/page.js` with notification sound for new friend requests
-   - Updated `app/inbox/page.js` with notification sound for new messages
+   - Created `app/contexts/NotificationContext.js` with Web Audio API
+   - Sound on/off toggle persisted to localStorage
+   - Browser notification permission handling
+   - Sound throttling (1 second minimum between sounds)
+   - Helper methods: `notifyFriendRequest`, `notifyMessage`, `notifyInteraction`
 
 6. **Friend Request System (Verified Working)**
    - Accept/decline flow in `app/api/[[...path]]/route.js` confirmed correct
    - Frontend properly refreshes state after accept/decline
-   - Notifications sent to requester on acceptance
-   - Friend requests now visible in main notification dropdown
+
+7. **Stories Panel on Dashboard (NEW)**
+   - Horizontal scrollable stories row with mobile optimization
+   - User avatars with unviewed ring animation
+   - Video/photo type indicators
+   - Story viewer modal with full-screen support
+   - Progress bars for multiple stories
+   - Stories API returns user avatar
+
+8. **Add Story Feature (NEW)**
+   - "Add Story" button on dashboard
+   - Support for photo, video, and text stories
+   - Image compression before upload (reduces bandwidth)
+   - Privacy settings (Everyone / Friends Only)
+   - Background color picker for text stories
+   - Upload progress indicator
+
+9. **Image Compression Utility (NEW)**
+   - Client-side image compression before upload
+   - Reduces images to max 1200px width
+   - Quality set to 80% for optimal balance
+
+10. **Analytics Tracking (NEW)**
+    - Local analytics storage for user engagement
+    - Tracks story views, story creation, and other events
+    - Ready for server-side integration
+
+11. **Mobile CSS Improvements (NEW)**
+    - Safe area padding for notched devices
+    - Horizontal scroll optimization with touch support
+    - Minimum 44px touch targets on mobile
+    - Scroll snap for carousel-style components
+
+12. **Kinks Scrolling Fix**
+    - Fixed horizontal scroll in profile edit for kinks categories
+    - Improved touch scrolling with WebkitOverflowScrolling
+
+13. **Featured Spotlight Removed**
+    - Removed from main dashboard as requested
 
 ## Key Files Modified
 - `app/ClientLayout.js` - Layout wrapper with providers

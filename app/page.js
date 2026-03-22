@@ -6,9 +6,61 @@ import {
   Users, MessageSquare, Sofa, Search, Wallet, Moon, Gamepad2, Radio, Music, 
   Calendar, Bell, Lock, X, Eye, EyeOff, Volume2, VolumeX, UserPlus, CheckCircle, 
   LogOut, Settings, Sparkles, Home, User, ChevronRight, Send, Heart, Check, Trash2,
-  Play, Image as ImageIcon
+  Play, Image as ImageIcon, Plus, Camera, Video, Type, Loader2
 } from 'lucide-react'
 import { useNotifications } from './contexts/NotificationContext'
+
+// Image compression utility
+const compressImage = async (file, maxWidth = 1200, quality = 0.8) => {
+  return new Promise((resolve) => {
+    const reader = new FileReader()
+    reader.onload = (e) => {
+      const img = new Image()
+      img.onload = () => {
+        const canvas = document.createElement('canvas')
+        let { width, height } = img
+        
+        if (width > maxWidth) {
+          height = (height * maxWidth) / width
+          width = maxWidth
+        }
+        
+        canvas.width = width
+        canvas.height = height
+        
+        const ctx = canvas.getContext('2d')
+        ctx.drawImage(img, 0, 0, width, height)
+        
+        const compressedBase64 = canvas.toDataURL('image/jpeg', quality)
+        resolve(compressedBase64)
+      }
+      img.src = e.target.result
+    }
+    reader.readAsDataURL(file)
+  })
+}
+
+// Simple analytics tracker
+const trackEvent = (eventName, data = {}) => {
+  try {
+    // Store analytics locally for now
+    const analytics = JSON.parse(localStorage.getItem('lowkey_analytics') || '[]')
+    analytics.push({
+      event: eventName,
+      data,
+      timestamp: new Date().toISOString(),
+      userId: data.userId || 'anonymous'
+    })
+    // Keep last 100 events
+    if (analytics.length > 100) analytics.shift()
+    localStorage.setItem('lowkey_analytics', JSON.stringify(analytics))
+    
+    // Could send to server here
+    // fetch('/api/analytics', { method: 'POST', body: JSON.stringify({ event: eventName, data }) })
+  } catch (e) {
+    // Silent fail for analytics
+  }
+}
 
 // Auth Context
 const AuthContext = createContext(null)
@@ -630,6 +682,15 @@ const HomePage = ({ user, onLogout, setUser }) => {
   const [pendingFriendRequests, setPendingFriendRequests] = useState([])
   const [stories, setStories] = useState([])
   const [selectedStory, setSelectedStory] = useState(null)
+  const [showAddStory, setShowAddStory] = useState(false)
+  const [storyType, setStoryType] = useState('photo') // photo, video, text
+  const [storyFile, setStoryFile] = useState(null)
+  const [storyPreview, setStoryPreview] = useState(null)
+  const [storyText, setStoryText] = useState('')
+  const [storyPrivacy, setStoryPrivacy] = useState('everyone')
+  const [storyBgColor, setStoryBgColor] = useState('#1a1a2e')
+  const [uploadingStory, setUploadingStory] = useState(false)
+  const storyFileInputRef = useRef(null)
   const router = useRouter()
   const pollRef = useRef(null)
   const prevNotificationCount = useRef(0)
@@ -804,6 +865,7 @@ const HomePage = ({ user, onLogout, setUser }) => {
 
   const viewStory = async (storyGroup) => {
     setSelectedStory(storyGroup)
+    trackEvent('story_view', { userId: user.id, storyOwnerId: storyGroup.userId })
     // Mark stories as viewed
     for (const story of storyGroup.stories) {
       if (!story.viewedBy?.includes(user.id)) {
@@ -818,6 +880,93 @@ const HomePage = ({ user, onLogout, setUser }) => {
         }
       }
     }
+  }
+
+  // Handle story file selection
+  const handleStoryFileSelect = async (e) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    
+    const isVideo = file.type.startsWith('video/')
+    const maxSize = isVideo ? 50 * 1024 * 1024 : 10 * 1024 * 1024 // 50MB video, 10MB image
+    
+    if (file.size > maxSize) {
+      alert(`File too large. Max ${isVideo ? '50MB' : '10MB'} allowed.`)
+      return
+    }
+    
+    setStoryType(isVideo ? 'video' : 'photo')
+    setStoryFile(file)
+    setStoryPreview(URL.createObjectURL(file))
+  }
+
+  // Create and upload story
+  const createStory = async () => {
+    if (storyType === 'text' && !storyText.trim()) {
+      alert('Please enter some text for your story')
+      return
+    }
+    if (storyType !== 'text' && !storyFile) {
+      alert('Please select a photo or video')
+      return
+    }
+    
+    setUploadingStory(true)
+    trackEvent('story_create_start', { userId: user.id, type: storyType })
+    
+    try {
+      let content = storyText
+      
+      if (storyFile) {
+        // Compress images before upload
+        if (storyType === 'photo') {
+          content = await compressImage(storyFile, 1200, 0.8)
+        } else {
+          // For video, convert to base64 (consider chunked upload for large videos)
+          content = await new Promise((resolve) => {
+            const reader = new FileReader()
+            reader.onload = () => resolve(reader.result)
+            reader.readAsDataURL(storyFile)
+          })
+        }
+      }
+      
+      const res = await fetch('/api/stories', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: user.id,
+          type: storyType,
+          content: content,
+          privacy: storyPrivacy,
+          backgroundColor: storyBgColor
+        })
+      })
+      
+      if (res.ok) {
+        trackEvent('story_create_success', { userId: user.id, type: storyType })
+        setShowAddStory(false)
+        resetStoryForm()
+        fetchStories()
+      } else {
+        throw new Error('Failed to create story')
+      }
+    } catch (err) {
+      console.error('Story creation failed:', err)
+      alert('Failed to create story. Please try again.')
+      trackEvent('story_create_error', { userId: user.id, error: err.message })
+    }
+    setUploadingStory(false)
+  }
+
+  // Reset story form
+  const resetStoryForm = () => {
+    setStoryType('photo')
+    setStoryFile(null)
+    setStoryPreview(null)
+    setStoryText('')
+    setStoryPrivacy('everyone')
+    setStoryBgColor('#1a1a2e')
   }
 
   const markNotificationRead = async (notificationId) => {
@@ -1100,59 +1249,223 @@ const HomePage = ({ user, onLogout, setUser }) => {
       )}
 
       {/* Stories Panel - Mobile Optimized */}
-      {stories.length > 0 && (
-        <div className="relative z-10 px-4 pt-4">
-          <div 
-            className="flex gap-3 overflow-x-auto pb-3 -mx-4 px-4"
-            style={{ 
-              WebkitOverflowScrolling: 'touch', 
-              scrollbarWidth: 'none', 
-              msOverflowStyle: 'none',
-              scrollSnapType: 'x mandatory'
-            }}
+      <div className="relative z-10 px-4 pt-4">
+        <div 
+          className="flex gap-3 overflow-x-auto pb-3 -mx-4 px-4"
+          style={{ 
+            WebkitOverflowScrolling: 'touch', 
+            scrollbarWidth: 'none', 
+            msOverflowStyle: 'none',
+            scrollSnapType: 'x mandatory'
+          }}
+        >
+          {/* Add Story Button - Always First */}
+          <button
+            onClick={() => setShowAddStory(true)}
+            className="flex-none flex flex-col items-center gap-1"
+            style={{ scrollSnapAlign: 'start' }}
           >
-            {stories.map((storyGroup) => {
-              const hasUnviewed = storyGroup.stories?.some(s => !s.viewedBy?.includes(user.id))
-              const isOwn = storyGroup.userId === user.id
-              const latestStory = storyGroup.stories?.[0]
-              const isVideo = latestStory?.type === 'video' || latestStory?.mediaType === 'video'
-              
-              return (
-                <button
-                  key={storyGroup.userId}
-                  onClick={() => viewStory(storyGroup)}
-                  className="flex-none flex flex-col items-center gap-1 scroll-snap-align-start"
-                  style={{ scrollSnapAlign: 'start' }}
-                >
-                  <div className={`relative w-16 h-16 rounded-full p-0.5 ${hasUnviewed ? 'bg-gradient-to-br from-pink-500 via-purple-500 to-amber-500' : 'bg-white/20'}`}>
-                    <div className="w-full h-full rounded-full bg-[#0a0a0f] p-0.5">
-                      <div className="w-full h-full rounded-full overflow-hidden bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
-                        {storyGroup.avatar ? (
-                          <img src={storyGroup.avatar} alt="" className="w-full h-full object-cover" />
-                        ) : (
-                          <User className="w-6 h-6 text-white" />
-                        )}
-                      </div>
+            <div className="relative w-16 h-16 rounded-full p-0.5 bg-gradient-to-br from-amber-400 to-yellow-500">
+              <div className="w-full h-full rounded-full bg-[#0a0a0f] flex items-center justify-center">
+                <Plus className="w-7 h-7 text-amber-400" />
+              </div>
+            </div>
+            <span className="text-white text-xs">Add Story</span>
+          </button>
+          
+          {/* User Stories */}
+          {stories.map((storyGroup) => {
+            const hasUnviewed = storyGroup.stories?.some(s => !s.viewedBy?.includes(user.id))
+            const isOwn = storyGroup.userId === user.id
+            const latestStory = storyGroup.stories?.[0]
+            const isVideo = latestStory?.type === 'video' || latestStory?.mediaType === 'video'
+            
+            return (
+              <button
+                key={storyGroup.userId}
+                onClick={() => viewStory(storyGroup)}
+                className="flex-none flex flex-col items-center gap-1 scroll-snap-align-start"
+                style={{ scrollSnapAlign: 'start' }}
+              >
+                <div className={`relative w-16 h-16 rounded-full p-0.5 ${hasUnviewed ? 'bg-gradient-to-br from-pink-500 via-purple-500 to-amber-500' : 'bg-white/20'}`}>
+                  <div className="w-full h-full rounded-full bg-[#0a0a0f] p-0.5">
+                    <div className="w-full h-full rounded-full overflow-hidden bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
+                      {storyGroup.avatar ? (
+                        <img src={storyGroup.avatar} alt="" className="w-full h-full object-cover" />
+                      ) : (
+                        <User className="w-6 h-6 text-white" />
+                      )}
                     </div>
-                    {/* Video indicator */}
-                    {isVideo && (
-                      <div className="absolute bottom-0 right-0 w-5 h-5 rounded-full bg-black/80 flex items-center justify-center border border-white/20">
-                        <Play className="w-3 h-3 text-white fill-white" />
-                      </div>
-                    )}
-                    {/* Image indicator for photos */}
-                    {!isVideo && latestStory?.mediaUrl && (
-                      <div className="absolute bottom-0 right-0 w-5 h-5 rounded-full bg-black/80 flex items-center justify-center border border-white/20">
-                        <ImageIcon className="w-3 h-3 text-white" />
-                      </div>
-                    )}
                   </div>
-                  <span className="text-white text-xs truncate w-16 text-center">
-                    {isOwn ? 'You' : storyGroup.displayName?.split(' ')[0] || 'User'}
-                  </span>
+                  {/* Video indicator */}
+                  {isVideo && (
+                    <div className="absolute bottom-0 right-0 w-5 h-5 rounded-full bg-black/80 flex items-center justify-center border border-white/20">
+                      <Play className="w-3 h-3 text-white fill-white" />
+                    </div>
+                  )}
+                  {/* Image indicator for photos */}
+                  {!isVideo && latestStory?.mediaUrl && (
+                    <div className="absolute bottom-0 right-0 w-5 h-5 rounded-full bg-black/80 flex items-center justify-center border border-white/20">
+                      <ImageIcon className="w-3 h-3 text-white" />
+                    </div>
+                  )}
+                </div>
+                <span className="text-white text-xs truncate w-16 text-center">
+                  {isOwn ? 'You' : storyGroup.displayName?.split(' ')[0] || 'User'}
+                </span>
+              </button>
+            )
+          })}
+        </div>
+      </div>
+
+      {/* Hidden file input for story */}
+      <input
+        type="file"
+        ref={storyFileInputRef}
+        onChange={handleStoryFileSelect}
+        accept="image/*,video/*"
+        className="hidden"
+      />
+
+      {/* Add Story Modal */}
+      {showAddStory && (
+        <div className="fixed inset-0 z-50 bg-black/90 backdrop-blur-sm flex items-end sm:items-center justify-center" onClick={() => { setShowAddStory(false); resetStoryForm(); }}>
+          <div className="w-full max-w-lg bg-[#1a1a2e] rounded-t-3xl sm:rounded-2xl p-6 max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+            {/* Header */}
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl text-white font-semibold">Create Story</h2>
+              <button onClick={() => { setShowAddStory(false); resetStoryForm(); }} className="p-2 rounded-full hover:bg-white/10">
+                <X className="w-5 h-5 text-gray-400" />
+              </button>
+            </div>
+            
+            {/* Story Type Tabs */}
+            <div className="flex gap-2 mb-6">
+              <button
+                onClick={() => { setStoryType('photo'); setStoryFile(null); setStoryPreview(null); }}
+                className={`flex-1 py-3 rounded-xl flex items-center justify-center gap-2 transition-colors ${
+                  storyType === 'photo' ? 'bg-amber-500 text-black' : 'bg-white/10 text-gray-400'
+                }`}
+              >
+                <Camera className="w-4 h-4" /> Photo
+              </button>
+              <button
+                onClick={() => { setStoryType('video'); setStoryFile(null); setStoryPreview(null); }}
+                className={`flex-1 py-3 rounded-xl flex items-center justify-center gap-2 transition-colors ${
+                  storyType === 'video' ? 'bg-amber-500 text-black' : 'bg-white/10 text-gray-400'
+                }`}
+              >
+                <Video className="w-4 h-4" /> Video
+              </button>
+              <button
+                onClick={() => { setStoryType('text'); setStoryFile(null); setStoryPreview(null); }}
+                className={`flex-1 py-3 rounded-xl flex items-center justify-center gap-2 transition-colors ${
+                  storyType === 'text' ? 'bg-amber-500 text-black' : 'bg-white/10 text-gray-400'
+                }`}
+              >
+                <Type className="w-4 h-4" /> Text
+              </button>
+            </div>
+            
+            {/* Content Area */}
+            {storyType === 'text' ? (
+              <div className="mb-6">
+                <div 
+                  className="aspect-[9/16] max-h-64 rounded-xl flex items-center justify-center p-6 mb-4"
+                  style={{ backgroundColor: storyBgColor }}
+                >
+                  <textarea
+                    value={storyText}
+                    onChange={(e) => setStoryText(e.target.value)}
+                    placeholder="What's on your mind?"
+                    className="w-full h-full bg-transparent text-white text-xl text-center resize-none focus:outline-none placeholder-white/50"
+                    maxLength={200}
+                  />
+                </div>
+                
+                {/* Background Color Picker */}
+                <div className="flex gap-2 justify-center">
+                  {['#1a1a2e', '#2d1b4e', '#1a365d', '#3d1c02', '#0d2818', '#3d2b2b'].map(color => (
+                    <button
+                      key={color}
+                      onClick={() => setStoryBgColor(color)}
+                      className={`w-8 h-8 rounded-full border-2 ${storyBgColor === color ? 'border-white' : 'border-transparent'}`}
+                      style={{ backgroundColor: color }}
+                    />
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <div className="mb-6">
+                {storyPreview ? (
+                  <div className="aspect-[9/16] max-h-64 rounded-xl overflow-hidden bg-black mb-4 relative">
+                    {storyType === 'video' ? (
+                      <video src={storyPreview} className="w-full h-full object-contain" controls />
+                    ) : (
+                      <img src={storyPreview} alt="Preview" className="w-full h-full object-contain" />
+                    )}
+                    <button
+                      onClick={() => { setStoryFile(null); setStoryPreview(null); }}
+                      className="absolute top-2 right-2 p-2 rounded-full bg-black/60 hover:bg-black/80"
+                    >
+                      <X className="w-4 h-4 text-white" />
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => storyFileInputRef.current?.click()}
+                    className="w-full aspect-[9/16] max-h-64 rounded-xl border-2 border-dashed border-white/20 flex flex-col items-center justify-center gap-3 hover:border-amber-500/50 transition-colors"
+                  >
+                    {storyType === 'photo' ? (
+                      <Camera className="w-12 h-12 text-gray-500" />
+                    ) : (
+                      <Video className="w-12 h-12 text-gray-500" />
+                    )}
+                    <span className="text-gray-400">Tap to select {storyType}</span>
+                  </button>
+                )}
+              </div>
+            )}
+            
+            {/* Privacy Setting */}
+            <div className="mb-6">
+              <label className="text-gray-400 text-sm mb-2 block">Who can see this?</label>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setStoryPrivacy('everyone')}
+                  className={`flex-1 py-2 rounded-lg text-sm ${
+                    storyPrivacy === 'everyone' ? 'bg-green-500 text-black' : 'bg-white/10 text-gray-400'
+                  }`}
+                >
+                  Everyone
                 </button>
-              )
-            })}
+                <button
+                  onClick={() => setStoryPrivacy('friends')}
+                  className={`flex-1 py-2 rounded-lg text-sm ${
+                    storyPrivacy === 'friends' ? 'bg-amber-500 text-black' : 'bg-white/10 text-gray-400'
+                  }`}
+                >
+                  Friends Only
+                </button>
+              </div>
+            </div>
+            
+            {/* Submit Button */}
+            <button
+              onClick={createStory}
+              disabled={uploadingStory || (storyType === 'text' ? !storyText.trim() : !storyFile)}
+              className="w-full py-4 rounded-xl bg-gradient-to-r from-amber-400 to-yellow-500 text-black font-semibold flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {uploadingStory ? (
+                <>
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                  Uploading...
+                </>
+              ) : (
+                'Share Story'
+              )}
+            </button>
           </div>
         </div>
       )}
