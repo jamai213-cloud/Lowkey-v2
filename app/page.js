@@ -699,22 +699,31 @@ const HomePage = ({ user, onLogout, setUser }) => {
   const lockedFeatures = ['radio', 'music', 'afterdark']
   
   useEffect(() => {
+    // Initial fetch - staggered to avoid blocking
     fetchNotifications()
-    fetchNoticeUnreadCount()
-    fetchPendingFriendRequests()
-    fetchStories()
-    checkOnboarding()
-    requestPermission()
     
-    // Start polling for notifications every 10 seconds
+    // Delay other fetches to improve initial load
+    const timer1 = setTimeout(() => fetchNoticeUnreadCount(), 500)
+    const timer2 = setTimeout(() => fetchPendingFriendRequests(), 1000)
+    const timer3 = setTimeout(() => fetchStories(), 1500)
+    const timer4 = setTimeout(() => {
+      checkOnboarding()
+      requestPermission()
+    }, 2000)
+    
+    // Polling every 30 seconds instead of 10 (less aggressive)
     pollRef.current = setInterval(() => {
       fetchNotifications()
       fetchPendingFriendRequests()
       fetchStories()
-    }, 10000)
+    }, 30000)
     
     return () => {
       if (pollRef.current) clearInterval(pollRef.current)
+      clearTimeout(timer1)
+      clearTimeout(timer2)
+      clearTimeout(timer3)
+      clearTimeout(timer4)
     }
   }, [])
 
@@ -1055,8 +1064,8 @@ const HomePage = ({ user, onLogout, setUser }) => {
       <div className="absolute top-0 left-0 w-[500px] h-[500px] rounded-full bg-gradient-to-br from-pink-500/20 via-purple-500/15 to-transparent blur-3xl pointer-events-none z-0" />
       
       {/* Header */}
-      <header className="relative z-10 flex items-center justify-between p-4 border-b border-white/5">
-        <div className="flex items-center gap-2">
+      <header className="relative z-10 flex items-center justify-between p-3 border-b border-white/5">
+        <div className="flex items-center">
           {/* Logo slot - responsive sizing with animation */}
           <div className="lk-logoSlot">
             <img 
@@ -1066,9 +1075,9 @@ const HomePage = ({ user, onLogout, setUser }) => {
           </div>
         </div>
         
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1">
           {user.verified && (
-            <span className="flex items-center gap-1 px-2 py-1 rounded-full bg-green-500/20 border border-green-500/30 text-green-400 text-xs">
+            <span className="hidden sm:flex items-center gap-1 px-2 py-1 rounded-full bg-green-500/20 border border-green-500/30 text-green-400 text-xs">
               <CheckCircle className="w-3 h-3" />
               Verified
             </span>
@@ -1077,12 +1086,11 @@ const HomePage = ({ user, onLogout, setUser }) => {
             onClick={toggleSound}
             className="p-2 rounded-full hover:bg-white/10 transition-colors"
             title={soundEnabled ? 'Mute notification sounds' : 'Enable notification sounds'}
-            data-testid="sound-toggle"
           >
             {soundEnabled ? (
-              <Volume2 className="w-5 h-5 text-amber-400" />
+              <Volume2 className="w-4 h-4 text-amber-400" />
             ) : (
-              <VolumeX className="w-5 h-5 text-gray-500" />
+              <VolumeX className="w-4 h-4 text-gray-500" />
             )}
           </button>
           <NotificationBell 
@@ -1091,10 +1099,10 @@ const HomePage = ({ user, onLogout, setUser }) => {
             hasNew={hasNewNotification}
           />
           <button onClick={() => router.push('/admin')} className="p-2 rounded-full hover:bg-white/10 transition-colors">
-            <Settings className="w-5 h-5 text-gray-400" />
+            <Settings className="w-4 h-4 text-gray-400" />
           </button>
           <button onClick={onLogout} className="p-2 rounded-full hover:bg-white/10 transition-colors">
-            <LogOut className="w-5 h-5 text-gray-400" />
+            <LogOut className="w-4 h-4 text-gray-400" />
           </button>
         </div>
       </header>
@@ -1567,29 +1575,18 @@ const HomePage = ({ user, onLogout, setUser }) => {
             const IconComponent = tile.icon
             const isLocked = lockedFeatures.includes(tile.id) && !user.verified
             return (
-              <div
+              <button
                 key={tile.id}
-                onClick={(e) => {
-                  e.preventDefault()
-                  e.stopPropagation()
-                  handleTileClick(tile.id, tile.path)
-                }}
-                onTouchEnd={(e) => {
-                  e.preventDefault()
-                  handleTileClick(tile.id, tile.path)
-                }}
-                role="button"
-                tabIndex={0}
-                className="relative aspect-[4/3] rounded-2xl overflow-hidden transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] cursor-pointer select-none"
+                type="button"
+                onClick={() => handleTileClick(tile.id, tile.path)}
+                className="relative aspect-[4/3] rounded-2xl overflow-hidden transition-transform duration-200 active:scale-95 cursor-pointer"
                 style={{
                   background: `linear-gradient(135deg, ${tile.color}15, ${tile.color}05)`,
                   border: `1px solid ${tile.color}40`,
-                  boxShadow: `0 4px 20px ${tile.color}10`,
-                  WebkitTapHighlightColor: 'transparent',
-                  touchAction: 'manipulation'
+                  boxShadow: `0 4px 20px ${tile.color}10`
                 }}
               >
-                <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 pointer-events-none">
+                <div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
                   <div 
                     className="w-10 h-10 rounded-xl flex items-center justify-center"
                     style={{ backgroundColor: `${tile.color}25` }}
@@ -1599,16 +1596,16 @@ const HomePage = ({ user, onLogout, setUser }) => {
                   <span className="text-white text-xs font-medium">{tile.label}</span>
                 </div>
                 {isLocked && (
-                  <div className="absolute inset-0 bg-black/60 flex items-center justify-center pointer-events-none">
+                  <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
                     <Lock className="w-5 h-5 text-gray-400" />
                   </div>
                 )}
                 {tile.id === 'notices' && noticeUnreadCount > 0 && (
-                  <div className="absolute top-2 right-2 w-5 h-5 rounded-full bg-red-500 flex items-center justify-center pointer-events-none">
+                  <div className="absolute top-2 right-2 w-5 h-5 rounded-full bg-red-500 flex items-center justify-center">
                     <span className="text-white text-xs font-bold">{noticeUnreadCount}</span>
                   </div>
                 )}
-              </div>
+              </button>
             )
           })}          
         </div>
