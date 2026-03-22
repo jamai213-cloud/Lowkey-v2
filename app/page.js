@@ -1051,20 +1051,19 @@ const HomePage = ({ user, onLogout, setUser }) => {
 
   return (
     <div className="min-h-screen bg-[#0a0a0f] relative">
-      {/* Background glow */}
-      <div className="absolute top-0 left-0 w-[500px] h-[500px] rounded-full bg-gradient-to-br from-pink-500/20 via-purple-500/15 to-transparent blur-3xl pointer-events-none" />
+      {/* Background glow - pointer-events-none ensures it doesn't block clicks */}
+      <div className="absolute top-0 left-0 w-[500px] h-[500px] rounded-full bg-gradient-to-br from-pink-500/20 via-purple-500/15 to-transparent blur-3xl pointer-events-none z-0" />
       
       {/* Header */}
       <header className="relative z-10 flex items-center justify-between p-4 border-b border-white/5">
         <div className="flex items-center gap-2">
-          {/* Logo slot - responsive sizing, no shrink */}
+          {/* Logo slot - responsive sizing with animation */}
           <div className="lk-logoSlot">
             <img 
               src="https://customer-assets.emergentagent.com/job_9cfb4bde-566c-4101-8a52-a8ca747e74ca/artifacts/xjtcpb4e_095E7AA1-912D-48A9-A667-A5A89F16DBD7.png" 
               alt="LowKey" 
             />
           </div>
-          <span className="lk-headerText">LowKey</span>
         </div>
         
         <div className="flex items-center gap-2">
@@ -1249,7 +1248,7 @@ const HomePage = ({ user, onLogout, setUser }) => {
       )}
 
       {/* Stories Panel - Mobile Optimized */}
-      <div className="relative z-10 px-4 pt-4">
+      <div className="relative z-[5] px-4 pt-4">
         <div 
           className="flex gap-3 overflow-x-auto pb-3 -mx-4 px-4"
           style={{ 
@@ -1561,7 +1560,7 @@ const HomePage = ({ user, onLogout, setUser }) => {
       )}
 
       {/* Main Content */}
-      <main className="relative z-10 p-4 pb-24">
+      <main className="relative z-[5] p-4 pb-24">
         {/* Tiles Grid - 3 columns with consistent styling */}
         <div className="grid grid-cols-3 gap-3 mb-6">
           {tiles.map((tile) => {
