@@ -1570,11 +1570,12 @@ const HomePage = ({ user, onLogout, setUser }) => {
               <button
                 key={tile.id}
                 onClick={() => handleTileClick(tile.id, tile.path)}
-                className="relative aspect-[4/3] rounded-2xl overflow-hidden transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]"
+                className="relative aspect-[4/3] rounded-2xl overflow-hidden transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] cursor-pointer touch-manipulation"
                 style={{
                   background: `linear-gradient(135deg, ${tile.color}15, ${tile.color}05)`,
                   border: `1px solid ${tile.color}40`,
-                  boxShadow: `0 4px 20px ${tile.color}10`
+                  boxShadow: `0 4px 20px ${tile.color}10`,
+                  WebkitTapHighlightColor: 'transparent'
                 }}
               >
                 <div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
