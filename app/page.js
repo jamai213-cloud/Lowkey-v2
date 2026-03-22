@@ -1043,6 +1043,7 @@ const HomePage = ({ user, onLogout, setUser }) => {
   const unreadCount = notifications.filter(n => !n.read).length + pendingFriendRequests.length
 
   const tiles = [
+    { id: 'profile', icon: User, label: 'Profile', color: '#A855F7', path: '/profile' },
     { id: 'friends', icon: Users, label: 'Friends', color: '#EC4899', path: '/friends' },
     { id: 'inbox', icon: MessageSquare, label: 'Inbox', color: '#F59E0B', path: '/inbox' },
     { id: 'lounge', icon: Sofa, label: 'Lounge', color: '#8B5CF6', path: '/lounge' },
