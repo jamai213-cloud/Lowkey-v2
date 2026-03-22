@@ -333,13 +333,13 @@ body {
 .glow-gold { box-shadow: 0 0 30px rgba(245, 158, 11, 0.4); }
 .glow-pink { box-shadow: 0 0 30px rgba(236, 72, 153, 0.4); }
 
-/* ===== HEADER LOGO SLOT - BIGGER with clamp ===== */
+/* ===== HEADER LOGO SLOT - MUCH BIGGER with clamp ===== */
 .lk-logoSlot {
-  /* Responsive: 64px mobile → 80px desktop - ENLARGED */
-  width: clamp(64px, 10vw, 80px);
-  height: clamp(64px, 10vw, 80px);
-  min-width: 64px;
-  min-height: 64px;
+  /* Responsive: 100px mobile → 140px desktop - MUCH LARGER */
+  width: clamp(100px, 18vw, 140px);
+  height: clamp(100px, 18vw, 140px);
+  min-width: 100px;
+  min-height: 100px;
   flex-shrink: 0;
   display: block;
   /* Vibrant glow with multiple colors */

@@ -1567,18 +1567,29 @@ const HomePage = ({ user, onLogout, setUser }) => {
             const IconComponent = tile.icon
             const isLocked = lockedFeatures.includes(tile.id) && !user.verified
             return (
-              <button
+              <div
                 key={tile.id}
-                onClick={() => handleTileClick(tile.id, tile.path)}
-                className="relative aspect-[4/3] rounded-2xl overflow-hidden transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] cursor-pointer touch-manipulation"
+                onClick={(e) => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  handleTileClick(tile.id, tile.path)
+                }}
+                onTouchEnd={(e) => {
+                  e.preventDefault()
+                  handleTileClick(tile.id, tile.path)
+                }}
+                role="button"
+                tabIndex={0}
+                className="relative aspect-[4/3] rounded-2xl overflow-hidden transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] cursor-pointer select-none"
                 style={{
                   background: `linear-gradient(135deg, ${tile.color}15, ${tile.color}05)`,
                   border: `1px solid ${tile.color}40`,
                   boxShadow: `0 4px 20px ${tile.color}10`,
-                  WebkitTapHighlightColor: 'transparent'
+                  WebkitTapHighlightColor: 'transparent',
+                  touchAction: 'manipulation'
                 }}
               >
-                <div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
+                <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 pointer-events-none">
                   <div 
                     className="w-10 h-10 rounded-xl flex items-center justify-center"
                     style={{ backgroundColor: `${tile.color}25` }}
@@ -1588,16 +1599,16 @@ const HomePage = ({ user, onLogout, setUser }) => {
                   <span className="text-white text-xs font-medium">{tile.label}</span>
                 </div>
                 {isLocked && (
-                  <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
+                  <div className="absolute inset-0 bg-black/60 flex items-center justify-center pointer-events-none">
                     <Lock className="w-5 h-5 text-gray-400" />
                   </div>
                 )}
                 {tile.id === 'notices' && noticeUnreadCount > 0 && (
-                  <div className="absolute top-2 right-2 w-5 h-5 rounded-full bg-red-500 flex items-center justify-center">
+                  <div className="absolute top-2 right-2 w-5 h-5 rounded-full bg-red-500 flex items-center justify-center pointer-events-none">
                     <span className="text-white text-xs font-bold">{noticeUnreadCount}</span>
                   </div>
                 )}
-              </button>
+              </div>
             )
           })}          
         </div>
