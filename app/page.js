@@ -5,7 +5,8 @@ import { useRouter } from 'next/navigation'
 import { 
   Users, MessageSquare, Sofa, Search, Wallet, Moon, Gamepad2, Radio, Music, 
   Calendar, Bell, Lock, X, Eye, EyeOff, Volume2, VolumeX, UserPlus, CheckCircle, 
-  LogOut, Settings, Sparkles, Home, User, ChevronRight, Send, Heart, Check, Trash2
+  LogOut, Settings, Sparkles, Home, User, ChevronRight, Send, Heart, Check, Trash2,
+  Play, Image as ImageIcon
 } from 'lucide-react'
 import { useNotifications } from './contexts/NotificationContext'
 
@@ -1098,21 +1099,32 @@ const HomePage = ({ user, onLogout, setUser }) => {
         </div>
       )}
 
-      {/* Stories Panel */}
+      {/* Stories Panel - Mobile Optimized */}
       {stories.length > 0 && (
         <div className="relative z-10 px-4 pt-4">
-          <div className="flex gap-3 overflow-x-auto pb-2" style={{ WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+          <div 
+            className="flex gap-3 overflow-x-auto pb-3 -mx-4 px-4"
+            style={{ 
+              WebkitOverflowScrolling: 'touch', 
+              scrollbarWidth: 'none', 
+              msOverflowStyle: 'none',
+              scrollSnapType: 'x mandatory'
+            }}
+          >
             {stories.map((storyGroup) => {
               const hasUnviewed = storyGroup.stories?.some(s => !s.viewedBy?.includes(user.id))
               const isOwn = storyGroup.userId === user.id
+              const latestStory = storyGroup.stories?.[0]
+              const isVideo = latestStory?.type === 'video' || latestStory?.mediaType === 'video'
               
               return (
                 <button
                   key={storyGroup.userId}
                   onClick={() => viewStory(storyGroup)}
-                  className="flex-none flex flex-col items-center gap-1"
+                  className="flex-none flex flex-col items-center gap-1 scroll-snap-align-start"
+                  style={{ scrollSnapAlign: 'start' }}
                 >
-                  <div className={`w-16 h-16 rounded-full p-0.5 ${hasUnviewed ? 'bg-gradient-to-br from-pink-500 via-purple-500 to-amber-500' : 'bg-white/20'}`}>
+                  <div className={`relative w-16 h-16 rounded-full p-0.5 ${hasUnviewed ? 'bg-gradient-to-br from-pink-500 via-purple-500 to-amber-500' : 'bg-white/20'}`}>
                     <div className="w-full h-full rounded-full bg-[#0a0a0f] p-0.5">
                       <div className="w-full h-full rounded-full overflow-hidden bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
                         {storyGroup.avatar ? (
@@ -1122,6 +1134,18 @@ const HomePage = ({ user, onLogout, setUser }) => {
                         )}
                       </div>
                     </div>
+                    {/* Video indicator */}
+                    {isVideo && (
+                      <div className="absolute bottom-0 right-0 w-5 h-5 rounded-full bg-black/80 flex items-center justify-center border border-white/20">
+                        <Play className="w-3 h-3 text-white fill-white" />
+                      </div>
+                    )}
+                    {/* Image indicator for photos */}
+                    {!isVideo && latestStory?.mediaUrl && (
+                      <div className="absolute bottom-0 right-0 w-5 h-5 rounded-full bg-black/80 flex items-center justify-center border border-white/20">
+                        <ImageIcon className="w-3 h-3 text-white" />
+                      </div>
+                    )}
                   </div>
                   <span className="text-white text-xs truncate w-16 text-center">
                     {isOwn ? 'You' : storyGroup.displayName?.split(' ')[0] || 'User'}
@@ -1133,55 +1157,91 @@ const HomePage = ({ user, onLogout, setUser }) => {
         </div>
       )}
 
-      {/* Story Viewer Modal */}
+      {/* Story Viewer Modal - Full Screen Mobile Optimized */}
       {selectedStory && (
-        <div className="fixed inset-0 z-50 bg-black flex items-center justify-center" onClick={() => setSelectedStory(null)}>
-          <button 
-            onClick={() => setSelectedStory(null)}
-            className="absolute top-4 right-4 z-10 p-2 rounded-full bg-white/10 hover:bg-white/20"
-          >
-            <X className="w-6 h-6 text-white" />
-          </button>
-          
-          <div className="absolute top-4 left-4 z-10 flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full overflow-hidden bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
-              {selectedStory.avatar ? (
-                <img src={selectedStory.avatar} alt="" className="w-full h-full object-cover" />
-              ) : (
-                <User className="w-5 h-5 text-white" />
-              )}
+        <div 
+          className="fixed inset-0 z-50 bg-black flex flex-col" 
+          onClick={() => setSelectedStory(null)}
+        >
+          {/* Header */}
+          <div className="absolute top-0 left-0 right-0 z-20 p-4 bg-gradient-to-b from-black/80 to-transparent">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full overflow-hidden bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
+                  {selectedStory.avatar ? (
+                    <img src={selectedStory.avatar} alt="" className="w-full h-full object-cover" />
+                  ) : (
+                    <User className="w-5 h-5 text-white" />
+                  )}
+                </div>
+                <div>
+                  <p className="text-white font-medium text-sm">{selectedStory.displayName || 'User'}</p>
+                  <p className="text-gray-400 text-xs">
+                    {selectedStory.stories?.[0]?.createdAt && 
+                      new Date(selectedStory.stories[0].createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                    }
+                  </p>
+                </div>
+              </div>
+              <button 
+                onClick={(e) => { e.stopPropagation(); setSelectedStory(null); }}
+                className="p-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors"
+              >
+                <X className="w-6 h-6 text-white" />
+              </button>
             </div>
-            <div>
-              <p className="text-white font-medium text-sm">{selectedStory.displayName || 'User'}</p>
-              <p className="text-gray-400 text-xs">
-                {selectedStory.stories?.[0]?.createdAt && 
-                  new Date(selectedStory.stories[0].createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-                }
-              </p>
-            </div>
+            
+            {/* Progress bars for multiple stories */}
+            {selectedStory.stories?.length > 1 && (
+              <div className="flex gap-1 mt-3">
+                {selectedStory.stories.map((_, idx) => (
+                  <div key={idx} className="flex-1 h-0.5 rounded-full bg-white/30 overflow-hidden">
+                    <div className={`h-full bg-white ${idx === 0 ? 'w-full' : 'w-0'}`} />
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
           
-          {selectedStory.stories?.[0] && (
-            <div className="max-w-lg w-full max-h-[80vh]" onClick={e => e.stopPropagation()}>
-              {selectedStory.stories[0].mediaType === 'video' ? (
-                <video 
-                  src={selectedStory.stories[0].mediaUrl} 
-                  className="w-full h-full object-contain"
-                  autoPlay
-                  controls
-                />
-              ) : (
-                <img 
-                  src={selectedStory.stories[0].mediaUrl} 
-                  alt="" 
-                  className="w-full h-full object-contain"
-                />
-              )}
-              {selectedStory.stories[0].caption && (
-                <div className="absolute bottom-4 left-4 right-4 p-3 bg-black/60 rounded-xl">
-                  <p className="text-white text-sm">{selectedStory.stories[0].caption}</p>
-                </div>
-              )}
+          {/* Story Content */}
+          <div className="flex-1 flex items-center justify-center" onClick={e => e.stopPropagation()}>
+            {selectedStory.stories?.[0] && (
+              <>
+                {(selectedStory.stories[0].type === 'video' || selectedStory.stories[0].mediaType === 'video') ? (
+                  <video 
+                    src={selectedStory.stories[0].mediaUrl || selectedStory.stories[0].content} 
+                    className="max-w-full max-h-full object-contain"
+                    autoPlay
+                    playsInline
+                    controls
+                    loop
+                  />
+                ) : selectedStory.stories[0].type === 'text' ? (
+                  <div 
+                    className="w-full h-full flex items-center justify-center p-8"
+                    style={{ backgroundColor: selectedStory.stories[0].backgroundColor || '#1a1a2e' }}
+                  >
+                    <p className="text-white text-2xl text-center font-medium">
+                      {selectedStory.stories[0].content || selectedStory.stories[0].text}
+                    </p>
+                  </div>
+                ) : (
+                  <img 
+                    src={selectedStory.stories[0].mediaUrl || selectedStory.stories[0].content} 
+                    alt="" 
+                    className="max-w-full max-h-full object-contain"
+                  />
+                )}
+              </>
+            )}
+          </div>
+          
+          {/* Caption Footer */}
+          {(selectedStory.stories?.[0]?.caption || selectedStory.stories?.[0]?.text) && (
+            <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 to-transparent">
+              <p className="text-white text-sm">
+                {selectedStory.stories[0].caption || selectedStory.stories[0].text}
+              </p>
             </div>
           )}
         </div>

@@ -441,3 +441,48 @@ body {
     @apply bg-background text-foreground;
   }
 }
+
+/* Mobile-optimized horizontal scroll containers */
+.scroll-horizontal {
+  display: flex;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  scroll-snap-type: x mandatory;
+  touch-action: pan-x;
+}
+
+.scroll-horizontal::-webkit-scrollbar {
+  display: none;
+}
+
+.scroll-horizontal > * {
+  scroll-snap-align: start;
+  flex-shrink: 0;
+}
+
+/* Safe area padding for notched devices */
+.safe-area-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 20px);
+}
+
+.safe-area-top {
+  padding-top: env(safe-area-inset-top, 0px);
+}
+
+/* Prevent text selection on interactive elements */
+.no-select {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+
+/* Improve touch targets for mobile */
+@media (max-width: 768px) {
+  button, a, [role="button"] {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}
+
