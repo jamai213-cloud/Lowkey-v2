@@ -154,12 +154,14 @@ export default function EventsPage() {
               const userRsvp = getUserRsvp(event)
               const yesCount = event.rsvps?.filter(r => r.status === 'yes').length || 0
               const isCreator = event.creatorId === user?.id
+              const isFounder = user?.role === 'founder' || user?.role === 'admin' || user?.verificationTier === 'founder'
+              const canDelete = isCreator || isFounder
               
               return (
                 <div key={event.id} className="p-4 rounded-xl bg-white/5 border border-white/10">
                   <div className="flex justify-between items-start">
                     <h3 className="text-white font-semibold text-lg">{event.title}</h3>
-                    {isCreator && (
+                    {canDelete && (
                       <button
                         onClick={() => deleteEvent(event.id)}
                         disabled={deleting === event.id}

@@ -151,6 +151,33 @@ export default function MusicPage() {
     } catch (err) { console.error('Failed to set status') }
   }
 
+  const shareToStory = async (track) => {
+    try {
+      const res = await fetch('/api/stories', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: user.id,
+          type: 'music',
+          content: JSON.stringify({
+            trackName: track.name,
+            artistName: track.artist || track.artistName,
+            albumArt: track.albumArt || track.imageUrl,
+            previewUrl: track.previewUrl || track.preview
+          }),
+          privacy: 'everyone',
+          backgroundColor: '#1a1a2e'
+        })
+      })
+      if (res.ok) {
+        alert('Music shared to your story!')
+      }
+    } catch (err) { 
+      console.error('Failed to share to story:', err)
+      alert('Failed to share to story')
+    }
+  }
+
   const removeTrack = async (trackId) => {
     try {
       await fetch(`/api/music/saved/${user.id}/${trackId}`, { method: 'DELETE' })
@@ -256,6 +283,7 @@ export default function MusicPage() {
                     onPlay={() => playTrack(track)}
                     onSave={() => saveTrackToProfile(track)}
                     onSetStatus={() => setAsStatus(track)}
+                    onShareStory={() => shareToStory(track)}
                     formatDuration={formatDuration}
                   />
                 ))}
@@ -357,7 +385,7 @@ export default function MusicPage() {
 }
 
 // Track Item Component
-function TrackItem({ track, playing, onPlay, onSave, onRemove, onSetStatus, formatDuration, showRemove, compact }) {
+function TrackItem({ track, playing, onPlay, onSave, onRemove, onSetStatus, onShareStory, formatDuration, showRemove, compact }) {
   const isPlaying = playing?.id === track.id
   const artwork = track.artwork || track.album?.cover_medium || track.album?.cover_small
   const name = track.name || track.title
@@ -388,6 +416,12 @@ function TrackItem({ track, playing, onPlay, onSave, onRemove, onSetStatus, form
         <div className="flex items-center gap-1">
           {duration && (
             <span className="text-gray-500 text-xs mr-2">{formatDuration(duration)}</span>
+          )}
+          {onShareStory && (
+            <button onClick={onShareStory} title="Share to Story"
+              className="p-2 rounded-full hover:bg-white/10 text-gray-400 hover:text-amber-400">
+              <Disc3 className="w-4 h-4" />
+            </button>
           )}
           {onSetStatus && (
             <button onClick={onSetStatus} title="Set as status"
