@@ -601,6 +601,7 @@ const PacManGame = ({ onClose }) => {
 // Ice Breaker - 2 Player Game
 const IceBreakerGame = ({ onClose, user }) => {
   const [friends, setFriends] = useState([])
+  const [loading, setLoading] = useState(true)
   const [selectedFriend, setSelectedFriend] = useState(null)
   const [gameState, setGameState] = useState('invite') // invite, waiting, playing, finished
   const [currentQuestion, setCurrentQuestion] = useState(null)
@@ -609,6 +610,7 @@ const IceBreakerGame = ({ onClose, user }) => {
   const [theirAnswers, setTheirAnswers] = useState([])
   const [showAnswer, setShowAnswer] = useState(false)
   const [score, setScore] = useState({ me: 0, them: 0 })
+  const [inviteSent, setInviteSent] = useState(false)
   
   const questions = [
     { q: "What's your ideal first date?", options: ["Coffee shop chat", "Adventure activity", "Nice dinner", "Movie night"] },
@@ -624,35 +626,60 @@ const IceBreakerGame = ({ onClose, user }) => {
   ]
 
   useEffect(() => {
-    // Fetch friends list
-    const fetchFriends = async () => {
-      try {
-        const res = await fetch(`/api/friends/${user.id}`)
-        if (res.ok) {
-          const data = await res.json()
-          setFriends(data.friends || [])
-        }
-      } catch (err) { console.error('Failed to fetch friends') }
-    }
     fetchFriends()
-  }, [user.id])
+  }, [])
 
-  const inviteFriend = async (friend) => {
+  const fetchFriends = async () => {
+    setLoading(true)
+    try {
+      const res = await fetch(`/api/friends/${user.id}`)
+      if (res.ok) {
+        const data = await res.json()
+        // API returns array directly
+        setFriends(Array.isArray(data) ? data : [])
+      }
+    } catch (err) { 
+      console.error('Failed to fetch friends:', err)
+    }
+    setLoading(false)
+  }
+
+  const sendInvite = async (friend) => {
     setSelectedFriend(friend)
-    // In a real app, this would send a notification to the friend
-    // For now, simulate starting the game
-    setGameState('playing')
-    setCurrentQuestion(questions[0])
+    setInviteSent(true)
+    
+    // Send game invite notification
+    try {
+      await fetch('/api/notifications', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: friend.id,
+          type: 'game_invite',
+          title: 'Game Invite!',
+          message: `${user.displayName || 'Someone'} invited you to play Ice Breaker!`,
+          fromUserId: user.id,
+          fromName: user.displayName,
+          fromAvatar: user.avatar,
+          data: { gameType: 'icebreaker' }
+        })
+      })
+    } catch (err) { console.error('Failed to send invite') }
+    
+    // For demo, start game after short delay
+    setTimeout(() => {
+      setGameState('playing')
+      setCurrentQuestion(questions[0])
+    }, 1500)
   }
 
   const answerQuestion = (answerIndex) => {
     setMyAnswers([...myAnswers, answerIndex])
-    // Simulate other player's answer (random for demo)
+    // Simulate other player's answer (in real app, this would come from server)
     const theirAnswer = Math.floor(Math.random() * 4)
     setTheirAnswers([...theirAnswers, theirAnswer])
     setShowAnswer(true)
     
-    // Update score if answers match
     if (answerIndex === theirAnswer) {
       setScore({ ...score, me: score.me + 10, them: score.them + 10 })
     }
@@ -671,6 +698,7 @@ const IceBreakerGame = ({ onClose, user }) => {
   const resetGame = () => {
     setGameState('invite')
     setSelectedFriend(null)
+    setInviteSent(false)
     setQuestionIndex(0)
     setMyAnswers([])
     setTheirAnswers([])
@@ -703,31 +731,42 @@ const IceBreakerGame = ({ onClose, user }) => {
           <div className="space-y-4">
             <p className="text-white text-center mb-6">Invite a friend to play Ice Breaker and discover your compatibility!</p>
             
-            {friends.length === 0 ? (
+            {loading ? (
+              <div className="text-center py-8">
+                <div className="w-8 h-8 border-2 border-pink-500 border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
+                <p className="text-gray-400">Loading friends...</p>
+              </div>
+            ) : friends.length === 0 ? (
               <div className="text-center py-8">
                 <p className="text-gray-400">No friends yet</p>
-                <p className="text-gray-500 text-sm mt-1">Add friends to play together</p>
+                <p className="text-gray-500 text-sm mt-1">Add friends from the Search or Friends page to play together!</p>
               </div>
             ) : (
               <div className="space-y-2">
-                <p className="text-amber-400 text-sm font-medium mb-3">Select a friend to invite:</p>
+                <p className="text-amber-400 text-sm font-medium mb-3">Select a friend to invite ({friends.length} friends):</p>
                 {friends.map((friend) => (
                   <button
                     key={friend.id}
-                    onClick={() => inviteFriend(friend)}
-                    className="w-full p-4 rounded-xl bg-white/10 hover:bg-white/20 transition-colors flex items-center gap-3"
+                    onClick={() => sendInvite(friend)}
+                    disabled={inviteSent}
+                    className="w-full p-4 rounded-xl bg-white/10 hover:bg-white/20 transition-colors flex items-center gap-3 disabled:opacity-50"
                   >
                     <div className="w-12 h-12 rounded-full bg-gradient-to-br from-pink-500 to-purple-500 flex items-center justify-center overflow-hidden">
-                      {friend.avatar ? (
-                        <img src={friend.avatar} alt="" className="w-full h-full object-cover" />
+                      {friend.avatar || friend.profilePicture ? (
+                        <img src={friend.avatar || friend.profilePicture} alt="" className="w-full h-full object-cover" />
                       ) : (
                         <span className="text-white text-lg">{friend.displayName?.[0] || '?'}</span>
                       )}
                     </div>
                     <div className="flex-1 text-left">
                       <p className="text-white font-medium">{friend.displayName || 'User'}</p>
-                      <p className="text-gray-400 text-sm">Tap to invite</p>
+                      <p className="text-gray-400 text-sm">
+                        {inviteSent && selectedFriend?.id === friend.id ? 'Invite sent! Waiting...' : 'Tap to invite'}
+                      </p>
                     </div>
+                    {inviteSent && selectedFriend?.id === friend.id && (
+                      <div className="w-6 h-6 border-2 border-amber-500 border-t-transparent rounded-full animate-spin"></div>
+                    )}
                   </button>
                 ))}
               </div>
@@ -741,13 +780,13 @@ const IceBreakerGame = ({ onClose, user }) => {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <div className="w-8 h-8 rounded-full bg-gradient-to-br from-pink-500 to-purple-500 flex items-center justify-center overflow-hidden">
-                  {selectedFriend?.avatar ? (
-                    <img src={selectedFriend.avatar} alt="" className="w-full h-full object-cover" />
+                  {selectedFriend?.avatar || selectedFriend?.profilePicture ? (
+                    <img src={selectedFriend.avatar || selectedFriend.profilePicture} alt="" className="w-full h-full object-cover" />
                   ) : (
                     <span className="text-white text-sm">{selectedFriend?.displayName?.[0] || '?'}</span>
                   )}
                 </div>
-                <span className="text-white text-sm">Playing with {selectedFriend?.displayName}</span>
+                <span className="text-white text-sm">vs {selectedFriend?.displayName}</span>
               </div>
               <span className="text-amber-400 font-bold">{questionIndex + 1}/{questions.length}</span>
             </div>
@@ -833,6 +872,248 @@ const IceBreakerGame = ({ onClose, user }) => {
   )
 }
 
+// Tic Tac Toe - 2 Player Game with Invite
+const TicTacToeGame = ({ onClose, user }) => {
+  const [friends, setFriends] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [selectedFriend, setSelectedFriend] = useState(null)
+  const [gameState, setGameState] = useState('invite') // invite, playing
+  const [board, setBoard] = useState(Array(9).fill(null))
+  const [isMyTurn, setIsMyTurn] = useState(true)
+  const [winner, setWinner] = useState(null)
+  const [inviteSent, setInviteSent] = useState(false)
+
+  useEffect(() => {
+    fetchFriends()
+  }, [])
+
+  const fetchFriends = async () => {
+    setLoading(true)
+    try {
+      const res = await fetch(`/api/friends/${user.id}`)
+      if (res.ok) {
+        const data = await res.json()
+        setFriends(Array.isArray(data) ? data : [])
+      }
+    } catch (err) { console.error('Failed to fetch friends') }
+    setLoading(false)
+  }
+
+  const sendInvite = async (friend) => {
+    setSelectedFriend(friend)
+    setInviteSent(true)
+    
+    try {
+      await fetch('/api/notifications', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: friend.id,
+          type: 'game_invite',
+          title: 'Game Invite!',
+          message: `${user.displayName || 'Someone'} invited you to play Tic-Tac-Toe!`,
+          fromUserId: user.id,
+          fromName: user.displayName,
+          fromAvatar: user.avatar,
+          data: { gameType: 'tictactoe' }
+        })
+      })
+    } catch (err) { console.error('Failed to send invite') }
+    
+    setTimeout(() => {
+      setGameState('playing')
+    }, 1500)
+  }
+
+  const checkWinner = (squares) => {
+    const lines = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]]
+    for (const [a,b,c] of lines) {
+      if (squares[a] && squares[a] === squares[b] && squares[a] === squares[c]) return squares[a]
+    }
+    return null
+  }
+
+  const handleClick = (i) => {
+    if (board[i] || winner || !isMyTurn) return
+    
+    const newBoard = [...board]
+    newBoard[i] = 'X' // Player is always X
+    setBoard(newBoard)
+    
+    const gameWinner = checkWinner(newBoard)
+    if (gameWinner) {
+      setWinner(gameWinner)
+      return
+    }
+    
+    setIsMyTurn(false)
+    
+    // Simulate opponent's move
+    setTimeout(() => {
+      const emptySquares = newBoard.map((v, idx) => v === null ? idx : null).filter(v => v !== null)
+      if (emptySquares.length > 0) {
+        const opponentMove = emptySquares[Math.floor(Math.random() * emptySquares.length)]
+        const updatedBoard = [...newBoard]
+        updatedBoard[opponentMove] = 'O'
+        setBoard(updatedBoard)
+        
+        const opponentWinner = checkWinner(updatedBoard)
+        if (opponentWinner) {
+          setWinner(opponentWinner)
+        } else {
+          setIsMyTurn(true)
+        }
+      }
+    }, 800)
+  }
+
+  const resetGame = () => {
+    setBoard(Array(9).fill(null))
+    setIsMyTurn(true)
+    setWinner(null)
+  }
+
+  const backToInvite = () => {
+    setGameState('invite')
+    setSelectedFriend(null)
+    setInviteSent(false)
+    resetGame()
+  }
+
+  const isDraw = !winner && board.every(cell => cell)
+
+  return (
+    <div className="fixed inset-0 z-50 bg-gradient-to-br from-purple-900/95 to-indigo-900/95 backdrop-blur-lg flex flex-col">
+      <div className="flex items-center justify-between p-4 border-b border-white/10">
+        <h2 className="text-xl text-white font-bold flex items-center gap-2">
+          ⭕ Tic-Tac-Toe
+        </h2>
+        <button onClick={onClose} className="p-2 rounded-full hover:bg-white/10">
+          <X className="w-6 h-6 text-white" />
+        </button>
+      </div>
+
+      <div className="flex-1 overflow-y-auto p-4 flex flex-col items-center justify-center">
+        {/* Invite Screen */}
+        {gameState === 'invite' && (
+          <div className="w-full max-w-md space-y-4">
+            <p className="text-white text-center mb-6">Invite a friend for a game of Tic-Tac-Toe!</p>
+            
+            {loading ? (
+              <div className="text-center py-8">
+                <div className="w-8 h-8 border-2 border-purple-500 border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
+                <p className="text-gray-400">Loading friends...</p>
+              </div>
+            ) : friends.length === 0 ? (
+              <div className="text-center py-8">
+                <p className="text-gray-400">No friends yet</p>
+                <p className="text-gray-500 text-sm mt-1">Add friends to play together!</p>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                <p className="text-amber-400 text-sm font-medium mb-3">Select opponent ({friends.length} friends):</p>
+                {friends.map((friend) => (
+                  <button
+                    key={friend.id}
+                    onClick={() => sendInvite(friend)}
+                    disabled={inviteSent}
+                    className="w-full p-4 rounded-xl bg-white/10 hover:bg-white/20 transition-colors flex items-center gap-3 disabled:opacity-50"
+                  >
+                    <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 to-indigo-500 flex items-center justify-center overflow-hidden">
+                      {friend.avatar || friend.profilePicture ? (
+                        <img src={friend.avatar || friend.profilePicture} alt="" className="w-full h-full object-cover" />
+                      ) : (
+                        <span className="text-white text-lg">{friend.displayName?.[0] || '?'}</span>
+                      )}
+                    </div>
+                    <div className="flex-1 text-left">
+                      <p className="text-white font-medium">{friend.displayName || 'User'}</p>
+                      <p className="text-gray-400 text-sm">
+                        {inviteSent && selectedFriend?.id === friend.id ? 'Invite sent! Waiting...' : 'Tap to invite'}
+                      </p>
+                    </div>
+                    {inviteSent && selectedFriend?.id === friend.id && (
+                      <div className="w-6 h-6 border-2 border-amber-500 border-t-transparent rounded-full animate-spin"></div>
+                    )}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Playing Screen */}
+        {gameState === 'playing' && (
+          <div className="text-center">
+            <div className="flex items-center justify-center gap-4 mb-6">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-amber-500 to-yellow-500 flex items-center justify-center">
+                  <span className="text-black font-bold">X</span>
+                </div>
+                <span className="text-white text-sm">You</span>
+              </div>
+              <span className="text-gray-500">vs</span>
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-pink-500 to-purple-500 flex items-center justify-center overflow-hidden">
+                  {selectedFriend?.avatar ? (
+                    <img src={selectedFriend.avatar} alt="" className="w-full h-full object-cover" />
+                  ) : (
+                    <span className="text-white font-bold">O</span>
+                  )}
+                </div>
+                <span className="text-white text-sm">{selectedFriend?.displayName}</span>
+              </div>
+            </div>
+
+            <div className="text-white mb-4 text-lg">
+              {winner ? (
+                winner === 'X' ? '🎉 You Win!' : `${selectedFriend?.displayName} Wins!`
+              ) : isDraw ? (
+                "It's a Draw!"
+              ) : (
+                isMyTurn ? "Your turn (X)" : `${selectedFriend?.displayName}'s turn (O)...`
+              )}
+            </div>
+
+            <div className="grid grid-cols-3 gap-2 mb-6">
+              {board.map((cell, i) => (
+                <button
+                  key={i}
+                  onClick={() => handleClick(i)}
+                  disabled={!isMyTurn || winner || cell}
+                  className={`w-20 h-20 rounded-xl text-4xl font-bold flex items-center justify-center transition-colors
+                    ${cell ? 'bg-white/20' : 'bg-white/10 hover:bg-white/20'}
+                    ${cell === 'X' ? 'text-amber-400' : 'text-pink-400'}
+                    ${!isMyTurn && !cell ? 'cursor-not-allowed' : ''}`}
+                >
+                  {cell}
+                </button>
+              ))}
+            </div>
+
+            {(winner || isDraw) && (
+              <div className="flex gap-3 justify-center">
+                <button
+                  onClick={resetGame}
+                  className="px-6 py-3 rounded-xl bg-purple-500 text-white font-bold"
+                >
+                  Rematch
+                </button>
+                <button
+                  onClick={backToInvite}
+                  className="px-6 py-3 rounded-xl bg-white/10 text-white font-bold"
+                >
+                  New Opponent
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
 export default function GamesPage() {
   const router = useRouter()
   const [user, setUser] = useState(null)
@@ -854,6 +1135,7 @@ export default function GamesPage() {
 
   const games = [
     { id: 'icebreaker', name: 'Ice Breaker', desc: '2 Player - Discover compatibility!', icon: '💘', color: 'from-pink-500 to-purple-500' },
+    { id: 'tictactoe', name: 'Tic-Tac-Toe', desc: '2 Player - Classic X vs O', icon: '⭕', color: 'from-purple-500 to-indigo-500' },
     { id: 'snake', name: 'Snake', desc: 'Classic snake game', icon: '🐍', color: 'from-green-500 to-emerald-600' },
     { id: 'pacman', name: 'Pac-Man', desc: 'Eat dots, avoid ghosts!', icon: '👻', color: 'from-yellow-400 to-orange-500' },
   ]
@@ -883,6 +1165,7 @@ export default function GamesPage() {
         ))}
       </div>
       {activeGame === 'icebreaker' && <IceBreakerGame onClose={() => setActiveGame(null)} user={user} />}
+      {activeGame === 'tictactoe' && <TicTacToeGame onClose={() => setActiveGame(null)} user={user} />}
       {activeGame === 'snake' && <SnakeGame onClose={() => setActiveGame(null)} />}
       {activeGame === 'pacman' && <PacManGame onClose={() => setActiveGame(null)} />}
     </div>
