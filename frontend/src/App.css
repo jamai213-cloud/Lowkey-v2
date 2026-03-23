@@ -12,7 +12,7 @@
 /* Main content area - accounts for mini player + bottom nav */
 .main-content {
   flex: 1;
-  padding-bottom: 160px; /* 72px bottom nav + 80px mini player + buffer */
+  padding-bottom: 180px; /* 72px bottom nav + 100px mini player + buffer */
   overflow-y: auto;
   overflow-x: hidden;
 }

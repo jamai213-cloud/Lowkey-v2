@@ -1,64 +1,81 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 
-// Radio Browser API - free public radio stations
-const RADIO_API_BASE = 'https://de1.api.radio-browser.info/json';
-
-// Curated stations for the Lowkey nightlife vibe
-const FALLBACK_STATIONS = [
+// Lowkey Radio Stations - Real streaming URLs
+const STATIONS = [
   {
-    id: 'lowkey-1',
-    name: 'Late Night Vibes',
-    genre: 'Chill',
-    url: 'https://streams.ilovemusic.de/iloveradio-chillhop.mp3',
+    id: 'bbc-1xtra',
+    name: 'BBC 1Xtra',
+    genre: 'Hip-Hop / R&B',
+    url: 'http://stream.live.vc.bbcmedia.co.uk/bbc_1xtra',
+    fallbackUrl: 'https://stream.live.vc.bbcmedia.co.uk/bbc_1xtra',
     favicon: '',
+    color: '#7C3AED',
   },
   {
-    id: 'lowkey-2', 
-    name: 'Deep House Radio',
-    genre: 'House',
-    url: 'https://streams.ilovemusic.de/iloveradio17.mp3',
+    id: 'capital-xtra',
+    name: 'Capital XTRA',
+    genre: 'Urban / Dance',
+    url: 'https://media-ice.musicradio.com/CapitalXTRALondonMP3',
+    fallbackUrl: 'https://media-ice.musicradio.com/CapitalXTRAMP3',
     favicon: '',
+    color: '#F59E0B',
   },
   {
-    id: 'lowkey-3',
-    name: 'Lounge FM',
-    genre: 'Lounge',
-    url: 'https://stream.laut.fm/lounge',
+    id: 'nts-1',
+    name: 'NTS Radio 1',
+    genre: 'Eclectic',
+    url: 'https://stream-relay-geo.ntslive.net/stream',
+    fallbackUrl: 'https://stream-relay-geo.ntslive.net/stream?client=NTSWebApp',
     favicon: '',
+    color: '#A78BFA',
   },
   {
-    id: 'lowkey-4',
-    name: 'Night Owl Radio',
-    genre: 'Electronic',
-    url: 'https://streams.ilovemusic.de/iloveradio2.mp3',
+    id: 'nts-2',
+    name: 'NTS Radio 2',
+    genre: 'Eclectic',
+    url: 'https://stream-relay-geo.ntslive.net/stream2',
+    fallbackUrl: 'https://stream-relay-geo.ntslive.net/stream2?client=NTSWebApp',
     favicon: '',
+    color: '#22C55E',
   },
   {
-    id: 'lowkey-5',
-    name: 'Smooth Jazz',
-    genre: 'Jazz',
-    url: 'https://streaming.radio.co/s774887f7b/listen',
+    id: 'bbc-radio1',
+    name: 'BBC Radio 1',
+    genre: 'Pop / Dance',
+    url: 'http://stream.live.vc.bbcmedia.co.uk/bbc_radio_one',
+    fallbackUrl: 'https://stream.live.vc.bbcmedia.co.uk/bbc_radio_one',
     favicon: '',
+    color: '#EC4899',
+  },
+  {
+    id: 'kisstory',
+    name: 'KISSTORY',
+    genre: 'Old School',
+    url: 'https://stream-mz.planetradio.co.uk/kisstory.mp3',
+    fallbackUrl: 'https://stream.planetradio.co.uk/kisstory.mp3',
+    favicon: '',
+    color: '#3B82F6',
   },
 ];
 
 export const useRadio = () => {
-  const [stations, setStations] = useState(FALLBACK_STATIONS);
-  const [currentStation, setCurrentStation] = useState(FALLBACK_STATIONS[0]);
+  const [stations] = useState(STATIONS);
+  const [currentStation, setCurrentStation] = useState(STATIONS[0]);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [volume, setVolume] = useState(0.7);
   const [error, setError] = useState(null);
   const audioRef = useRef(null);
+  const retryCountRef = useRef(0);
 
   // Initialize audio element
   useEffect(() => {
     if (!audioRef.current) {
       audioRef.current = new Audio();
-      audioRef.current.preload = 'metadata';
+      audioRef.current.preload = 'none';
       audioRef.current.volume = volume;
+      audioRef.current.crossOrigin = 'anonymous';
       
-      // Event listeners
       audioRef.current.addEventListener('loadstart', () => {
         setIsLoading(true);
         setError(null);
@@ -66,6 +83,7 @@ export const useRadio = () => {
       
       audioRef.current.addEventListener('canplay', () => {
         setIsLoading(false);
+        retryCountRef.current = 0;
       });
       
       audioRef.current.addEventListener('play', () => {
@@ -80,8 +98,19 @@ export const useRadio = () => {
       audioRef.current.addEventListener('error', (e) => {
         console.error('Radio stream error:', e);
         setIsLoading(false);
-        setIsPlaying(false);
-        setError('Unable to play this station');
+        
+        // Try fallback URL if available
+        if (retryCountRef.current === 0 && currentStation?.fallbackUrl) {
+          retryCountRef.current = 1;
+          audioRef.current.src = currentStation.fallbackUrl;
+          audioRef.current.play().catch(() => {
+            setError('Unable to connect');
+            setIsPlaying(false);
+          });
+        } else {
+          setError('Unable to connect');
+          setIsPlaying(false);
+        }
       });
 
       audioRef.current.addEventListener('waiting', () => {
@@ -90,6 +119,11 @@ export const useRadio = () => {
 
       audioRef.current.addEventListener('playing', () => {
         setIsLoading(false);
+        setError(null);
+      });
+
+      audioRef.current.addEventListener('stalled', () => {
+        setIsLoading(true);
       });
     }
 
@@ -101,62 +135,6 @@ export const useRadio = () => {
     };
   }, []);
 
-  // Fetch stations from Radio Browser API
-  useEffect(() => {
-    const fetchStations = async () => {
-      try {
-        // Fetch chill/lounge stations suitable for nightlife app
-        const response = await fetch(
-          `${RADIO_API_BASE}/stations/search?tags=lounge,chill,house,electronic&limit=10&order=clickcount&reverse=true`,
-          {
-            headers: {
-              'User-Agent': 'Lowkey/1.0',
-            },
-          }
-        );
-        
-        if (response.ok) {
-          const data = await response.json();
-          if (data && data.length > 0) {
-            const mappedStations = data
-              .filter(s => s.url_resolved && s.url_resolved.includes('http'))
-              .map(s => ({
-                id: s.stationuuid,
-                name: s.name,
-                genre: s.tags?.split(',')[0] || 'Radio',
-                url: s.url_resolved,
-                favicon: s.favicon || '',
-              }));
-            
-            if (mappedStations.length > 0) {
-              setStations([...FALLBACK_STATIONS, ...mappedStations]);
-            }
-          }
-        }
-      } catch (err) {
-        console.log('Using fallback stations:', err);
-        // Keep using fallback stations
-      }
-    };
-
-    fetchStations();
-  }, []);
-
-  // Update audio source when station changes
-  useEffect(() => {
-    if (audioRef.current && currentStation?.url) {
-      const wasPlaying = isPlaying;
-      audioRef.current.src = currentStation.url;
-      
-      if (wasPlaying) {
-        audioRef.current.play().catch(err => {
-          console.error('Autoplay error:', err);
-          setError('Click play to start');
-        });
-      }
-    }
-  }, [currentStation]);
-
   // Update volume
   useEffect(() => {
     if (audioRef.current) {
@@ -165,14 +143,29 @@ export const useRadio = () => {
   }, [volume]);
 
   const play = useCallback(() => {
-    if (audioRef.current) {
+    if (audioRef.current && currentStation) {
       setError(null);
+      retryCountRef.current = 0;
+      
+      // Set source if not already set
+      if (!audioRef.current.src || audioRef.current.src !== currentStation.url) {
+        audioRef.current.src = currentStation.url;
+      }
+      
       audioRef.current.play().catch(err => {
         console.error('Play error:', err);
-        setError('Unable to play');
+        // Try fallback
+        if (currentStation.fallbackUrl) {
+          audioRef.current.src = currentStation.fallbackUrl;
+          audioRef.current.play().catch(() => {
+            setError('Tap to retry');
+          });
+        } else {
+          setError('Tap to retry');
+        }
       });
     }
-  }, []);
+  }, [currentStation]);
 
   const pause = useCallback(() => {
     if (audioRef.current) {
@@ -188,21 +181,44 @@ export const useRadio = () => {
     }
   }, [isPlaying, play, pause]);
 
+  const selectStation = useCallback((station) => {
+    const wasPlaying = isPlaying;
+    
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.src = '';
+    }
+    
+    setCurrentStation(station);
+    setError(null);
+    retryCountRef.current = 0;
+    
+    // Auto-play when switching stations if was playing
+    if (wasPlaying && audioRef.current) {
+      setTimeout(() => {
+        audioRef.current.src = station.url;
+        audioRef.current.play().catch(err => {
+          console.error('Station switch play error:', err);
+          if (station.fallbackUrl) {
+            audioRef.current.src = station.fallbackUrl;
+            audioRef.current.play().catch(() => setError('Tap to retry'));
+          }
+        });
+      }, 100);
+    }
+  }, [isPlaying]);
+
   const nextStation = useCallback(() => {
     const currentIndex = stations.findIndex(s => s.id === currentStation?.id);
     const nextIndex = (currentIndex + 1) % stations.length;
-    setCurrentStation(stations[nextIndex]);
-  }, [stations, currentStation]);
+    selectStation(stations[nextIndex]);
+  }, [stations, currentStation, selectStation]);
 
   const previousStation = useCallback(() => {
     const currentIndex = stations.findIndex(s => s.id === currentStation?.id);
     const prevIndex = currentIndex === 0 ? stations.length - 1 : currentIndex - 1;
-    setCurrentStation(stations[prevIndex]);
-  }, [stations, currentStation]);
-
-  const selectStation = useCallback((station) => {
-    setCurrentStation(station);
-  }, []);
+    selectStation(stations[prevIndex]);
+  }, [stations, currentStation, selectStation]);
 
   return {
     stations,
