@@ -1,0 +1,130 @@
+{
+  "theme": "dark",
+  "typography": {
+    "headings": {
+      "fontFamily": "Unbounded, Playfair Display, sans-serif",
+      "weights": ["400", "700", "900"],
+      "description": "Expressive and modern. Unbounded for a premium, slightly futuristic neon feel."
+    },
+    "body": {
+      "fontFamily": "Outfit, Inter, sans-serif",
+      "weights": ["300", "400", "500"],
+      "description": "Clean, highly readable geometric sans-serif to contrast with expressive headers."
+    }
+  },
+  "colors": {
+    "background": "#0A0A0F",
+    "surface": "#12121A",
+    "surface_glass": "rgba(18, 18, 26, 0.7)",
+    "primary": "#7C3AED",
+    "primary_glow": "#A78BFA",
+    "accent": "#F59E0B",
+    "accent_glow": "#FCD34D",
+    "text_primary": "#FFFFFF",
+    "text_secondary": "#A1A1AA",
+    "text_inverse": "#0A0A0F"
+  },
+  "visual_enhancers": {
+    "neon_glow": "box-shadow: 0 0 15px rgba(124, 58, 237, 0.5), 0 0 30px rgba(124, 58, 237, 0.3);",
+    "gold_glow": "box-shadow: 0 0 15px rgba(245, 158, 11, 0.5), 0 0 30px rgba(245, 158, 11, 0.3);",
+    "glassmorphism": "backdrop-filter: blur(16px); background: rgba(18, 18, 26, 0.6); border: 1px solid rgba(255, 255, 255, 0.05);",
+    "gradients": "linear-gradient(135deg, rgba(124,58,237,0.2) 0%, rgba(10,10,15,0) 100%)"
+  },
+  "components": {
+    "cards": {
+      "background": "#12121A",
+      "border": "1px solid rgba(255,255,255,0.05)",
+      "borderRadius": "16px",
+      "padding": "24px",
+      "shadow": "0 8px 32px rgba(0,0,0,0.5)"
+    },
+    "buttons": {
+      "primary": "bg-primary text-white rounded-full px-6 py-3 font-medium transition-all hover:shadow-[0_0_20px_rgba(124,58,237,0.6)]",
+      "accent": "bg-accent text-black rounded-full px-6 py-3 font-medium transition-all hover:shadow-[0_0_20px_rgba(245,158,11,0.6)]",
+      "glass": "bg-white/5 backdrop-blur-md border border-white/10 text-white rounded-full px-6 py-3 hover:bg-white/10"
+    },
+    "navigation": {
+      "style": "fixed bottom-0 w-full bg-[#0A0A0F]/80 backdrop-blur-xl border-t border-white/5 pb-safe pt-2 px-6 flex justify-between items-center z-50",
+      "active_tab": "text-primary_glow drop-shadow-[0_0_8px_rgba(167,139,250,0.8)]",
+      "inactive_tab": "text-text_secondary"
+    }
+  },
+  "layouts": {
+    "spacing": "Generous. Use p-6 to p-8 for main sections. Gap-4 to gap-6 for lists.",
+    "grid": "Mobile-first. Horizontal scrolling (overflow-x-auto, snap-x) for avatars and match cards. Vertical stack for active lounges.",
+    "alignment": "Left-aligned content for profiles and cards to maintain reading flow. Center headers or icons when appropriate."
+  },
+  "motion": {
+    "transitions": "transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease",
+    "hover": "Scale up slightly (scale-105) for interactive elements. Add neon glow on hover or active state.",
+    "entrance": "Fade in and slide up (translate-y-4 to translate-y-0) on mount."
+  },
+  "accessibility": {
+    "contrast": "Ensure white text on #0A0A0F and #12121A passes WCAG AAA. Primary purple and gold used mostly for accents/borders/glows. Use bold text when using primary color for text.",
+    "testing": "All interactive elements MUST include a `data-testid` attribute (e.g. data-testid='nav-home-button')."
+  },
+  "media": {
+    "images": [
+      {
+        "url": "https://images.unsplash.com/photo-1666979303152-d1678dc0eefa?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NTYxODF8MHwxfHNlYXJjaHwzfHx5b3VuZyUyMHdvbWFuJTIwcG9ydHJhaXQlMjBuZW9ufGVufDB8fHx8MTc3NDI3NzI3Mnww&ixlib=rb-4.1.0&q=85",
+        "description": "Woman with pink hair, neon lighting",
+        "category": "avatars_and_profiles"
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1591639365049-0bf0944f31d8?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NTYxODF8MHwxfHNlYXJjaHw0fHx5b3VuZyUyMHdvbWFuJTIwcG9ydHJhaXQlMjBuZW9ufGVufDB8fHx8MTc3NDI3NzI3Mnww&ixlib=rb-4.1.0&q=85",
+        "description": "Woman in red shirt with purple hair",
+        "category": "avatars_and_profiles"
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1656946213160-380350566dde?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjAzMzN8MHwxfHNlYXJjaHw0fHx5b3VuZyUyMG1hbiUyMHBvcnRyYWl0JTIwbmlnaHR8ZW58MHx8fHwxNzc0Mjc3MjczfDA&ixlib=rb-4.1.0&q=85",
+        "description": "Man wearing glasses at night",
+        "category": "avatars_and_profiles"
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1730608580612-43823ad5dfc9?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjAzMzN8MHwxfHNlYXJjaHwyfHx5b3VuZyUyMG1hbiUyMHBvcnRyYWl0JTIwbmlnaHR8ZW58MHx8fHwxNzc0Mjc3MjczfDA&ixlib=rb-4.1.0&q=85",
+        "description": "Man standing outside at night",
+        "category": "avatars_and_profiles"
+      },
+      {
+        "url": "https://images.pexels.com/photos/2607917/pexels-photo-2607917.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+        "description": "Colorful neon lights illuminate a bustling nightlife scene",
+        "category": "lounges_backgrounds"
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1698602737825-08831895fc96?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA2MDV8MHwxfHNlYXJjaHw0fHxkaiUyMGNsdWIlMjBwYXJ0eXxlbnwwfHx8fDE3NzQyNzcyNzZ8MA&ixlib=rb-4.1.0&q=85",
+        "description": "DJ's deck with a red light behind it",
+        "category": "radio_player_background"
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1771775751047-ced7768bdece?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjAzMzV8MHwxfHNlYXJjaHw0fHxuZW9uJTIwbmlnaHRsaWZlJTIwY3Jvd2R8ZW58MHx8fHwxNzc0Mjc3Mjc0fDA&ixlib=rb-4.1.0&q=85",
+        "description": "Fremont street experience with colorful light canopy",
+        "category": "after_dark_rooms"
+      }
+    ]
+  },
+  "instructions_to_main_agent": [
+    "Build the application using React and Tailwind CSS.",
+    "Ensure dark mode is forced and there's no light mode toggle. The app background MUST be #0A0A0F.",
+    "Implement the Bottom Navigation bar as a fixed glassmorphic element at the bottom, overlapping the content.",
+    "Use Phosphor Icons (@phosphor-icons/react) with duotone style for the premium nightlife vibe.",
+    "Implement horizontal scroll for 'People Online' (avatars with green dot) and 'New Matches' (cards). Use 'hide-scrollbar' utility classes.",
+    "For the Radio Player, create a small floating or sticky mini-player above the bottom navigation, blurred and styled elegantly.",
+    "Use 'After Dark' screens with a more intense Gold/Neon glow or darker aesthetics.",
+    "CRITICAL: Include data-testid on ALL interactive elements.",
+    "DO NOT use a dashboard layout. Think of it as a premium mobile app for social nightlife.",
+    "For avatars and profile images, use the provided Unsplash and Pexels URLs. Apply `object-cover`."
+  ],
+  "UNIVERSAL_GUIDELINES_FOR_MAIN_AGENT": [
+    "You tend to converge toward generic, 'on distribution' outputs. Avoid this.",
+    "Don't make generic centered layouts or simplistic gradients.",
+    "Create depth through layered design elements with z-index hierarchy and glassmorphism.",
+    "You MUST NOT apply universal transition (e.g., transition: all). Add transitions for specific properties.",
+    "You MUST NOT center align the app container.",
+    "Always use modern button styles (pill-shaped) with interaction animations.",
+    "NEVER use emojis for icons.",
+    "Every interaction needs micro-animations (hover states, scaling, fading).",
+    "Use 2-3x more spacing than feels comfortable.",
+    "DO NOT use complete transparent background in header, overlays, or surfaces that have content under it. Add glassmorphism (backdrop blur + translucent background).",
+    "All interactive and key informational elements MUST include a `data-testid` attribute."
+  ]
+}
