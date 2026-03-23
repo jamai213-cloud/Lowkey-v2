@@ -7,6 +7,7 @@ Build a premium social + dating app UI called "Lowkey" focused on dating, social
 - **Frontend**: React 19 + Tailwind CSS + shadcn/ui
 - **Backend**: FastAPI + MongoDB (existing setup)
 - **Styling**: Custom CSS with neon glow effects, glassmorphism
+- **Radio**: Real streaming stations with HTML5 Audio API
 
 ## User Personas
 1. **Night Owls** (21-35): Young adults seeking premium social/dating experiences
@@ -19,6 +20,7 @@ Build a premium social + dating app UI called "Lowkey" focused on dating, social
 - Bottom navigation: Home, Lounge, After Dark, Profile
 - Glassmorphism effects and subtle neon glows
 - Mobile-first responsive design
+- Radio player with real streaming stations
 
 ## What's Been Implemented (Jan 2026)
 
@@ -30,17 +32,25 @@ Build a premium social + dating app UI called "Lowkey" focused on dating, social
 
 ### Components
 - BottomNav: Fixed navigation with active state glow
-- MiniPlayer: Collapsible radio player with play/pause controls
+- MiniPlayer: Expandable radio player with real stations
 - PeopleOnline: Horizontal avatars with online indicators
 - NewMatches: Profile cards with connect actions
 - ActiveLounges: Lounge cards with live/hot indicators
+
+### Radio Stations (Real Streams)
+- BBC 1Xtra (Hip-Hop / R&B)
+- Capital XTRA (Urban / Dance)
+- NTS Radio 1 (Eclectic)
+- NTS Radio 2 (Eclectic)
+- BBC Radio 1 (Pop / Dance)
+- KISSTORY (Old School)
 
 ### Styling
 - Custom fonts: Unbounded (headings), Outfit (body)
 - Neon glow effects on active elements
 - Glassmorphism for navigation and player
 - Staggered entrance animations
-- Pulse animations for online indicators
+- No UI overlaps (proper spacing for player + nav)
 
 ## Prioritized Backlog
 
@@ -48,6 +58,7 @@ Build a premium social + dating app UI called "Lowkey" focused on dating, social
 - ✅ All core pages implemented
 - ✅ Navigation working
 - ✅ Premium styling applied
+- ✅ Radio player with real stations
 
 ### P1 (Important)
 - Real-time chat functionality in lounges
