@@ -27,9 +27,6 @@ export const HomePage = () => {
 
       {/* Active Lounges */}
       <ActiveLounges />
-
-      {/* Bottom spacing for nav + mini player */}
-      <div className="h-8" />
     </div>
   );
 };

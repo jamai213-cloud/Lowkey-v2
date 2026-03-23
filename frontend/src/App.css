@@ -2,8 +2,19 @@
 
 .app-container {
   min-height: 100vh;
+  min-height: 100dvh;
   background-color: var(--background);
-  padding-bottom: 100px; /* Space for bottom nav and mini player */
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+/* Main content area - accounts for mini player + bottom nav */
+.main-content {
+  flex: 1;
+  padding-bottom: 160px; /* 72px bottom nav + 80px mini player + buffer */
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 /* Bottom Navigation */
@@ -15,10 +26,11 @@
   z-index: 50;
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  background: rgba(10, 10, 15, 0.85);
+  background: rgba(10, 10, 15, 0.92);
   border-top: 1px solid rgba(255, 255, 255, 0.05);
-  padding: 12px 24px;
-  padding-bottom: max(12px, env(safe-area-inset-bottom));
+  padding: 8px 24px;
+  padding-bottom: max(8px, env(safe-area-inset-bottom));
+  height: 72px;
 }
 
 .nav-item {
@@ -51,22 +63,7 @@
 
 /* Mini Player */
 .mini-player {
-  position: fixed;
-  bottom: 80px;
-  left: 16px;
-  right: 16px;
-  z-index: 40;
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  background: rgba(18, 18, 26, 0.8);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 16px;
-  padding: 12px 16px;
-  transition: transform 0.3s ease, opacity 0.3s ease;
-}
-
-.mini-player:hover {
-  border-color: rgba(124, 58, 237, 0.3);
+  /* Now controlled via inline styles in component */
 }
 
 /* Section Titles */
