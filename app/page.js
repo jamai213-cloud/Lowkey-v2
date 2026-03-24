@@ -505,26 +505,28 @@ const AuthPage = ({ onLogin }) => {
         {/* Auth Card */}
         <div className="glass-card rounded-3xl p-8 shadow-2xl" data-testid="auth-card">
           {/* Tabs */}
-          <div className="flex mb-8 bg-[#0A0A0F]/60 rounded-full p-1">
+          <div className="flex mb-8 bg-black/40 rounded-full p-1">
             <button
               onClick={() => setIsLogin(true)}
               data-testid="auth-signin-tab"
-              className={`flex-1 py-3 rounded-full font-semibold transition-all duration-300 font-heading ${
+              className={`flex-1 py-3 rounded-full font-semibold transition-all duration-300 font-heading text-sm ${
                 isLogin 
-                  ? 'bg-gradient-to-r from-purple-500 to-purple-700 text-white shadow-lg shadow-purple-500/25' 
-                  : 'text-gray-400 hover:text-white'
+                  ? 'bg-gradient-to-r from-[#D4A54A] to-[#B8860B] text-black shadow-lg' 
+                  : 'text-white/35 hover:text-white/60'
               }`}
+              style={isLogin ? { boxShadow: '0 4px 20px rgba(212,165,74,0.3)' } : {}}
             >
               Sign In
             </button>
             <button
               onClick={() => setIsLogin(false)}
               data-testid="auth-join-tab"
-              className={`flex-1 py-3 rounded-full font-semibold transition-all duration-300 font-heading ${
+              className={`flex-1 py-3 rounded-full font-semibold transition-all duration-300 font-heading text-sm ${
                 !isLogin 
-                  ? 'bg-gradient-to-r from-purple-500 to-purple-700 text-white shadow-lg shadow-purple-500/25' 
-                  : 'text-gray-400 hover:text-white'
+                  ? 'bg-gradient-to-r from-[#D4A54A] to-[#B8860B] text-black shadow-lg' 
+                  : 'text-white/35 hover:text-white/60'
               }`}
+              style={!isLogin ? { boxShadow: '0 4px 20px rgba(212,165,74,0.3)' } : {}}
             >
               Join
             </button>
@@ -588,14 +590,14 @@ const AuthPage = ({ onLogin }) => {
                     type="checkbox"
                     checked={rememberMe}
                     onChange={(e) => setRememberMe(e.target.checked)}
-                    className="w-4 h-4 rounded border-white/10 bg-[#1A1A24] text-purple-500 focus:ring-purple-500"
+                    className="w-4 h-4 rounded border-white/10 bg-[#141420] text-[#D4A54A] focus:ring-[#D4A54A]"
                   />
                   <span className="text-white/50 text-sm">Remember me</span>
                 </label>
                 <button 
                   type="button" 
                   onClick={() => setShowForgotPassword(true)}
-                  className="text-purple-400 text-sm hover:text-purple-300 transition-colors"
+                  className="text-[#D4A54A]/70 text-sm hover:text-[#D4A54A] transition-colors"
                   data-testid="auth-forgot-password-btn"
                 >
                   Forgot password?
@@ -612,15 +614,16 @@ const AuthPage = ({ onLogin }) => {
             <button
               type="submit"
               disabled={loading}
-              className="lk-btn-primary w-full py-4 bg-gradient-to-r from-purple-500 to-purple-700 text-white text-base disabled:opacity-50 shadow-lg shadow-purple-500/20"
+              className="lk-btn-primary w-full py-4 bg-gradient-to-r from-[#D4A54A] to-[#B8860B] text-black text-base font-bold disabled:opacity-50"
+              style={{ boxShadow: '0 6px 24px rgba(212,165,74,0.3)' }}
               data-testid="auth-submit-btn"
             >
               {loading ? 'Please wait...' : (isLogin ? 'Sign In' : 'Join Now')}
             </button>
           </form>
 
-          <p className="text-center text-white/20 text-xs mt-8 tracking-wide">
-            Powered by <span className="text-purple-400/60">3DK</span> + <span className="text-purple-400/60">King Tense</span>
+          <p className="text-center text-white/15 text-xs mt-8 tracking-wider">
+            Powered by <span className="text-[#D4A54A]/40">3DK</span> + <span className="text-[#D4A54A]/40">King Tense</span>
           </p>
         </div>
       </div>
@@ -652,12 +655,12 @@ const Tile = ({ icon: Icon, label, colorClass, isLocked, onClick }) => {
 const NotificationBell = ({ count, onClick, hasNew }) => (
   <button 
     onClick={onClick} 
-    className={`relative p-2 rounded-full hover:bg-white/5 transition-all duration-300 ${hasNew ? 'animate-pulse' : ''}`}
+    className={`relative p-2 rounded-full hover:bg-white/5 transition-all duration-300 ${hasNew ? 'animate-pulse-soft' : ''}`}
     data-testid="notification-bell"
   >
-    <Bell className={`w-5 h-5 transition-colors ${count > 0 ? 'text-purple-400' : 'text-white/40'}`} strokeWidth={1.5} />
+    <Bell className={`w-5 h-5 transition-colors ${count > 0 ? 'text-[#D4A54A]' : 'text-white/25'}`} strokeWidth={1.5} />
     {count > 0 && (
-      <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] rounded-full bg-gradient-to-br from-red-500 to-red-600 flex items-center justify-center text-white text-[10px] font-bold px-1 shadow-lg shadow-red-500/30">
+      <span className="absolute -top-1 -right-1 min-w-[17px] h-[17px] rounded-full bg-[#E8364E] flex items-center justify-center text-white text-[9px] font-bold px-1" style={{ boxShadow: '0 2px 8px rgba(232,54,78,0.45)' }}>
         {count > 99 ? '99+' : count}
       </span>
     )}
@@ -1037,28 +1040,43 @@ const HomePage = ({ user, onLogout, setUser }) => {
 
   const unreadCount = notifications.filter(n => !n.read).length + pendingFriendRequests.length
 
-  const tiles = [
-    { id: 'profile', icon: User, label: 'Profile', color: '#A855F7', path: '/profile' },
-    { id: 'friends', icon: Users, label: 'Friends', color: '#EC4899', path: '/friends' },
-    { id: 'inbox', icon: MessageSquare, label: 'Inbox', color: '#F59E0B', path: '/inbox' },
-    { id: 'lounge', icon: Sofa, label: 'Lounge', color: '#8B5CF6', path: '/lounge' },
-    { id: 'search', icon: Search, label: 'Search', color: '#3B82F6', path: '/search' },
-    { id: 'wallet', icon: Wallet, label: 'Wallet', color: '#10B981', path: '/wallet' },
-    { id: 'communities', icon: UserPlus, label: 'Groups', color: '#F59E0B', path: '/communities' },
-    { id: 'notices', icon: Bell, label: 'Notices', color: '#EF4444', path: '/notices' },
-    { id: 'quiet', icon: Volume2, label: 'Quiet', color: '#6366F1', path: '/quiet' },
-    { id: 'afterdark', icon: Moon, label: 'After Dark', color: '#A855F7', path: '/afterdark' },
-    { id: 'games', icon: Gamepad2, label: 'Games', color: '#22C55E', path: '/games' },
-    { id: 'radio', icon: Radio, label: 'Radio', color: '#F97316', path: '/radio' },
-    { id: 'music', icon: Music, label: 'Music', color: '#EC4899', path: '/music' },
-    { id: 'events', icon: Calendar, label: 'Events', color: '#14B8A6', path: '/events' },
-  ]
+  // Fetch members for "People Online" section
+  const [members, setMembers] = useState([])
+  const [loungesList, setLoungesList] = useState([])
+
+  useEffect(() => {
+    if (!user) return
+    const fetchMembers = async () => {
+      try {
+        const res = await fetch('/api/users')
+        if (res.ok) {
+          const data = await res.json()
+          setMembers(data.filter(u => u.id !== user.id))
+        }
+      } catch (err) { /* silent */ }
+    }
+    const fetchLounges = async () => {
+      try {
+        const res = await fetch('/api/lounges')
+        if (res.ok) {
+          const data = await res.json()
+          setLoungesList(data)
+        }
+      } catch (err) { /* silent */ }
+    }
+    fetchMembers()
+    fetchLounges()
+  }, [user])
+
+  // Lounge accent palette
+  const loungeAccents = ['#3B82F6', '#D4A54A', '#E8364E', '#9333EA', '#E84393', '#10B981']
+  const getLoungeAccent = (idx) => loungeAccents[idx % loungeAccents.length]
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f] relative page-enter" data-testid="home-page">
-      {/* Background glow */}
-      <div className="absolute top-0 left-0 w-[400px] h-[400px] rounded-full bg-purple-500/10 blur-[120px] pointer-events-none z-0" />
-      <div className="absolute bottom-0 right-0 w-[300px] h-[300px] rounded-full bg-cyan-500/5 blur-[100px] pointer-events-none z-0" />
+    <div className="min-h-screen bg-[#08080D] relative page-enter" data-testid="home-page">
+      {/* Ambient background — subtle and layered */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[400px] rounded-full bg-[#9333EA]/[0.04] blur-[140px] pointer-events-none z-0" />
+      <div className="absolute bottom-40 right-0 w-[350px] h-[350px] rounded-full bg-[#D4A54A]/[0.03] blur-[120px] pointer-events-none z-0" />
       
       {/* Header */}
       <header className="lk-page-header relative z-10 flex items-center justify-between" data-testid="home-header">
@@ -1071,9 +1089,9 @@ const HomePage = ({ user, onLogout, setUser }) => {
           </div>
         </div>
         
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-1">
           {user.verified && (
-            <span className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-green-500/10 border border-green-500/20 text-green-400 text-xs font-medium">
+            <span className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#D4A54A]/10 border border-[#D4A54A]/20 text-[#D4A54A] text-[10px] font-semibold tracking-wide">
               <CheckCircle className="w-3 h-3" />
               Verified
             </span>
@@ -1085,9 +1103,9 @@ const HomePage = ({ user, onLogout, setUser }) => {
             data-testid="sound-toggle-btn"
           >
             {soundEnabled ? (
-              <Volume2 className="w-4 h-4 text-purple-400" strokeWidth={1.5} />
+              <Volume2 className="w-4 h-4 text-[#D4A54A]" strokeWidth={1.5} />
             ) : (
-              <VolumeX className="w-4 h-4 text-white/30" strokeWidth={1.5} />
+              <VolumeX className="w-4 h-4 text-white/20" strokeWidth={1.5} />
             )}
           </button>
           <NotificationBell 
@@ -1096,10 +1114,10 @@ const HomePage = ({ user, onLogout, setUser }) => {
             hasNew={hasNewNotification}
           />
           <button onClick={() => router.push('/admin')} className="p-2 rounded-full hover:bg-white/5 transition-colors" data-testid="settings-btn">
-            <Settings className="w-4 h-4 text-white/40" strokeWidth={1.5} />
+            <Settings className="w-4 h-4 text-white/25" strokeWidth={1.5} />
           </button>
           <button onClick={onLogout} className="p-2 rounded-full hover:bg-white/5 transition-colors" data-testid="logout-btn">
-            <LogOut className="w-4 h-4 text-white/40" strokeWidth={1.5} />
+            <LogOut className="w-4 h-4 text-white/25" strokeWidth={1.5} />
           </button>
         </div>
       </header>
@@ -1273,12 +1291,12 @@ const HomePage = ({ user, onLogout, setUser }) => {
             style={{ scrollSnapAlign: 'start' }}
             data-testid="add-story-btn"
           >
-            <div className="relative w-[68px] h-[68px] rounded-full p-[2px] bg-gradient-to-br from-purple-500 to-purple-700">
-              <div className="w-full h-full rounded-full bg-[#0a0a0f] flex items-center justify-center">
-                <Plus className="w-6 h-6 text-purple-400" strokeWidth={1.5} />
+            <div className="relative w-[68px] h-[68px] rounded-full p-[2px] bg-gradient-to-br from-[#D4A54A] to-[#9333EA]">
+              <div className="w-full h-full rounded-full bg-[#08080D] flex items-center justify-center">
+                <Plus className="w-6 h-6 text-[#D4A54A]" strokeWidth={1.5} />
               </div>
             </div>
-            <span className="text-white/50 text-[10px] font-medium">Add Story</span>
+            <span className="text-white/35 text-[10px] font-medium">Add Story</span>
           </button>
           
           {/* User Stories */}
@@ -1296,9 +1314,9 @@ const HomePage = ({ user, onLogout, setUser }) => {
                 style={{ scrollSnapAlign: 'start' }}
                 data-testid={`story-${storyGroup.userId}`}
               >
-                <div className={`relative w-[68px] h-[68px] rounded-full p-[2px] ${hasUnviewed ? 'bg-gradient-to-br from-purple-500 via-pink-500 to-orange-400' : 'bg-white/10'}`}>
-                  <div className="w-full h-full rounded-full bg-[#0a0a0f] p-[2px]">
-                    <div className="w-full h-full rounded-full overflow-hidden bg-[#1A1A24] flex items-center justify-center">
+                <div className={`relative w-[68px] h-[68px] rounded-full p-[2px] ${hasUnviewed ? 'bg-gradient-to-br from-[#D4A54A] via-[#E84393] to-[#9333EA]' : 'bg-white/8'}`}>
+                  <div className="w-full h-full rounded-full bg-[#08080D] p-[2px]">
+                    <div className="w-full h-full rounded-full overflow-hidden bg-[#141420] flex items-center justify-center">
                       {storyGroup.avatar ? (
                         <img src={storyGroup.avatar} alt="" className="w-full h-full object-cover" />
                       ) : (
@@ -1567,73 +1585,236 @@ const HomePage = ({ user, onLogout, setUser }) => {
         </div>
       )}
 
-      {/* Main Content */}
-      <main className="relative z-[5] px-5 py-6 pb-28">
-        {/* Tiles Grid - 3 columns with premium styling */}
-        <div className="grid grid-cols-3 gap-3 mb-8" data-testid="tiles-grid">
-          {tiles.map((tile, idx) => {
-            const IconComponent = tile.icon
-            const isLocked = lockedFeatures.includes(tile.id) && !user.verified
-            return (
-              <button
-                key={tile.id}
-                type="button"
-                onClick={() => handleTileClick(tile.id, tile.path)}
-                data-testid={`tile-${tile.id}`}
-                className="relative aspect-[4/3] rounded-2xl overflow-hidden transition-transform duration-300 hover:-translate-y-1 active:scale-95 cursor-pointer group"
-                style={{
-                  background: `linear-gradient(135deg, ${tile.color}10, ${tile.color}04)`,
-                  border: `1px solid ${tile.color}25`,
-                  animationDelay: `${idx * 40}ms`
-                }}
-              >
-                <div className="absolute inset-0 flex flex-col items-center justify-center gap-2.5">
-                  <div 
-                    className="w-11 h-11 rounded-xl flex items-center justify-center transition-transform duration-300 group-hover:scale-110"
-                    style={{ backgroundColor: `${tile.color}15` }}
-                  >
-                    <IconComponent className="w-5 h-5" style={{ color: tile.color }} strokeWidth={1.5} />
-                  </div>
-                  <span className="text-white/80 text-xs font-medium tracking-wide">{tile.label}</span>
-                </div>
-                {isLocked && (
-                  <div className="absolute inset-0 bg-[#0A0A0F]/70 flex items-center justify-center backdrop-blur-sm">
-                    <Lock className="w-5 h-5 text-white/30" strokeWidth={1.5} />
-                  </div>
-                )}
-                {tile.id === 'notices' && noticeUnreadCount > 0 && (
-                  <div className="absolute top-2 right-2 w-5 h-5 rounded-full bg-red-500 flex items-center justify-center shadow-lg shadow-red-500/30">
-                    <span className="text-white text-[10px] font-bold">{noticeUnreadCount}</span>
-                  </div>
-                )}
-              </button>
-            )
-          })}          
-        </div>
+      {/* ===== SCROLL-BASED HOME EXPERIENCE ===== */}
+      <main className="relative z-[5] pb-28">
 
-        {/* Tagline */}
-        <div className="mb-6 px-1" data-testid="home-tagline">
-          <p className="text-white/30 text-sm leading-relaxed">A private space for adults. Connection happens at your own pace.</p>
-          <p className="text-white/15 text-xs mt-2">Share what you want  ·  Say what you feel  ·  Respect boundaries</p>
+        {/* --- PEOPLE ONLINE --- */}
+        <section className="px-5 pt-5" data-testid="people-online-section">
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2">
+              <span className="lk-label text-[#D4A54A]/60">People Online</span>
+              <span className="flex items-center gap-1 text-[10px] text-[#10B981] font-medium">
+                <span className="live-dot" style={{ background: '#10B981' }} />
+                {members.length}
+              </span>
+            </div>
+            <button onClick={() => router.push('/search')} className="text-[11px] text-white/25 hover:text-white/50 transition-colors" data-testid="see-all-members">
+              See all
+            </button>
+          </div>
+
+          <div 
+            className="flex gap-3 overflow-x-auto pb-2 -mx-5 px-5"
+            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', WebkitOverflowScrolling: 'touch' }}
+            data-testid="people-online-scroll"
+          >
+            {members.slice(0, 20).map((m) => (
+              <button
+                key={m.id}
+                onClick={() => router.push(`/search?view=${m.id}`)}
+                className="flex-none flex flex-col items-center gap-1.5 group"
+                data-testid={`online-user-${m.id}`}
+              >
+                <div className="relative">
+                  <div className="w-14 h-14 rounded-full bg-[#141420] overflow-hidden border border-white/[0.06] group-hover:border-[#D4A54A]/30 transition-colors">
+                    {m.avatar || m.profilePicture ? (
+                      <img src={m.avatar || m.profilePicture} alt="" className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-white/20 text-sm font-medium">
+                        {m.displayName?.charAt(0)?.toUpperCase() || '?'}
+                      </div>
+                    )}
+                  </div>
+                  <div className="absolute bottom-0 right-0 w-3 h-3 rounded-full bg-[#10B981] border-2 border-[#08080D]" />
+                </div>
+                <span className="text-white/40 text-[10px] font-medium truncate w-14 text-center group-hover:text-white/60 transition-colors">
+                  {m.displayName?.split(' ')[0]?.slice(0, 8) || 'User'}
+                </span>
+              </button>
+            ))}
+            {members.length === 0 && (
+              <div className="flex items-center justify-center w-full py-6 text-white/20 text-sm">
+                No members yet
+              </div>
+            )}
+          </div>
+        </section>
+
+        <div className="mx-5 my-5 h-px bg-white/[0.03]" />
+
+        {/* --- NEW MATCHES / FRIEND REQUESTS --- */}
+        {pendingFriendRequests.length > 0 && (
+          <section className="px-5 mb-5" data-testid="new-matches-section">
+            <div className="flex items-center gap-2 mb-3">
+              <span className="lk-label text-[#E84393]/60">New Matches</span>
+              <span className="w-5 h-5 rounded-full bg-[#E84393] text-white text-[10px] font-bold flex items-center justify-center" style={{ boxShadow: '0 2px 8px rgba(232,67,147,0.4)' }}>
+                {pendingFriendRequests.length}
+              </span>
+            </div>
+
+            <div className="space-y-2">
+              {pendingFriendRequests.map((req) => (
+                <div key={req.id || req.fromUserId} className="flex items-center gap-3 p-3.5 rounded-2xl bg-[#101018] border border-[#E84393]/10 hover:border-[#E84393]/20 transition-colors" data-testid={`match-${req.fromUserId}`}>
+                  <div className="w-11 h-11 rounded-full bg-[#141420] overflow-hidden border border-white/[0.06] flex-shrink-0">
+                    {req.fromAvatar ? (
+                      <img src={req.fromAvatar} alt="" className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-[#E84393] text-sm font-medium">
+                        {req.fromName?.charAt(0) || '?'}
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-white text-sm font-medium truncate">{req.fromName || 'Unknown'}</p>
+                    <p className="text-white/25 text-xs">Wants to connect</p>
+                  </div>
+                  <div className="flex gap-1.5 flex-shrink-0">
+                    <button 
+                      onClick={() => acceptFriendRequest(req.fromUserId)}
+                      className="px-3.5 py-1.5 rounded-full bg-[#10B981]/15 text-[#10B981] text-xs font-semibold border border-[#10B981]/15 hover:bg-[#10B981]/25 transition-colors"
+                    >
+                      Accept
+                    </button>
+                    <button 
+                      onClick={() => declineFriendRequest(req.fromUserId)}
+                      className="px-3 py-1.5 rounded-full bg-white/[0.04] text-white/30 text-xs border border-white/[0.04] hover:bg-white/[0.08] transition-colors"
+                    >
+                      Pass
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className="mt-3 h-px bg-white/[0.03]" />
+          </section>
+        )}
+
+        {/* --- ACTIVE LOUNGES --- */}
+        <section className="px-5 pt-1" data-testid="active-lounges-section">
+          <div className="flex items-center justify-between mb-3">
+            <span className="lk-label text-[#3B82F6]/60">Active Lounges</span>
+            <button onClick={() => handleTileClick('lounge', '/lounge')} className="text-[11px] text-white/25 hover:text-white/50 transition-colors" data-testid="see-all-lounges">
+              See all
+            </button>
+          </div>
+
+          <div className="space-y-2.5">
+            {loungesList.slice(0, 4).map((lounge, idx) => {
+              const accentColors = ['#3B82F6', '#D4A54A', '#E8364E', '#9333EA', '#E84393', '#10B981']
+              const accentNames = ['blue', 'gold', 'red', 'purple', 'pink', 'emerald']
+              const accent = accentColors[idx % accentColors.length]
+              return (
+                <button
+                  key={lounge.id}
+                  onClick={() => router.push(`/lounge?id=${lounge.id}`)}
+                  className="lounge-card w-full text-left p-5 group"
+                  data-accent={accentNames[idx % accentNames.length]}
+                  data-testid={`home-lounge-${lounge.id}`}
+                >
+                  <div className="flex items-center gap-4">
+                    <div 
+                      className="w-12 h-12 rounded-xl flex items-center justify-center border flex-shrink-0 transition-colors"
+                      style={{ backgroundColor: `${accent}10`, borderColor: `${accent}18` }}
+                    >
+                      <Sofa className="w-5 h-5" style={{ color: accent }} strokeWidth={1.5} />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-0.5">
+                        <h3 className="text-white font-heading font-semibold text-sm truncate">{lounge.name || 'Main Lounge'}</h3>
+                        {(lounge.members?.length || 0) > 0 && (
+                          <span className="flex items-center gap-1 text-[10px] font-medium" style={{ color: `${accent}99` }}>
+                            <span className="live-dot" style={{ background: accent }} />
+                            Live
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-white/25 text-xs truncate">{lounge.description || 'Open conversation space'}</p>
+                    </div>
+                    <div className="flex items-center gap-1 text-white/15 text-xs flex-shrink-0">
+                      <Users className="w-3 h-3" strokeWidth={1.5} />
+                      <span>{lounge.members?.length || 0}</span>
+                    </div>
+                  </div>
+                </button>
+              )
+            })}
+            {loungesList.length === 0 && (
+              <button
+                onClick={() => handleTileClick('lounge', '/lounge')}
+                className="lounge-card w-full text-left p-5 group"
+                data-accent="blue"
+                data-testid="home-lounge-main"
+              >
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-[#3B82F6]/10 border border-[#3B82F6]/18 flex-shrink-0">
+                    <Sofa className="w-5 h-5 text-[#3B82F6]" strokeWidth={1.5} />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-0.5">
+                      <h3 className="text-white font-heading font-semibold text-sm">Main Lounge</h3>
+                      <span className="flex items-center gap-1 text-[10px] text-[#3B82F6]/60 font-medium">
+                        <span className="live-dot" style={{ background: '#3B82F6' }} />
+                        Live
+                      </span>
+                    </div>
+                    <p className="text-white/25 text-xs">The heart of LowKey — conversation, culture, music</p>
+                  </div>
+                </div>
+              </button>
+            )}
+          </div>
+        </section>
+
+        <div className="mx-5 my-5 h-px bg-white/[0.03]" />
+
+        {/* --- QUICK ACCESS --- */}
+        <section className="px-5" data-testid="quick-access">
+          <span className="lk-label text-white/20 block mb-3">Quick Access</span>
+          <div className="grid grid-cols-5 gap-2">
+            {[
+              { icon: MessageSquare, label: 'Inbox', color: '#3B82F6', path: '/inbox', id: 'inbox' },
+              { icon: Moon, label: 'After Dark', color: '#D4A54A', path: '/afterdark', id: 'afterdark' },
+              { icon: Gamepad2, label: 'Games', color: '#10B981', path: '/games', id: 'games' },
+              { icon: Radio, label: 'Radio', color: '#E8364E', path: '/radio', id: 'radio' },
+              { icon: Calendar, label: 'Events', color: '#F59E0B', path: '/events', id: 'events' },
+            ].map((item) => {
+              const Icon = item.icon
+              return (
+                <button
+                  key={item.id}
+                  onClick={() => handleTileClick(item.id, item.path)}
+                  className="flex flex-col items-center gap-1.5 py-3 rounded-2xl bg-[#101018] border border-white/[0.03] hover:border-white/[0.08] transition-all duration-300 group"
+                  data-testid={`quick-${item.id}`}
+                >
+                  <Icon className="w-[18px] h-[18px] transition-colors" style={{ color: `${item.color}88` }} strokeWidth={1.5} />
+                  <span className="text-white/30 text-[9px] font-medium">{item.label}</span>
+                </button>
+              )
+            })}
+          </div>
+        </section>
+
+        <div className="px-5 mt-6 border-l-2 border-[#D4A54A]/10 pl-4" data-testid="home-tagline">
+          <p className="text-white/15 text-xs italic leading-relaxed">A private space for adults. Connection at your own pace.</p>
         </div>
       </main>
 
       {/* Bottom Navigation */}
-      <nav className="fixed bottom-0 left-0 right-0 z-20 bg-[#12121A]/90 backdrop-blur-xl border-t border-white/5" data-testid="bottom-nav">
-        <div className="flex items-center justify-around py-3 max-w-lg mx-auto">
-          <button className="flex flex-col items-center gap-1 px-4 py-1 text-purple-400" data-testid="nav-home">
-            <Home className="w-5 h-5" strokeWidth={1.5} />
-            <span className="text-[10px] font-medium">Home</span>
+      <nav className="fixed bottom-0 left-0 right-0 z-20 bg-[#101018]/92 backdrop-blur-2xl border-t border-white/[0.04]" data-testid="bottom-nav">
+        <div className="flex items-center justify-around py-2.5 max-w-lg mx-auto">
+          <button className="flex flex-col items-center gap-0.5 px-4 py-1.5" data-testid="nav-home">
+            <Home className="w-5 h-5 text-[#D4A54A]" strokeWidth={1.5} />
+            <span className="text-[10px] font-medium text-[#D4A54A]">Home</span>
           </button>
-          <button onClick={() => router.push('/lounge')} className="flex flex-col items-center gap-1 px-4 py-1 text-white/30 hover:text-cyan-400 transition-colors" data-testid="nav-lounge">
+          <button onClick={() => router.push('/lounge')} className="flex flex-col items-center gap-0.5 px-4 py-1.5 text-white/25 hover:text-[#3B82F6] transition-colors" data-testid="nav-lounge">
             <Sofa className="w-5 h-5" strokeWidth={1.5} />
             <span className="text-[10px] font-medium">Lounge</span>
           </button>
-          <button onClick={() => handleTileClick('afterdark', '/afterdark')} className="flex flex-col items-center gap-1 px-4 py-1 text-white/30 hover:text-orange-400 transition-colors" data-testid="nav-afterdark">
+          <button onClick={() => handleTileClick('afterdark', '/afterdark')} className="flex flex-col items-center gap-0.5 px-4 py-1.5 text-white/25 hover:text-[#D4A54A] transition-colors" data-testid="nav-afterdark">
             <Moon className="w-5 h-5" strokeWidth={1.5} />
             <span className="text-[10px] font-medium">After Dark</span>
           </button>
-          <button onClick={() => router.push('/profile')} className="flex flex-col items-center gap-1 px-4 py-1 text-white/30 hover:text-stone-300 transition-colors" data-testid="nav-profile">
+          <button onClick={() => router.push('/profile')} className="flex flex-col items-center gap-0.5 px-4 py-1.5 text-white/25 hover:text-white/60 transition-colors" data-testid="nav-profile">
             <User className="w-5 h-5" strokeWidth={1.5} />
             <span className="text-[10px] font-medium">Profile</span>
           </button>

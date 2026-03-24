@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { ArrowLeft, Send, Users, MessageCircle, Clock, Sparkles, Lock, AlertTriangle, Hash, Flame, Star, TrendingUp, Crown, MessageSquare, ChevronRight, Plus, Heart, Smile, Image as ImageIcon, X, UserPlus, Volume2, VolumeX, Menu, Trash2 } from 'lucide-react'
+import { ArrowLeft, Send, Users, MessageCircle, Clock, Sparkles, Lock, AlertTriangle, Hash, Flame, Star, TrendingUp, Crown, MessageSquare, ChevronRight, Plus, Heart, Smile, Image as ImageIcon, X, UserPlus, Volume2, VolumeX, Menu, Trash2, Sofa } from 'lucide-react'
 
 export const dynamic = 'force-dynamic'
 
@@ -133,57 +133,82 @@ export default function LoungePage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#0a0a0f] flex items-center justify-center">
-        <div className="animate-pulse text-cyan-400/60 font-heading">Loading...</div>
+      <div className="min-h-screen bg-[#08080D] flex items-center justify-center">
+        <div className="animate-pulse text-[#3B82F6]/60 font-heading">Loading...</div>
       </div>
     )
   }
 
+  // Lounge accent palette
+  const loungeAccents = ['#3B82F6', '#D4A54A', '#E8364E', '#9333EA', '#E84393', '#10B981']
+  const loungeAccentNames = ['blue', 'gold', 'red', 'purple', 'pink', 'emerald']
+  const getLoungeAccent = (idx) => loungeAccents[idx % loungeAccents.length]
+  const getLoungeAccentName = (idx) => loungeAccentNames[idx % loungeAccentNames.length]
+
   // Lounge Selection View
   if (showLoungeList) {
     return (
-      <div className="min-h-screen bg-[#0a0a0f] page-enter" data-testid="lounge-list">
-        <div className="absolute top-0 right-0 w-[300px] h-[300px] rounded-full bg-cyan-500/8 blur-[100px] pointer-events-none z-0" />
+      <div className="min-h-screen bg-[#08080D] page-enter" data-testid="lounge-list">
+        <div className="absolute top-0 right-0 w-[350px] h-[350px] rounded-full bg-[#3B82F6]/[0.04] blur-[130px] pointer-events-none z-0" />
+        <div className="absolute bottom-40 left-0 w-[250px] h-[250px] rounded-full bg-[#D4A54A]/[0.03] blur-[100px] pointer-events-none z-0" />
         
         <header className="lk-page-header flex items-center gap-3" data-testid="lounge-header">
           <button onClick={() => router.push('/')} className="p-2 rounded-full hover:bg-white/5 transition-colors" data-testid="lounge-back-btn">
-            <ArrowLeft className="w-5 h-5 text-white/60" strokeWidth={1.5} />
+            <ArrowLeft className="w-5 h-5 text-white/40" strokeWidth={1.5} />
           </button>
           <div>
-            <h1 className="text-xl font-heading font-semibold text-white">Lounges</h1>
-            <p className="text-white/30 text-xs">Choose a room to join</p>
+            <h1 className="text-xl font-heading font-bold text-white">Lounges</h1>
+            <p className="text-white/25 text-xs">Private rooms. Real conversations.</p>
           </div>
         </header>
 
         <div className="p-5 space-y-3">
           {lounges.length === 0 ? (
-            <div className="lk-card-elevated rounded-2xl p-8 text-center">
-              <MessageCircle className="w-12 h-12 text-cyan-500/30 mx-auto mb-4" strokeWidth={1.5} />
-              <p className="text-white/40">No lounges available yet</p>
+            <div className="lk-card-elevated rounded-2xl p-10 text-center">
+              <Sofa className="w-14 h-14 text-[#3B82F6]/15 mx-auto mb-4" strokeWidth={1.5} />
+              <p className="text-white/30 text-sm font-heading">No lounges available yet</p>
+              <p className="text-white/15 text-xs mt-1">Be the first to start a conversation</p>
             </div>
           ) : (
-            lounges.map((lounge) => (
-              <button
-                key={lounge.id}
-                onClick={() => enterLounge(lounge.id)}
-                className="w-full text-left p-5 rounded-2xl bg-[#12121A] border border-white/5 hover:bg-[#1A1A24] hover:-translate-y-0.5 transition-all duration-300 group"
-                data-testid={`lounge-item-${lounge.id}`}
-              >
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-xl bg-cyan-500/10 flex items-center justify-center border border-cyan-500/15 group-hover:border-cyan-500/30 transition-colors">
-                    <Hash className="w-5 h-5 text-cyan-400" strokeWidth={1.5} />
+            lounges.map((lounge, idx) => {
+              const accent = getLoungeAccent(idx)
+              const accentName = getLoungeAccentName(idx)
+              const memberCount = lounge.memberCount || lounge.members?.length || 0
+              return (
+                <button
+                  key={lounge.id}
+                  onClick={() => enterLounge(lounge.id)}
+                  className="lounge-card w-full text-left p-5 group"
+                  data-accent={accentName}
+                  data-testid={`lounge-item-${lounge.id}`}
+                >
+                  <div className="flex items-center gap-4">
+                    <div 
+                      className="w-12 h-12 rounded-xl flex items-center justify-center border flex-shrink-0 transition-colors"
+                      style={{ backgroundColor: `${accent}10`, borderColor: `${accent}18` }}
+                    >
+                      <Hash className="w-5 h-5" style={{ color: accent }} strokeWidth={1.5} />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-0.5">
+                        <h3 className="text-white font-heading font-semibold truncate">{lounge.name}</h3>
+                        {memberCount > 0 && (
+                          <span className="flex items-center gap-1 text-[10px] font-medium" style={{ color: `${accent}99` }}>
+                            <span className="live-dot" style={{ background: accent }} />
+                            Live
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-white/25 text-sm truncate">{lounge.description || 'Open conversation space'}</p>
+                    </div>
+                    <div className="flex items-center gap-1.5 text-white/15 text-xs shrink-0">
+                      <Users className="w-3.5 h-3.5" strokeWidth={1.5} />
+                      <span>{memberCount}</span>
+                    </div>
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <h3 className="text-white font-heading font-semibold truncate">{lounge.name}</h3>
-                    <p className="text-white/30 text-sm truncate">{lounge.description || 'Open conversation space'}</p>
-                  </div>
-                  <div className="flex items-center gap-1.5 text-cyan-400/60 text-xs shrink-0">
-                    <Users className="w-3.5 h-3.5" strokeWidth={1.5} />
-                    <span>{lounge.memberCount || 0}</span>
-                  </div>
-                </div>
-              </button>
-            ))
+                </button>
+              )
+            })
           )}
         </div>
       </div>
@@ -192,19 +217,19 @@ export default function LoungePage() {
 
   // Chat View
   return (
-    <div className="min-h-screen bg-[#0a0a0f] flex flex-col page-enter" data-testid="lounge-chat">
+    <div className="min-h-screen bg-[#08080D] flex flex-col page-enter" data-testid="lounge-chat">
       <header className="lk-page-header flex items-center justify-between" data-testid="lounge-chat-header">
         <div className="flex items-center gap-3">
           <button onClick={() => { setShowLoungeList(true); router.push('/lounge'); }} className="p-2 rounded-full hover:bg-white/5 transition-colors" data-testid="lounge-chat-back">
-            <ArrowLeft className="w-5 h-5 text-white/60" strokeWidth={1.5} />
+            <ArrowLeft className="w-5 h-5 text-white/40" strokeWidth={1.5} />
           </button>
           <div>
             <h1 className="text-lg font-heading font-semibold text-white flex items-center gap-2">
-              <Hash className="w-4 h-4 text-cyan-400" strokeWidth={1.5} />
+              <Hash className="w-4 h-4 text-[#3B82F6]" strokeWidth={1.5} />
               {lounges.find(l => l.id === loungeId)?.name || 'Lounge'}
             </h1>
-            <p className="text-white/30 text-xs flex items-center gap-1.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
+            <p className="text-white/25 text-xs flex items-center gap-1.5">
+              <span className="live-dot" />
               {onlineCount} online
             </p>
           </div>
@@ -223,14 +248,14 @@ export default function LoungePage() {
 
       {/* Members Panel */}
       {showMembers && (
-        <div className="bg-[#12121A] border-b border-white/5 p-4 animate-fade-in" data-testid="members-panel">
+        <div className="bg-[#101018] border-b border-white/5 p-4 animate-fade-in" data-testid="members-panel">
           <div className="flex items-center gap-2 mb-3">
-            <span className="lk-label text-cyan-400">Members ({members.length})</span>
+            <span className="lk-label text-[#3B82F6]">Members ({members.length})</span>
           </div>
           <div className="flex gap-3 overflow-x-auto pb-1" style={{ scrollbarWidth: 'none' }}>
             {members.map((member) => (
               <div key={member.id} className="flex flex-col items-center gap-1 flex-shrink-0">
-                <div className="w-10 h-10 rounded-full bg-[#1A1A24] flex items-center justify-center overflow-hidden border border-white/5">
+                <div className="w-10 h-10 rounded-full bg-[#141420] flex items-center justify-center overflow-hidden border border-white/5">
                   {member.avatar ? (
                     <img src={member.avatar} alt="" className="w-full h-full object-cover" />
                   ) : (
@@ -260,7 +285,7 @@ export default function LoungePage() {
             const isOwn = msg.userId === user?.id
             return (
               <div key={msg.id} className={`flex gap-3 ${isOwn ? 'flex-row-reverse' : ''}`} data-testid={`message-${msg.id}`}>
-                <div className="w-9 h-9 rounded-full bg-[#1A1A24] flex items-center justify-center overflow-hidden flex-shrink-0 border border-white/5">
+                <div className="w-9 h-9 rounded-full bg-[#141420] flex items-center justify-center overflow-hidden flex-shrink-0 border border-white/5">
                   {msg.avatar ? (
                     <img src={msg.avatar} alt="" className="w-full h-full object-cover" />
                   ) : (
@@ -269,7 +294,7 @@ export default function LoungePage() {
                 </div>
                 <div className={`max-w-[75%] ${isOwn ? 'items-end' : ''}`}>
                   <div className="flex items-center gap-2 mb-1">
-                    <span className={`text-xs font-medium ${isOwn ? 'text-cyan-400' : 'text-white/60'}`}>
+                    <span className={`text-xs font-medium ${isOwn ? 'text-[#3B82F6]' : 'text-white/60'}`}>
                       {msg.displayName || 'User'}
                     </span>
                     <span className="text-white/15 text-[10px]">
@@ -283,8 +308,8 @@ export default function LoungePage() {
                   </div>
                   <div className={`rounded-2xl px-4 py-2.5 text-sm leading-relaxed ${
                     isOwn 
-                      ? 'bg-cyan-500/15 text-white border border-cyan-500/15' 
-                      : 'bg-[#12121A] text-white/80 border border-white/5'
+                      ? 'bg-[#3B82F6]/12 text-white border border-[#3B82F6]/12' 
+                      : 'bg-[#101018] text-white/80 border border-white/5'
                   }`}>
                     {msg.content}
                   </div>
@@ -297,7 +322,7 @@ export default function LoungePage() {
       </div>
 
       {/* Message Input */}
-      <div className="fixed bottom-0 left-0 right-0 z-20 bg-[#12121A]/90 backdrop-blur-xl border-t border-white/5 p-4" data-testid="message-input-area">
+      <div className="fixed bottom-0 left-0 right-0 z-20 bg-[#101018]/90 backdrop-blur-xl border-t border-white/5 p-4" data-testid="message-input-area">
         <form onSubmit={sendMessage} className="flex gap-3">
           <input
             type="text"
@@ -310,7 +335,7 @@ export default function LoungePage() {
           <button
             type="submit"
             disabled={sending || !newMessage.trim()}
-            className="p-3 rounded-xl bg-cyan-500/15 text-cyan-400 hover:bg-cyan-500/25 transition-colors disabled:opacity-30 border border-cyan-500/15"
+            className="p-3 rounded-xl bg-[#3B82F6]/12 text-[#3B82F6] hover:bg-[#3B82F6]/20 transition-colors disabled:opacity-30 border border-[#3B82F6]/12"
             data-testid="send-message-btn"
           >
             <Send className="w-5 h-5" strokeWidth={1.5} />
