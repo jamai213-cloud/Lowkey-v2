@@ -11,7 +11,7 @@ import time
 from datetime import datetime
 
 # Configuration
-BASE_URL = "https://profile-chat-fix-1.preview.emergentagent.com/api"
+BASE_URL = "https://lowkey-ui-refresh.preview.emergentagent.com/api"
 HEADERS = {"Content-Type": "application/json"}
 
 class LowKeyAPITester:
