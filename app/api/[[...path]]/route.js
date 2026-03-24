@@ -2659,6 +2659,234 @@ async function handleRoute(request, { params }) {
       return handleCORS(NextResponse.json({ status: 'healthy' }))
     }
 
+    // ==================== GAME SESSIONS ====================
+    // Create a new game session
+    if (route === '/games/create' && method === 'POST') {
+      const body = await safeParseJson(request)
+      const { gameType, hostId, hostName, hostAvatar } = body
+      
+      const gameSession = {
+        id: uuidv4(),
+        gameType, // 'tictactoe' or 'icebreaker'
+        hostId,
+        hostName,
+        hostAvatar,
+        guestId: null,
+        guestName: null,
+        guestAvatar: null,
+        status: 'waiting', // waiting, playing, finished
+        gameState: gameType === 'tictactoe' 
+          ? { board: Array(9).fill(null), currentTurn: hostId, winner: null }
+          : { questionIndex: 0, hostAnswers: [], guestAnswers: [], revealed: false },
+        hostScore: 0,
+        guestScore: 0,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      }
+      
+      await db.collection('game_sessions').insertOne(gameSession)
+      return handleCORS(NextResponse.json(cleanMongoDoc(gameSession)))
+    }
+
+    // Get game session
+    if (route.match(/^\/games\/session\/[^/]+$/) && method === 'GET') {
+      const sessionId = path[2]
+      const session = await db.collection('game_sessions').findOne({ id: sessionId })
+      if (!session) {
+        return handleCORS(NextResponse.json({ error: 'Game not found' }, { status: 404 }))
+      }
+      return handleCORS(NextResponse.json(cleanMongoDoc(session)))
+    }
+
+    // Join a game session
+    if (route === '/games/join' && method === 'POST') {
+      const body = await safeParseJson(request)
+      const { sessionId, guestId, guestName, guestAvatar } = body
+      
+      const session = await db.collection('game_sessions').findOne({ id: sessionId })
+      if (!session) {
+        return handleCORS(NextResponse.json({ error: 'Game not found' }, { status: 404 }))
+      }
+      if (session.status !== 'waiting') {
+        return handleCORS(NextResponse.json({ error: 'Game already started' }, { status: 400 }))
+      }
+      if (session.hostId === guestId) {
+        return handleCORS(NextResponse.json({ error: 'Cannot join your own game' }, { status: 400 }))
+      }
+      
+      await db.collection('game_sessions').updateOne(
+        { id: sessionId },
+        { 
+          $set: { 
+            guestId, 
+            guestName, 
+            guestAvatar,
+            status: 'playing',
+            updatedAt: new Date()
+          } 
+        }
+      )
+      
+      const updated = await db.collection('game_sessions').findOne({ id: sessionId })
+      return handleCORS(NextResponse.json(cleanMongoDoc(updated)))
+    }
+
+    // Make a move in the game
+    if (route === '/games/move' && method === 'POST') {
+      const body = await safeParseJson(request)
+      const { sessionId, playerId, move } = body
+      
+      const session = await db.collection('game_sessions').findOne({ id: sessionId })
+      if (!session) {
+        return handleCORS(NextResponse.json({ error: 'Game not found' }, { status: 404 }))
+      }
+      
+      if (session.gameType === 'tictactoe') {
+        const { position } = move
+        const gameState = session.gameState
+        
+        if (gameState.currentTurn !== playerId) {
+          return handleCORS(NextResponse.json({ error: 'Not your turn' }, { status: 400 }))
+        }
+        if (gameState.board[position] !== null) {
+          return handleCORS(NextResponse.json({ error: 'Position taken' }, { status: 400 }))
+        }
+        
+        const symbol = playerId === session.hostId ? 'X' : 'O'
+        gameState.board[position] = symbol
+        gameState.currentTurn = playerId === session.hostId ? session.guestId : session.hostId
+        
+        // Check winner
+        const lines = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]]
+        for (const [a,b,c] of lines) {
+          if (gameState.board[a] && gameState.board[a] === gameState.board[b] && gameState.board[a] === gameState.board[c]) {
+            gameState.winner = playerId
+            break
+          }
+        }
+        
+        const isDraw = !gameState.winner && gameState.board.every(cell => cell !== null)
+        
+        const updateData = { 
+          gameState,
+          updatedAt: new Date()
+        }
+        
+        if (gameState.winner) {
+          updateData.status = 'finished'
+          if (gameState.winner === session.hostId) {
+            updateData.hostScore = (session.hostScore || 0) + 1
+          } else {
+            updateData.guestScore = (session.guestScore || 0) + 1
+          }
+        } else if (isDraw) {
+          updateData.status = 'finished'
+          gameState.winner = 'draw'
+        }
+        
+        await db.collection('game_sessions').updateOne({ id: sessionId }, { $set: updateData })
+      }
+      
+      if (session.gameType === 'icebreaker') {
+        const { answerIndex } = move
+        const gameState = session.gameState
+        const isHost = playerId === session.hostId
+        
+        if (isHost) {
+          gameState.hostAnswers.push(answerIndex)
+        } else {
+          gameState.guestAnswers.push(answerIndex)
+        }
+        
+        // Check if both answered
+        if (gameState.hostAnswers.length === gameState.guestAnswers.length) {
+          gameState.revealed = true
+          
+          // Check if answers match for points
+          const lastHostAnswer = gameState.hostAnswers[gameState.hostAnswers.length - 1]
+          const lastGuestAnswer = gameState.guestAnswers[gameState.guestAnswers.length - 1]
+          
+          const updateData = { gameState, updatedAt: new Date() }
+          
+          if (lastHostAnswer === lastGuestAnswer) {
+            updateData.hostScore = (session.hostScore || 0) + 10
+            updateData.guestScore = (session.guestScore || 0) + 10
+          }
+          
+          await db.collection('game_sessions').updateOne({ id: sessionId }, { $set: updateData })
+        } else {
+          await db.collection('game_sessions').updateOne({ id: sessionId }, { $set: { gameState, updatedAt: new Date() } })
+        }
+      }
+      
+      const updated = await db.collection('game_sessions').findOne({ id: sessionId })
+      return handleCORS(NextResponse.json(cleanMongoDoc(updated)))
+    }
+
+    // Next question in ice breaker
+    if (route === '/games/next-question' && method === 'POST') {
+      const body = await safeParseJson(request)
+      const { sessionId } = body
+      
+      const session = await db.collection('game_sessions').findOne({ id: sessionId })
+      if (!session || session.gameType !== 'icebreaker') {
+        return handleCORS(NextResponse.json({ error: 'Game not found' }, { status: 404 }))
+      }
+      
+      const gameState = session.gameState
+      gameState.questionIndex += 1
+      gameState.revealed = false
+      
+      const updateData = { gameState, updatedAt: new Date() }
+      
+      if (gameState.questionIndex >= 10) {
+        updateData.status = 'finished'
+      }
+      
+      await db.collection('game_sessions').updateOne({ id: sessionId }, { $set: updateData })
+      
+      const updated = await db.collection('game_sessions').findOne({ id: sessionId })
+      return handleCORS(NextResponse.json(cleanMongoDoc(updated)))
+    }
+
+    // Reset game for rematch
+    if (route === '/games/rematch' && method === 'POST') {
+      const body = await safeParseJson(request)
+      const { sessionId } = body
+      
+      const session = await db.collection('game_sessions').findOne({ id: sessionId })
+      if (!session) {
+        return handleCORS(NextResponse.json({ error: 'Game not found' }, { status: 404 }))
+      }
+      
+      const newGameState = session.gameType === 'tictactoe'
+        ? { board: Array(9).fill(null), currentTurn: session.hostId, winner: null }
+        : { questionIndex: 0, hostAnswers: [], guestAnswers: [], revealed: false }
+      
+      await db.collection('game_sessions').updateOne(
+        { id: sessionId },
+        { $set: { gameState: newGameState, status: 'playing', updatedAt: new Date() } }
+      )
+      
+      const updated = await db.collection('game_sessions').findOne({ id: sessionId })
+      return handleCORS(NextResponse.json(cleanMongoDoc(updated)))
+    }
+
+    // Get pending game invites for a user
+    if (route.match(/^\/games\/invites\/[^/]+$/) && method === 'GET') {
+      const userId = path[2]
+      const invites = await db.collection('game_sessions')
+        .find({ 
+          guestId: null, 
+          status: 'waiting',
+          hostId: { $ne: userId }
+        })
+        .sort({ createdAt: -1 })
+        .limit(20)
+        .toArray()
+      return handleCORS(NextResponse.json(invites.map(cleanMongoDoc)))
+    }
+
     return handleCORS(NextResponse.json({ error: `Route ${route} not found` }, { status: 404 }))
 
   } catch (error) {

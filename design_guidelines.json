@@ -1,0 +1,125 @@
+{
+  "project_name": "Lowkey Visual Upgrade",
+  "app_type": "social_dating_app",
+  "theme": "dark",
+  "general_ui_ux_design_guidelines": [
+    "You tend to converge toward generic, 'on distribution' outputs. In frontend design, this creates what users call the 'AI slop' aesthetic. Avoid this: make creative, distinctive frontends that surprise and delight.",
+    "Dark colors look good when used independently without gradients. DO NOT use dark colors as gradients.",
+    "Don't make generic centered layouts, simplistic gradients, and uniform styling.",
+    "Create depth through layered design elements with z-index hierarchy.",
+    "Use glass-morphism effects with backdrop filters (12-24px blur).",
+    "You MUST NOT apply universal transition (e.g., transition: all). This results in breaking transforms. Always add transitions for specific interactive elements.",
+    "You MUST NOT center align the app container, i.e., do not add .App { text-align: center; } in the css file.",
+    "Always use modern button styles like pill-shaped, or sharp buttons with interaction animations & color relevant to the app style.",
+    "NEVER use AI assistant Emoji characters for icons.",
+    "Every interaction needs micro-animations - hover states, transitions, parallax effects.",
+    "Use 2-3x more spacing than feels comfortable.",
+    "All interactive and key informational elements MUST include a data-testid attribute to facilitate robust automated testing.",
+    "DO NOT use complete transparent background in header, overlays, any surface that has content under it.",
+    "Components MUST use named exports, Pages MUST use default exports."
+  ],
+  "typography": {
+    "headings": {
+      "font_family": "Manrope, sans-serif",
+      "weights": ["600", "700", "800"],
+      "tracking": "tracking-tight",
+      "usage": "Use for all page titles, section headers, and large metric displays. Never use Inter."
+    },
+    "body": {
+      "font_family": "Figtree, sans-serif",
+      "weights": ["400", "500"],
+      "leading": "leading-relaxed",
+      "usage": "Use for all messaging, profile descriptions, and general UI text. Maintain high readability."
+    },
+    "labels": {
+      "styling": "uppercase tracking-[0.2em] text-[10px] md:text-xs font-bold text-white/50",
+      "usage": "Use for overlines, small badges, and section categorizations."
+    }
+  },
+  "colors": {
+    "base": {
+      "background": "#0A0A0F",
+      "surface_cards": "#12121A",
+      "surface_elevated": "#1A1A24",
+      "border_subtle": "rgba(255, 255, 255, 0.05)",
+      "border_active": "rgba(255, 255, 255, 0.15)"
+    },
+    "text": {
+      "primary": "#FFFFFF",
+      "secondary": "#A1A1AA",
+      "muted": "#71717A"
+    },
+    "sections": {
+      "home": {
+        "primary": "#A855F7",
+        "glow": "rgba(168, 85, 247, 0.4)",
+        "gradient": "bg-gradient-to-br from-purple-500 to-purple-700"
+      },
+      "lounge": {
+        "primary": "#06B6D4",
+        "glow": "rgba(6, 182, 212, 0.4)",
+        "gradient": "bg-gradient-to-br from-cyan-400 to-cyan-600"
+      },
+      "messages": {
+        "primary": "#6366F1",
+        "glow": "rgba(99, 102, 241, 0.4)",
+        "gradient": "bg-gradient-to-br from-indigo-400 to-indigo-600"
+      },
+      "after_dark": {
+        "primary": "#F97316",
+        "glow": "rgba(249, 115, 22, 0.4)",
+        "gradient": "bg-gradient-to-br from-orange-400 to-red-600"
+      },
+      "profile": {
+        "primary": "#D6D3D1",
+        "glow": "rgba(214, 211, 209, 0.2)",
+        "gradient": "bg-gradient-to-br from-stone-300 to-stone-500"
+      }
+    }
+  },
+  "visual_enhancers": {
+    "cards": "bg-[#12121A] border border-white/5 rounded-2xl md:rounded-3xl shadow-xl backdrop-blur-sm",
+    "glassmorphism": "bg-[#12121A]/80 backdrop-blur-xl border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.5)]",
+    "neon_glow_active": "shadow-[0_0_15px_var(--section-glow)] border-[var(--section-primary)]",
+    "layering": "Use inner shadows (shadow-inner) or subtle top-borders (border-t border-white/10) to create physical depth.",
+    "textures": "Apply subtle noise overlay (opacity-5) to the main background (#0A0A0F) to prevent the void-like pure flat color feel."
+  },
+  "layouts_and_grids": {
+    "rule": "DO NOT alter the structural layout, wiring, or functionality. ONLY apply visual spacing enhancements.",
+    "spacing": "Increase padding within cards organically. If it was p-4, make it p-6 or p-8.",
+    "mobile_first": "Ensure touch targets are large (min h-12). Images should not exceed 80vh.",
+    "alignment": "Keep general alignment left-aligned for data and lists. Center align only high-impact single actions or hero text."
+  },
+  "motion": {
+    "hover_states": "hover:-translate-y-1 hover:shadow-2xl transition-transform duration-300 ease-out",
+    "active_states": "active:scale-95 transition-transform duration-150 ease-in",
+    "buttons": "Relative overflow-hidden with pseudo-element shimmer effects on hover.",
+    "page_transitions": "Subtle fade in (opacity-0 to opacity-100) and slight slide up (translate-y-4 to translate-y-0)."
+  },
+  "media_and_icons": {
+    "avatars": "Perfect circles, use section-specific colored rings (ring-2 ring-offset-2 ring-offset-[#0A0A0F]) to indicate active stories or online status.",
+    "icons": "Use lucide-react. Standardize stroke width to 1.5 for a premium, lightweight aesthetic.",
+    "image_handling": "Apply object-cover. Use a dark gradient overlay at the bottom of images where text is layered to ensure contrast."
+  },
+  "component_guidelines": {
+    "buttons": "Pill-shaped (rounded-full). Primary actions use the section's gradient and glow. Secondary actions use bg-white/5 border border-white/10 hover:bg-white/10.",
+    "inputs": "bg-[#1A1A24] border border-white/5 rounded-xl focus:border-[var(--section-primary)] focus:ring-1 focus:ring-[var(--section-primary)] text-white placeholder:text-white/30",
+    "navigation_tabs": "Floating pill design. bg-[#12121A]/80 backdrop-blur-md rounded-full border border-white/10. Active tab gets bg-white/10 and text-[var(--section-primary)].",
+    "story_rings": "Gradient border around avatars. Uses the specific section's colors."
+  },
+  "accessibility": {
+    "contrast": "Ensure text over gradients/images maintains a 4.5:1 ratio. Use drop-shadows on text if necessary.",
+    "focus": "All interactive elements must have visible focus rings (focus-visible:ring-2).",
+    "motion": "Respect prefers-reduced-motion media queries for all animations."
+  },
+  "instructions_to_main_agent": [
+    "READ CAREFULLY: You are performing a VISUAL UPGRADE ONLY. Do not change any page routing, component logical structure, or state management.",
+    "The app uses .js files, NOT .tsx. Provide all updated component code in .js (JSX).",
+    "Users must find everything in the same place. Do not move the location of features.",
+    "Inject the section-specific colors (Home=Purple, Lounge=Blue/Cyan, Messages=Indigo, After Dark=Orange/Red, Profile=Stone) contextually based on the page being edited.",
+    "Implement the 'data-testid' attributes systematically on all buttons, links, inputs, and major containers (e.g., data-testid='home-story-avatar').",
+    "Ensure the background remains #0A0A0F and cards remain #12121A.",
+    "Apply the generous spacing philosophy (p-6, p-8) to make the UI breathe.",
+    "Enhance the 'premium' feel by removing harsh borders and replacing them with border-white/5 and subtle backdrop blurs."
+  ]
+}
