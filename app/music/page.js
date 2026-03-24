@@ -192,17 +192,17 @@ export default function MusicPage() {
   }
 
   if (!user) return <div className="min-h-screen bg-[#0a0a0f] flex items-center justify-center">
-    <div className="animate-pulse text-white">Loading...</div>
+    <div className="animate-pulse text-white/40 font-heading">Loading...</div>
   </div>
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f] pb-32">
+    <div className="min-h-screen bg-[#0a0a0f] pb-32 page-enter">
       <audio ref={audioRef} />
       
       {/* Header */}
-      <header className="sticky top-0 z-40 bg-[#0a0a0f]/95 backdrop-blur border-b border-white/10">
+      <header className="lk-page-header">
         <div className="flex items-center gap-3 p-4">
-          <button onClick={() => router.push('/')} className="p-2 rounded-full hover:bg-white/10">
+          <button onClick={() => router.push('/')} className="p-2 rounded-full hover:bg-white/5">
             <ArrowLeft className="w-5 h-5 text-white" />
           </button>
           <h1 className="text-xl font-bold text-white">Music</h1>
@@ -211,18 +211,18 @@ export default function MusicPage() {
         {/* Search Bar */}
         <form onSubmit={searchMusic} className="px-4 pb-3">
           <div className="relative">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/40" />
             <input
               type="text"
               placeholder="Search artists, songs, albums..."
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              className="w-full pl-12 pr-4 py-3 rounded-full bg-white/10 text-white placeholder-gray-400 border border-white/10 focus:border-green-500 focus:outline-none"
+              className="w-full pl-12 pr-4 py-3 rounded-full bg-white/10 text-white placeholder-gray-400 border border-white/5 focus:border-green-500 focus:outline-none"
             />
             {query && (
               <button type="button" onClick={() => { setQuery(''); setResults([]) }} 
-                className="absolute right-14 top-1/2 -translate-y-1/2 p-1 rounded-full hover:bg-white/10">
-                <X className="w-4 h-4 text-gray-400" />
+                className="absolute right-14 top-1/2 -translate-y-1/2 p-1 rounded-full hover:bg-white/5">
+                <X className="w-4 h-4 text-white/40" />
               </button>
             )}
             <button type="submit" disabled={loading}
@@ -252,29 +252,29 @@ export default function MusicPage() {
             {loading && (
               <div className="flex flex-col items-center py-12">
                 <Loader2 className="w-8 h-8 text-green-500 animate-spin mb-3" />
-                <p className="text-gray-400">Searching...</p>
+                <p className="text-white/40">Searching...</p>
               </div>
             )}
             
             {!loading && results.length === 0 && query && (
               <div className="text-center py-12">
-                <MusicIcon className="w-16 h-16 text-gray-600 mx-auto mb-4" />
-                <p className="text-gray-400">No results found for "{query}"</p>
-                <p className="text-gray-500 text-sm mt-1">Try a different search term</p>
+                <MusicIcon className="w-16 h-16 text-white/15 mx-auto mb-4" />
+                <p className="text-white/40">No results found for "{query}"</p>
+                <p className="text-white/25 text-sm mt-1">Try a different search term</p>
               </div>
             )}
             
             {!loading && results.length === 0 && !query && (
               <div className="text-center py-12">
-                <Search className="w-16 h-16 text-gray-600 mx-auto mb-4" />
-                <p className="text-gray-400">Search for your favorite music</p>
-                <p className="text-gray-500 text-sm mt-1">Find artists, songs, and albums</p>
+                <Search className="w-16 h-16 text-white/15 mx-auto mb-4" />
+                <p className="text-white/40">Search for your favorite music</p>
+                <p className="text-white/25 text-sm mt-1">Find artists, songs, and albums</p>
               </div>
             )}
 
             {results.length > 0 && (
               <div className="space-y-2">
-                <p className="text-gray-400 text-sm mb-4">{results.length} results</p>
+                <p className="text-white/40 text-sm mb-4">{results.length} results</p>
                 {results.map(track => (
                   <TrackItem 
                     key={track.id} 
@@ -297,13 +297,13 @@ export default function MusicPage() {
           <>
             {savedTracks.length === 0 ? (
               <div className="text-center py-12">
-                <Heart className="w-16 h-16 text-gray-600 mx-auto mb-4" />
-                <p className="text-gray-400">No saved tracks</p>
-                <p className="text-gray-500 text-sm mt-1">Save tracks from search to see them here</p>
+                <Heart className="w-16 h-16 text-white/15 mx-auto mb-4" />
+                <p className="text-white/40">No saved tracks</p>
+                <p className="text-white/25 text-sm mt-1">Save tracks from search to see them here</p>
               </div>
             ) : (
               <div className="space-y-2">
-                <p className="text-gray-400 text-sm mb-4">Tracks saved for 24 hours</p>
+                <p className="text-white/40 text-sm mb-4">Tracks saved for 24 hours</p>
                 {savedTracks.map(item => (
                   <TrackItem 
                     key={item.id}
@@ -326,20 +326,20 @@ export default function MusicPage() {
           <>
             {friendStatuses.length === 0 ? (
               <div className="text-center py-12">
-                <User className="w-16 h-16 text-gray-600 mx-auto mb-4" />
-                <p className="text-gray-400">No friends listening</p>
-                <p className="text-gray-500 text-sm mt-1">When friends set a song status, it'll appear here</p>
+                <User className="w-16 h-16 text-white/15 mx-auto mb-4" />
+                <p className="text-white/40">No friends listening</p>
+                <p className="text-white/25 text-sm mt-1">When friends set a song status, it'll appear here</p>
               </div>
             ) : (
               <div className="space-y-3">
                 {friendStatuses.map(status => (
-                  <div key={status.id} className="p-3 rounded-xl bg-white/5 border border-white/10">
+                  <div key={status.id} className="p-3 rounded-xl bg-[#12121A] border border-white/5">
                     <div className="flex items-center gap-3 mb-2">
                       <div className="w-8 h-8 rounded-full bg-gradient-to-br from-green-400 to-blue-500 flex items-center justify-center text-white text-sm font-bold">
                         {status.displayName?.[0]?.toUpperCase() || 'U'}
                       </div>
                       <span className="text-white font-medium">{status.displayName}</span>
-                      <span className="text-gray-500 text-xs">is listening to</span>
+                      <span className="text-white/25 text-xs">is listening to</span>
                     </div>
                     {status.track && (
                       <TrackItem 
@@ -360,7 +360,7 @@ export default function MusicPage() {
 
       {/* Now Playing Bar */}
       {playing && (
-        <div className="fixed bottom-0 left-0 right-0 bg-[#1a1a2e] border-t border-white/10 p-3 z-50">
+        <div className="fixed bottom-0 left-0 right-0 bg-[#1a1a2e] border-t border-white/5 p-3 z-50">
           <div className="flex items-center gap-3">
             <img 
               src={playing.artwork || playing.album?.cover_medium || '/placeholder.png'} 
@@ -369,7 +369,7 @@ export default function MusicPage() {
             />
             <div className="flex-1 min-w-0">
               <p className="text-white font-medium truncate">{playing.name || playing.title}</p>
-              <p className="text-gray-400 text-sm truncate">{playing.artist || playing.artist?.name}</p>
+              <p className="text-white/40 text-sm truncate">{playing.artist || playing.artist?.name}</p>
             </div>
             <button onClick={() => playTrack(playing)} className="p-3 rounded-full bg-green-500">
               <Pause className="w-5 h-5 text-black" />
@@ -395,7 +395,7 @@ function TrackItem({ track, playing, onPlay, onSave, onRemove, onSetStatus, onSh
   const hasPreview = track.previewUrl || track.preview
 
   return (
-    <div className={`flex items-center gap-3 p-2 rounded-xl ${isPlaying ? 'bg-green-500/10 border border-green-500/30' : 'bg-white/5 hover:bg-white/10'} transition-colors`}>
+    <div className={`flex items-center gap-3 p-2 rounded-xl ${isPlaying ? 'bg-green-500/10 border border-green-500/30' : 'bg-white/5 hover:bg-white/5'} transition-colors`}>
       <div className="relative">
         <img src={artwork || '/placeholder.png'} alt="" className={`${compact ? 'w-10 h-10' : 'w-14 h-14'} rounded-lg object-cover`} />
         {hasPreview && (
@@ -408,36 +408,36 @@ function TrackItem({ track, playing, onPlay, onSave, onRemove, onSetStatus, onSh
       
       <div className="flex-1 min-w-0">
         <p className={`text-white font-medium truncate ${compact ? 'text-sm' : ''}`}>{name}</p>
-        <p className={`text-gray-400 truncate ${compact ? 'text-xs' : 'text-sm'}`}>{artist}</p>
-        {!compact && album && <p className="text-gray-500 text-xs truncate">{album}</p>}
+        <p className={`text-white/40 truncate ${compact ? 'text-xs' : 'text-sm'}`}>{artist}</p>
+        {!compact && album && <p className="text-white/25 text-xs truncate">{album}</p>}
       </div>
       
       {!compact && (
         <div className="flex items-center gap-1">
           {duration && (
-            <span className="text-gray-500 text-xs mr-2">{formatDuration(duration)}</span>
+            <span className="text-white/25 text-xs mr-2">{formatDuration(duration)}</span>
           )}
           {onShareStory && (
             <button onClick={onShareStory} title="Share to Story"
-              className="p-2 rounded-full hover:bg-white/10 text-gray-400 hover:text-amber-400">
+              className="p-2 rounded-full hover:bg-white/5 text-white/40 hover:text-amber-400">
               <Disc3 className="w-4 h-4" />
             </button>
           )}
           {onSetStatus && (
             <button onClick={onSetStatus} title="Set as status"
-              className="p-2 rounded-full hover:bg-white/10 text-gray-400 hover:text-green-400">
+              className="p-2 rounded-full hover:bg-white/5 text-white/40 hover:text-green-400">
               <Upload className="w-4 h-4" />
             </button>
           )}
           {onSave && (
             <button onClick={onSave} title="Save to profile"
-              className="p-2 rounded-full hover:bg-white/10 text-gray-400 hover:text-pink-400">
+              className="p-2 rounded-full hover:bg-white/5 text-white/40 hover:text-pink-400">
               <Heart className="w-4 h-4" />
             </button>
           )}
           {showRemove && onRemove && (
             <button onClick={onRemove} title="Remove"
-              className="p-2 rounded-full hover:bg-white/10 text-gray-400 hover:text-red-400">
+              className="p-2 rounded-full hover:bg-white/5 text-white/40 hover:text-red-400">
               <X className="w-4 h-4" />
             </button>
           )}

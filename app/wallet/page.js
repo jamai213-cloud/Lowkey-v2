@@ -22,7 +22,7 @@ export default function WalletPage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-[#0a0a0f] flex items-center justify-center">
-        <div className="animate-pulse text-white">Loading...</div>
+        <div className="animate-pulse text-white/40 font-heading">Loading...</div>
       </div>
     )
   }
@@ -31,13 +31,13 @@ export default function WalletPage() {
   const transactions = []
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f]">
+    <div className="min-h-screen bg-[#0a0a0f] page-enter">
       {/* Header */}
-      <header className="flex items-center gap-3 p-4 border-b border-white/10">
-        <button onClick={() => router.push('/')} className="p-2 rounded-full hover:bg-white/10">
+      <header className="lk-page-header flex items-center gap-3">
+        <button onClick={() => router.push('/')} className="p-2 rounded-full hover:bg-white/5">
           <ArrowLeft className="w-5 h-5 text-white" />
         </button>
-        <h1 className="text-xl font-semibold text-white">Wallet</h1>
+        <h1 className="text-xl font-heading font-semibold text-white">Wallet</h1>
       </header>
 
       <div className="p-4">
@@ -62,15 +62,15 @@ export default function WalletPage() {
 
         {/* Quick Actions */}
         <div className="grid grid-cols-3 gap-3 mb-6">
-          <button className="p-4 rounded-xl bg-white/5 border border-white/10 text-center hover:bg-white/10 transition-colors">
+          <button className="p-4 rounded-xl bg-[#12121A] border border-white/5 text-center hover:bg-white/5 transition-colors">
             <CreditCard className="w-6 h-6 text-amber-400 mx-auto mb-2" />
             <span className="text-white text-sm">Cards</span>
           </button>
-          <button className="p-4 rounded-xl bg-white/5 border border-white/10 text-center hover:bg-white/10 transition-colors">
+          <button className="p-4 rounded-xl bg-[#12121A] border border-white/5 text-center hover:bg-white/5 transition-colors">
             <ArrowUpRight className="w-6 h-6 text-green-400 mx-auto mb-2" />
             <span className="text-white text-sm">Transfer</span>
           </button>
-          <button className="p-4 rounded-xl bg-white/5 border border-white/10 text-center hover:bg-white/10 transition-colors">
+          <button className="p-4 rounded-xl bg-[#12121A] border border-white/5 text-center hover:bg-white/5 transition-colors">
             <Clock className="w-6 h-6 text-purple-400 mx-auto mb-2" />
             <span className="text-white text-sm">History</span>
           </button>
@@ -81,10 +81,10 @@ export default function WalletPage() {
           <h2 className="text-white font-semibold mb-3">Recent Transactions</h2>
           
           {transactions.length === 0 ? (
-            <div className="p-8 rounded-xl bg-white/5 border border-white/10 text-center">
-              <WalletIcon className="w-12 h-12 text-gray-500 mx-auto mb-4" />
-              <p className="text-gray-400">No transactions yet</p>
-              <p className="text-gray-500 text-sm mt-1">
+            <div className="p-8 rounded-xl bg-[#12121A] border border-white/5 text-center">
+              <WalletIcon className="w-12 h-12 text-white/25 mx-auto mb-4" />
+              <p className="text-white/40">No transactions yet</p>
+              <p className="text-white/25 text-sm mt-1">
                 Your transaction history will appear here
               </p>
             </div>
@@ -103,7 +103,7 @@ export default function WalletPage() {
                   </div>
                   <div className="flex-1">
                     <p className="text-white font-medium">{tx.description}</p>
-                    <p className="text-gray-500 text-xs">{tx.date}</p>
+                    <p className="text-white/25 text-xs">{tx.date}</p>
                   </div>
                   <span className={`font-semibold ${
                     tx.type === 'in' ? 'text-green-400' : 'text-red-400'

@@ -303,7 +303,7 @@ export default function EditProfilePage() {
   if (loading || !user) {
     return (
       <div className="min-h-screen bg-[#0a0a0f] flex items-center justify-center">
-        <div className="animate-pulse text-white">Loading...</div>
+        <div className="animate-pulse text-white/40 font-heading">Loading...</div>
       </div>
     )
   }
@@ -327,10 +327,10 @@ export default function EditProfilePage() {
       />
 
       {/* Header */}
-      <header className="sticky top-0 z-20 bg-[#0a0a0f]/95 backdrop-blur-lg border-b border-white/10">
+      <header className="sticky top-0 z-20 bg-[#0a0a0f]/95 backdrop-blur-lg border-b border-white/5">
         <div className="flex items-center justify-between p-4">
           <div className="flex items-center gap-3">
-            <button onClick={() => router.push('/profile')} className="p-2 rounded-full hover:bg-white/10">
+            <button onClick={() => router.push('/profile')} className="p-2 rounded-full hover:bg-white/5">
               <ArrowLeft className="w-5 h-5 text-white" />
             </button>
             <h1 className="text-xl font-semibold text-white">Edit Profile</h1>
@@ -338,7 +338,7 @@ export default function EditProfilePage() {
           <button 
             onClick={saveProfile}
             disabled={saving}
-            className="px-4 py-2 rounded-xl bg-gradient-to-r from-amber-400 to-yellow-500 text-black font-semibold flex items-center gap-2 disabled:opacity-50"
+            className="px-4 py-2 lk-btn-primary bg-gradient-to-r from-purple-500 to-purple-700 text-white shadow-lg shadow-purple-500/20 flex items-center gap-2 disabled:opacity-50"
           >
             <Save className="w-4 h-4" />
             {saving ? 'Saving...' : 'Save'}
@@ -373,7 +373,7 @@ export default function EditProfilePage() {
               </button>
             </div>
             <div className="flex-1">
-              <p className="text-gray-400 text-sm mb-2">Tap the camera to upload from your phone</p>
+              <p className="text-white/40 text-sm mb-2">Tap the camera to upload from your phone</p>
               {gallery.length > 0 && (
                 <button 
                   onClick={() => setShowProfilePicUpload(true)}
@@ -428,8 +428,8 @@ export default function EditProfilePage() {
                 onClick={() => fileInputRef.current?.click()}
                 className="col-span-4 py-12 rounded-xl border-2 border-dashed border-white/20 text-center"
               >
-                <Camera className="w-12 h-12 mx-auto mb-2 text-gray-500" />
-                <p className="text-gray-400">Tap to upload photos</p>
+                <Camera className="w-12 h-12 mx-auto mb-2 text-white/25" />
+                <p className="text-white/40">Tap to upload photos</p>
               </button>
             )}
           </div>
@@ -444,7 +444,7 @@ export default function EditProfilePage() {
             <button
               onClick={() => setProfile(p => ({ ...p, profilePrivacy: 'public' }))}
               className={`flex-1 py-3 rounded-xl flex items-center justify-center gap-2 ${
-                profile.profilePrivacy === 'public' ? 'bg-green-500 text-black' : 'bg-white/10 text-gray-400'
+                profile.profilePrivacy === 'public' ? 'bg-green-500 text-black' : 'bg-white/10 text-white/40'
               }`}
             >
               <Globe className="w-4 h-4" /> Public
@@ -452,7 +452,7 @@ export default function EditProfilePage() {
             <button
               onClick={() => setProfile(p => ({ ...p, profilePrivacy: 'friends' }))}
               className={`flex-1 py-3 rounded-xl flex items-center justify-center gap-2 ${
-                profile.profilePrivacy === 'friends' ? 'bg-amber-500 text-black' : 'bg-white/10 text-gray-400'
+                profile.profilePrivacy === 'friends' ? 'bg-amber-500 text-black' : 'bg-white/10 text-white/40'
               }`}
             >
               <Lock className="w-4 h-4" /> Friends Only
@@ -469,7 +469,7 @@ export default function EditProfilePage() {
             value={profile.aboutMe}
             onChange={(e) => setProfile(p => ({ ...p, aboutMe: e.target.value }))}
             placeholder="Tell others about yourself..."
-            className="w-full h-32 px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-gray-500 focus:outline-none focus:border-amber-500/50 resize-none"
+            className="w-full h-32 px-4 py-3 rounded-xl bg-[#12121A] border border-white/5 text-white placeholder-gray-500 focus:outline-none focus:border-amber-500/50 resize-none"
           />
         </section>
 
@@ -482,7 +482,7 @@ export default function EditProfilePage() {
             value={profile.lookingFor}
             onChange={(e) => setProfile(p => ({ ...p, lookingFor: e.target.value }))}
             placeholder="What are you looking for on LowKey?"
-            className="w-full h-24 px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-gray-500 focus:outline-none focus:border-amber-500/50 resize-none"
+            className="w-full h-24 px-4 py-3 rounded-xl bg-[#12121A] border border-white/5 text-white placeholder-gray-500 focus:outline-none focus:border-amber-500/50 resize-none"
           />
         </section>
 
@@ -494,21 +494,21 @@ export default function EditProfilePage() {
           <div className="space-y-3">
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="text-gray-400 text-xs mb-1 block">Age</label>
+                <label className="text-white/40 text-xs mb-1 block">Age</label>
                 <input
                   type="number"
                   value={profile.age}
                   onChange={(e) => setProfile(p => ({ ...p, age: e.target.value }))}
                   placeholder="Age"
-                  className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-gray-500 focus:outline-none focus:border-amber-500/50"
+                  className="w-full px-4 py-3 rounded-xl bg-[#12121A] border border-white/5 text-white placeholder-gray-500 focus:outline-none focus:border-amber-500/50"
                 />
               </div>
               <div>
-                <label className="text-gray-400 text-xs mb-1 block">Gender</label>
+                <label className="text-white/40 text-xs mb-1 block">Gender</label>
                 <select
                   value={profile.gender}
                   onChange={(e) => setProfile(p => ({ ...p, gender: e.target.value }))}
-                  className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white focus:outline-none focus:border-amber-500/50"
+                  className="w-full px-4 py-3 rounded-xl bg-[#12121A] border border-white/5 text-white focus:outline-none focus:border-amber-500/50"
                 >
                   <option value="">Select</option>
                   {genderOptions.map(opt => <option key={opt} value={opt}>{opt}</option>)}
@@ -518,22 +518,22 @@ export default function EditProfilePage() {
 
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="text-gray-400 text-xs mb-1 block">Sexuality</label>
+                <label className="text-white/40 text-xs mb-1 block">Sexuality</label>
                 <select
                   value={profile.sexuality}
                   onChange={(e) => setProfile(p => ({ ...p, sexuality: e.target.value }))}
-                  className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white focus:outline-none focus:border-amber-500/50"
+                  className="w-full px-4 py-3 rounded-xl bg-[#12121A] border border-white/5 text-white focus:outline-none focus:border-amber-500/50"
                 >
                   <option value="">Select</option>
                   {sexualityOptions.map(opt => <option key={opt} value={opt}>{opt}</option>)}
                 </select>
               </div>
               <div>
-                <label className="text-gray-400 text-xs mb-1 block">Status</label>
+                <label className="text-white/40 text-xs mb-1 block">Status</label>
                 <select
                   value={profile.relationshipStatus}
                   onChange={(e) => setProfile(p => ({ ...p, relationshipStatus: e.target.value }))}
-                  className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white focus:outline-none focus:border-amber-500/50"
+                  className="w-full px-4 py-3 rounded-xl bg-[#12121A] border border-white/5 text-white focus:outline-none focus:border-amber-500/50"
                 >
                   <option value="">Select</option>
                   {relationshipOptions.map(opt => <option key={opt} value={opt}>{opt}</option>)}
@@ -551,21 +551,21 @@ export default function EditProfilePage() {
           <div className="space-y-3">
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="text-gray-400 text-xs mb-1 block">Height</label>
+                <label className="text-white/40 text-xs mb-1 block">Height</label>
                 <input
                   type="text"
                   value={profile.height}
                   onChange={(e) => setProfile(p => ({ ...p, height: e.target.value }))}
                   placeholder="e.g. 5'10 or 178cm"
-                  className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-gray-500 focus:outline-none focus:border-amber-500/50"
+                  className="w-full px-4 py-3 rounded-xl bg-[#12121A] border border-white/5 text-white placeholder-gray-500 focus:outline-none focus:border-amber-500/50"
                 />
               </div>
               <div>
-                <label className="text-gray-400 text-xs mb-1 block">Body Type</label>
+                <label className="text-white/40 text-xs mb-1 block">Body Type</label>
                 <select
                   value={profile.bodyType}
                   onChange={(e) => setProfile(p => ({ ...p, bodyType: e.target.value }))}
-                  className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white focus:outline-none focus:border-amber-500/50"
+                  className="w-full px-4 py-3 rounded-xl bg-[#12121A] border border-white/5 text-white focus:outline-none focus:border-amber-500/50"
                 >
                   <option value="">Select</option>
                   {bodyTypeOptions.map(opt => <option key={opt} value={opt}>{opt}</option>)}
@@ -575,33 +575,33 @@ export default function EditProfilePage() {
 
             <div className="grid grid-cols-3 gap-3">
               <div>
-                <label className="text-gray-400 text-xs mb-1 block">Eyes</label>
+                <label className="text-white/40 text-xs mb-1 block">Eyes</label>
                 <select
                   value={profile.eyeColor}
                   onChange={(e) => setProfile(p => ({ ...p, eyeColor: e.target.value }))}
-                  className="w-full px-3 py-3 rounded-xl bg-white/5 border border-white/10 text-white text-sm focus:outline-none focus:border-amber-500/50"
+                  className="w-full px-3 py-3 rounded-xl bg-[#12121A] border border-white/5 text-white text-sm focus:outline-none focus:border-amber-500/50"
                 >
                   <option value="">Select</option>
                   {eyeColorOptions.map(opt => <option key={opt} value={opt}>{opt}</option>)}
                 </select>
               </div>
               <div>
-                <label className="text-gray-400 text-xs mb-1 block">Hair</label>
+                <label className="text-white/40 text-xs mb-1 block">Hair</label>
                 <select
                   value={profile.hairColor}
                   onChange={(e) => setProfile(p => ({ ...p, hairColor: e.target.value }))}
-                  className="w-full px-3 py-3 rounded-xl bg-white/5 border border-white/10 text-white text-sm focus:outline-none focus:border-amber-500/50"
+                  className="w-full px-3 py-3 rounded-xl bg-[#12121A] border border-white/5 text-white text-sm focus:outline-none focus:border-amber-500/50"
                 >
                   <option value="">Select</option>
                   {hairColorOptions.map(opt => <option key={opt} value={opt}>{opt}</option>)}
                 </select>
               </div>
               <div>
-                <label className="text-gray-400 text-xs mb-1 block">Ethnicity</label>
+                <label className="text-white/40 text-xs mb-1 block">Ethnicity</label>
                 <select
                   value={profile.ethnicity}
                   onChange={(e) => setProfile(p => ({ ...p, ethnicity: e.target.value }))}
-                  className="w-full px-3 py-3 rounded-xl bg-white/5 border border-white/10 text-white text-sm focus:outline-none focus:border-amber-500/50"
+                  className="w-full px-3 py-3 rounded-xl bg-[#12121A] border border-white/5 text-white text-sm focus:outline-none focus:border-amber-500/50"
                 >
                   <option value="">Select</option>
                   {ethnicityOptions.map(opt => <option key={opt} value={opt}>{opt}</option>)}
@@ -618,26 +618,26 @@ export default function EditProfilePage() {
           </h2>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="text-gray-400 text-xs mb-1 block flex items-center gap-1">
+              <label className="text-white/40 text-xs mb-1 block flex items-center gap-1">
                 <Cigarette className="w-3 h-3" /> Smoking
               </label>
               <select
                 value={profile.smoking}
                 onChange={(e) => setProfile(p => ({ ...p, smoking: e.target.value }))}
-                className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white focus:outline-none focus:border-amber-500/50"
+                className="w-full px-4 py-3 rounded-xl bg-[#12121A] border border-white/5 text-white focus:outline-none focus:border-amber-500/50"
               >
                 <option value="">Select</option>
                 {smokingOptions.map(opt => <option key={opt} value={opt}>{opt}</option>)}
               </select>
             </div>
             <div>
-              <label className="text-gray-400 text-xs mb-1 block flex items-center gap-1">
+              <label className="text-white/40 text-xs mb-1 block flex items-center gap-1">
                 <Wine className="w-3 h-3" /> Drinking
               </label>
               <select
                 value={profile.drinking}
                 onChange={(e) => setProfile(p => ({ ...p, drinking: e.target.value }))}
-                className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white focus:outline-none focus:border-amber-500/50"
+                className="w-full px-4 py-3 rounded-xl bg-[#12121A] border border-white/5 text-white focus:outline-none focus:border-amber-500/50"
               >
                 <option value="">Select</option>
                 {drinkingOptions.map(opt => <option key={opt} value={opt}>{opt}</option>)}
@@ -657,14 +657,14 @@ export default function EditProfilePage() {
               value={profile.location}
               onChange={(e) => setProfile(p => ({ ...p, location: e.target.value }))}
               placeholder="City or area (e.g. London, Manchester)"
-              className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-gray-500 focus:outline-none focus:border-amber-500/50"
+              className="w-full px-4 py-3 rounded-xl bg-[#12121A] border border-white/5 text-white placeholder-gray-500 focus:outline-none focus:border-amber-500/50"
             />
             <div>
-              <label className="text-gray-400 text-xs mb-1 block">Willing to travel</label>
+              <label className="text-white/40 text-xs mb-1 block">Willing to travel</label>
               <select
                 value={profile.willingToTravel}
                 onChange={(e) => setProfile(p => ({ ...p, willingToTravel: e.target.value }))}
-                className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white focus:outline-none focus:border-amber-500/50"
+                className="w-full px-4 py-3 rounded-xl bg-[#12121A] border border-white/5 text-white focus:outline-none focus:border-amber-500/50"
               >
                 <option value="">Select</option>
                 {travelOptions.map(opt => <option key={opt} value={opt}>{opt}</option>)}
@@ -686,7 +686,7 @@ export default function EditProfilePage() {
                 className={`px-4 py-2 rounded-full text-sm transition-colors ${
                   profile.interestedIn?.includes(opt)
                     ? 'bg-amber-500 text-black font-semibold'
-                    : 'bg-white/10 text-gray-300 hover:bg-white/20'
+                    : 'bg-white/10 text-white/60 hover:bg-white/20'
                 }`}
               >
                 {opt}
@@ -708,7 +708,7 @@ export default function EditProfilePage() {
                 className={`px-4 py-2 rounded-full text-sm transition-colors ${
                   profile.openTo?.includes(opt)
                     ? 'bg-cyan-500 text-black font-semibold'
-                    : 'bg-white/10 text-gray-300 hover:bg-white/20'
+                    : 'bg-white/10 text-white/60 hover:bg-white/20'
                 }`}
               >
                 {opt}
@@ -722,7 +722,7 @@ export default function EditProfilePage() {
           <h2 className="text-white font-semibold mb-3 flex items-center gap-2">
             <Flame className="w-5 h-5 text-orange-400" /> Kinks & Preferences
           </h2>
-          <p className="text-gray-400 text-xs mb-4">
+          <p className="text-white/40 text-xs mb-4">
             Tap to select (green = into it). Tap again to mark as hard limit (red = won't do).
           </p>
           
@@ -744,7 +744,7 @@ export default function EditProfilePage() {
                   className={`flex-none px-4 py-2 rounded-full text-sm whitespace-nowrap transition-colors ${
                     activeKinkCategory === cat
                       ? 'bg-orange-500 text-black font-semibold'
-                      : 'bg-white/10 text-gray-300'
+                      : 'bg-white/10 text-white/60'
                   }`}
                 >
                   {cat}
@@ -778,7 +778,7 @@ export default function EditProfilePage() {
                       ? 'bg-red-500/20 border border-red-500/50 text-red-300'
                       : isSelected
                       ? 'bg-green-500/20 border border-green-500/50 text-green-300'
-                      : 'bg-white/5 border border-white/10 text-gray-400'
+                      : 'bg-[#12121A] border border-white/5 text-white/40'
                   }`}
                 >
                   <div className="flex items-center gap-2">
@@ -799,15 +799,15 @@ export default function EditProfilePage() {
           <div className="flex items-center gap-4 mt-4 text-xs">
             <div className="flex items-center gap-1">
               <div className="w-3 h-3 rounded bg-green-500" />
-              <span className="text-gray-400">Into it</span>
+              <span className="text-white/40">Into it</span>
             </div>
             <div className="flex items-center gap-1">
               <div className="w-3 h-3 rounded bg-red-500" />
-              <span className="text-gray-400">Hard limit</span>
+              <span className="text-white/40">Hard limit</span>
             </div>
             <div className="flex items-center gap-1">
               <div className="w-3 h-3 rounded bg-white/20" />
-              <span className="text-gray-400">No preference</span>
+              <span className="text-white/40">No preference</span>
             </div>
           </div>
         </section>
@@ -815,12 +815,12 @@ export default function EditProfilePage() {
 
       {/* Profile Picture from Gallery Modal - Only shows gallery options */}
       {showProfilePicUpload && (
-        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/80 backdrop-blur-sm" onClick={() => setShowProfilePicUpload(false)}>
+        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/70 backdrop-blur-md animate-fade-in" onClick={() => setShowProfilePicUpload(false)}>
           <div className="w-full max-w-lg bg-[#1a1a2e] rounded-t-3xl p-6" onClick={e => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-xl text-white font-semibold">Choose from Gallery</h2>
-              <button onClick={() => setShowProfilePicUpload(false)} className="p-2 rounded-full hover:bg-white/10">
-                <X className="w-5 h-5 text-gray-400" />
+              <button onClick={() => setShowProfilePicUpload(false)} className="p-2 rounded-full hover:bg-white/5">
+                <X className="w-5 h-5 text-white/40" />
               </button>
             </div>
             
@@ -842,7 +842,7 @@ export default function EditProfilePage() {
                 ))}
               </div>
             ) : (
-              <div className="py-8 text-center text-gray-400">
+              <div className="py-8 text-center text-white/40">
                 <Camera className="w-12 h-12 mx-auto mb-2 opacity-50" />
                 <p>No photos in gallery yet</p>
                 <p className="text-sm mt-1">Upload photos to your gallery first</p>
@@ -858,8 +858,8 @@ export default function EditProfilePage() {
           <div className="w-full max-w-lg bg-[#1a1a2e] rounded-t-3xl p-6 max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-xl text-white font-semibold">Upload Photo</h2>
-              <button onClick={() => { setShowUpload(false); setPreviewImage(null) }} className="p-2 rounded-full hover:bg-white/10">
-                <X className="w-5 h-5 text-gray-400" />
+              <button onClick={() => { setShowUpload(false); setPreviewImage(null) }} className="p-2 rounded-full hover:bg-white/5">
+                <X className="w-5 h-5 text-white/40" />
               </button>
             </div>
             
@@ -870,25 +870,25 @@ export default function EditProfilePage() {
 
             {/* Caption */}
             <div className="mb-4">
-              <label className="text-gray-400 text-sm mb-2 block">Caption (optional)</label>
+              <label className="text-white/40 text-sm mb-2 block">Caption (optional)</label>
               <input
                 type="text"
                 value={uploadCaption}
 
                 onChange={(e) => setUploadCaption(e.target.value)}
                 placeholder="Add a caption..."
-                className="w-full px-4 py-3 rounded-xl bg-black/40 border border-white/10 text-white placeholder-gray-500 focus:outline-none focus:border-amber-500/50"
+                className="w-full px-4 py-3 rounded-xl bg-black/40 border border-white/5 text-white placeholder-gray-500 focus:outline-none focus:border-amber-500/50"
               />
             </div>
 
             {/* Privacy */}
             <div className="mb-4">
-              <label className="text-gray-400 text-sm mb-2 block">Who can see this?</label>
+              <label className="text-white/40 text-sm mb-2 block">Who can see this?</label>
               <div className="flex gap-2">
                 <button
                   onClick={() => setUploadPrivacy('public')}
                   className={`flex-1 py-2 rounded-lg text-sm flex items-center justify-center gap-1 ${
-                    uploadPrivacy === 'public' ? 'bg-green-500 text-black' : 'bg-white/10 text-gray-400'
+                    uploadPrivacy === 'public' ? 'bg-green-500 text-black' : 'bg-white/10 text-white/40'
                   }`}
                 >
                   <Globe className="w-4 h-4" /> Public
@@ -896,7 +896,7 @@ export default function EditProfilePage() {
                        <button
                   onClick={() => setUploadPrivacy('friends')}
                   className={`flex-1 py-2 rounded-lg text-sm flex items-center justify-center gap-1 ${
-                    uploadPrivacy === 'friends' ? 'bg-amber-500 text-black' : 'bg-white/10 text-gray-400'
+                    uploadPrivacy === 'friends' ? 'bg-amber-500 text-black' : 'bg-white/10 text-white/40'
                   }`}
                 >
                   <Lock className="w-4 h-4" /> Friends Only
@@ -929,8 +929,8 @@ export default function EditProfilePage() {
           <div className="w-full max-w-lg bg-[#1a1a2e] rounded-t-3xl p-6 max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-white text-lg font-semibold">Edit Photo</h3>
-              <button onClick={() => setSelectedPhoto(null)} className="p-2 rounded-full hover:bg-white/10">
-                <X className="w-5 h-5 text-gray-400" />
+              <button onClick={() => setSelectedPhoto(null)} className="p-2 rounded-full hover:bg-white/5">
+                <X className="w-5 h-5 text-white/40" />
               </button>
             </div>
             
@@ -950,7 +950,7 @@ export default function EditProfilePage() {
                     <div className={`w-16 h-16 rounded-lg overflow-hidden border-2 ${selectedPhoto.filter === filter.id ? 'border-amber-500' : 'border-transparent'}`}>
                       <img src={getImageSrc(selectedPhoto)} alt="" className="w-full h-full object-cover" style={{ filter: filter.css }} />
                     </div>
-                    <span className="text-xs text-gray-400">{filter.name}</span>
+                    <span className="text-xs text-white/40">{filter.name}</span>
                   </button>
                 ))}
               </div>
@@ -959,10 +959,10 @@ export default function EditProfilePage() {
             <div className="mb-4">
               <h4 className="text-white text-sm font-semibold mb-2">Visibility</h4>
               <div className="flex gap-2">
-                <button onClick={() => updatePhotoPrivacy(selectedPhoto.id, 'public')} className={`flex-1 py-2 rounded-lg text-sm flex items-center justify-center gap-1 ${selectedPhoto.privacy === 'public' ? 'bg-green-500 text-black' : 'bg-white/10 text-gray-400'}`}>
+                <button onClick={() => updatePhotoPrivacy(selectedPhoto.id, 'public')} className={`flex-1 py-2 rounded-lg text-sm flex items-center justify-center gap-1 ${selectedPhoto.privacy === 'public' ? 'bg-green-500 text-black' : 'bg-white/10 text-white/40'}`}>
                   <Globe className="w-4 h-4" /> Public
                 </button>
-                <button onClick={() => updatePhotoPrivacy(selectedPhoto.id, 'friends')} className={`flex-1 py-2 rounded-lg text-sm flex items-center justify-center gap-1 ${selectedPhoto.privacy === 'friends' ? 'bg-amber-500 text-black' : 'bg-white/10 text-gray-400'}`}>
+                <button onClick={() => updatePhotoPrivacy(selectedPhoto.id, 'friends')} className={`flex-1 py-2 rounded-lg text-sm flex items-center justify-center gap-1 ${selectedPhoto.privacy === 'friends' ? 'bg-amber-500 text-black' : 'bg-white/10 text-white/40'}`}>
                   <Lock className="w-4 h-4" /> Friends Only
                 </button>
               </div>

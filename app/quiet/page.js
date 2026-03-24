@@ -49,19 +49,19 @@ export default function QuietPage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-[#0a0a0f] flex items-center justify-center">
-        <div className="animate-pulse text-white">Loading...</div>
+        <div className="animate-pulse text-white/40 font-heading">Loading...</div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f]">
+    <div className="min-h-screen bg-[#0a0a0f] page-enter">
       {/* Header */}
-      <header className="flex items-center gap-3 p-4 border-b border-white/10">
-        <button onClick={() => router.push('/')} className="p-2 rounded-full hover:bg-white/10">
+      <header className="lk-page-header flex items-center gap-3">
+        <button onClick={() => router.push('/')} className="p-2 rounded-full hover:bg-white/5">
           <ArrowLeft className="w-5 h-5 text-white" />
         </button>
-        <h1 className="text-xl font-semibold text-white">Quiet Mode</h1>
+        <h1 className="text-xl font-heading font-semibold text-white">Quiet Mode</h1>
       </header>
 
       <div className="p-4">
@@ -80,7 +80,7 @@ export default function QuietPage() {
               </div>
               <div>
                 <h2 className="text-white text-lg font-semibold">Quiet Mode</h2>
-                <p className="text-gray-400 text-sm">
+                <p className="text-white/40 text-sm">
                   {quietMode ? 'Currently active' : 'Currently off'}
                 </p>
               </div>
@@ -97,7 +97,7 @@ export default function QuietPage() {
               }`} />
             </button>
           </div>
-          <p className="text-gray-300 text-sm">
+          <p className="text-white/60 text-sm">
             When enabled, Quiet Mode reduces notifications and hides certain UI elements to give you a peaceful experience.
           </p>
         </div>
@@ -105,41 +105,41 @@ export default function QuietPage() {
         {/* What Quiet Mode Does */}
         <h3 className="text-white font-semibold mb-3">What Quiet Mode does:</h3>
         <div className="space-y-3">
-          <div className="flex items-center gap-4 p-4 rounded-xl bg-white/5 border border-white/10">
+          <div className="flex items-center gap-4 p-4 rounded-xl bg-[#12121A] border border-white/5">
             <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
               quietMode ? 'bg-green-500/20' : 'bg-white/10'
             }`}>
-              <BellOff className={`w-5 h-5 ${quietMode ? 'text-green-400' : 'text-gray-400'}`} />
+              <BellOff className={`w-5 h-5 ${quietMode ? 'text-green-400' : 'text-white/40'}`} />
             </div>
             <div className="flex-1">
               <p className="text-white font-medium">Mute notification badges</p>
-              <p className="text-gray-400 text-sm">Hide unread counts from notice tiles</p>
+              <p className="text-white/40 text-sm">Hide unread counts from notice tiles</p>
             </div>
             {quietMode && <span className="text-green-400 text-xs">Active</span>}
           </div>
 
-          <div className="flex items-center gap-4 p-4 rounded-xl bg-white/5 border border-white/10">
+          <div className="flex items-center gap-4 p-4 rounded-xl bg-[#12121A] border border-white/5">
             <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
               quietMode ? 'bg-green-500/20' : 'bg-white/10'
             }`}>
-              <EyeOff className={`w-5 h-5 ${quietMode ? 'text-green-400' : 'text-gray-400'}`} />
+              <EyeOff className={`w-5 h-5 ${quietMode ? 'text-green-400' : 'text-white/40'}`} />
             </div>
             <div className="flex-1">
               <p className="text-white font-medium">Hide Meet suggestions</p>
-              <p className="text-gray-400 text-sm">Stop seeing user suggestions</p>
+              <p className="text-white/40 text-sm">Stop seeing user suggestions</p>
             </div>
             {quietMode && <span className="text-green-400 text-xs">Active</span>}
           </div>
 
-          <div className="flex items-center gap-4 p-4 rounded-xl bg-white/5 border border-white/10">
+          <div className="flex items-center gap-4 p-4 rounded-xl bg-[#12121A] border border-white/5">
             <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
               quietMode ? 'bg-green-500/20' : 'bg-white/10'
             }`}>
-              <Users className={`w-5 h-5 ${quietMode ? 'text-green-400' : 'text-gray-400'}`} />
+              <Users className={`w-5 h-5 ${quietMode ? 'text-green-400' : 'text-white/40'}`} />
             </div>
             <div className="flex-1">
               <p className="text-white font-medium">Reduce social prompts</p>
-              <p className="text-gray-400 text-sm">Less "who's online" notifications</p>
+              <p className="text-white/40 text-sm">Less "who's online" notifications</p>
             </div>
             {quietMode && <span className="text-green-400 text-xs">Active</span>}
           </div>
@@ -149,9 +149,9 @@ export default function QuietPage() {
         <div className={`mt-6 p-4 rounded-xl ${
           quietMode 
             ? 'bg-purple-500/10 border border-purple-500/30' 
-            : 'bg-white/5 border border-white/10'
+            : 'bg-[#12121A] border border-white/5'
         }`}>
-          <p className={`text-sm ${quietMode ? 'text-purple-300' : 'text-gray-400'}`}>
+          <p className={`text-sm ${quietMode ? 'text-purple-300' : 'text-white/40'}`}>
             {quietMode 
               ? '🌙 Quiet Mode is active. Enjoy your peaceful experience.'
               : '💬 Quiet Mode is off. You will receive all notifications normally.'}

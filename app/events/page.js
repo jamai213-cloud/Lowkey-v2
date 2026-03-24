@@ -112,44 +112,48 @@ export default function EventsPage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-[#0a0a0f] flex items-center justify-center">
-        <div className="animate-pulse text-white">Loading...</div>
+        <div className="animate-pulse text-white/40 font-heading">Loading...</div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f]">
+    <div className="min-h-screen bg-[#0a0a0f] page-enter" data-testid="events-page">
+      <div className="absolute top-0 right-0 w-[250px] h-[250px] rounded-full bg-amber-500/5 blur-[100px] pointer-events-none z-0" />
+      
       {/* Header */}
-      <header className="flex items-center justify-between p-4 border-b border-white/10">
+      <header className="lk-page-header flex items-center justify-between" data-testid="events-header">
         <div className="flex items-center gap-3">
-          <button onClick={() => router.push('/')} className="p-2 rounded-full hover:bg-white/10">
-            <ArrowLeft className="w-5 h-5 text-white" />
+          <button onClick={() => router.push('/')} className="p-2 rounded-full hover:bg-white/5 transition-colors" data-testid="events-back-btn">
+            <ArrowLeft className="w-5 h-5 text-white/60" strokeWidth={1.5} />
           </button>
-          <h1 className="text-xl font-semibold text-white">Events</h1>
+          <h1 className="text-xl font-heading font-semibold text-white">Events</h1>
         </div>
         <button 
           onClick={() => setShowCreate(true)}
-          className="p-2 rounded-full bg-amber-500/20 hover:bg-amber-500/30"
+          className="p-2 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/15 transition-colors"
+          data-testid="create-event-btn"
         >
-          <Plus className="w-5 h-5 text-amber-400" />
+          <Plus className="w-5 h-5 text-amber-400" strokeWidth={1.5} />
         </button>
       </header>
 
-      <div className="p-4">
+      <div className="p-5 relative z-[5]">
         {events.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-64 text-gray-400">
-            <Calendar className="w-16 h-16 mb-4 opacity-50" />
-            <p className="text-lg">No events yet</p>
-            <p className="text-sm mt-1">Create one to get started!</p>
+          <div className="lk-card-elevated rounded-2xl p-8 text-center" data-testid="events-empty">
+            <Calendar className="w-12 h-12 mb-4 mx-auto text-amber-500/20" strokeWidth={1.5} />
+            <p className="text-white/40">No events yet</p>
+            <p className="text-white/25 text-sm mt-1">Create one to get started!</p>
             <button 
               onClick={() => setShowCreate(true)}
-              className="mt-4 px-6 py-3 rounded-xl bg-gradient-to-r from-amber-400 to-yellow-500 text-black font-semibold"
+              className="lk-btn-primary mt-5 px-6 py-3 bg-gradient-to-r from-amber-500 to-amber-700 text-white shadow-lg shadow-amber-500/20"
+              data-testid="create-first-event-btn"
             >
               Create Event
             </button>
           </div>
         ) : (
-          <div className="space-y-4">
+          <div className="space-y-3">
             {events.map(event => {
               const userRsvp = getUserRsvp(event)
               const yesCount = event.rsvps?.filter(r => r.status === 'yes').length || 0
@@ -158,65 +162,68 @@ export default function EventsPage() {
               const canDelete = isCreator || isFounder
               
               return (
-                <div key={event.id} className="p-4 rounded-xl bg-white/5 border border-white/10">
+                <div key={event.id} className="p-5 rounded-2xl bg-[#12121A] border border-white/5 hover:bg-[#1A1A24] transition-colors" data-testid={`event-${event.id}`}>
                   <div className="flex justify-between items-start">
-                    <h3 className="text-white font-semibold text-lg">{event.title}</h3>
+                    <h3 className="text-white font-heading font-semibold">{event.title}</h3>
                     {canDelete && (
                       <button
                         onClick={() => deleteEvent(event.id)}
                         disabled={deleting === event.id}
-                        className="p-2 rounded-lg bg-red-500/20 text-red-400 hover:bg-red-500/30 transition-colors disabled:opacity-50"
+                        className="p-2 rounded-xl bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-colors disabled:opacity-50 border border-red-500/10"
                         title="Delete event"
+                        data-testid={`delete-event-${event.id}`}
                       >
-                        <Trash2 className="w-4 h-4" />
+                        <Trash2 className="w-4 h-4" strokeWidth={1.5} />
                       </button>
                     )}
                   </div>
                   
-                  <div className="flex flex-wrap gap-3 mt-3 text-gray-400 text-sm">
-                    <span className="flex items-center gap-1">
-                      <Calendar className="w-4 h-4" />
+                  <div className="flex flex-wrap gap-3 mt-3 text-white/30 text-sm">
+                    <span className="flex items-center gap-1.5">
+                      <Calendar className="w-3.5 h-3.5" strokeWidth={1.5} />
                       {new Date(event.date).toLocaleDateString()}
                     </span>
-                    <span className="flex items-center gap-1">
-                      <Clock className="w-4 h-4" />
+                    <span className="flex items-center gap-1.5">
+                      <Clock className="w-3.5 h-3.5" strokeWidth={1.5} />
                       {new Date(event.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                     </span>
-                    <span className="flex items-center gap-1">
-                      <MapPin className="w-4 h-4" />
+                    <span className="flex items-center gap-1.5">
+                      <MapPin className="w-3.5 h-3.5" strokeWidth={1.5} />
                       {event.location || 'TBD'}
                     </span>
                   </div>
                   
                   {event.description && (
-                    <p className="text-gray-300 text-sm mt-2">{event.description}</p>
+                    <p className="text-white/40 text-sm mt-2 leading-relaxed">{event.description}</p>
                   )}
                   
-                  <div className="flex items-center justify-between mt-4 pt-3 border-t border-white/10">
-                    <span className="text-gray-400 text-sm flex items-center gap-1">
-                      <Users className="w-4 h-4" /> {yesCount} attending
+                  <div className="flex items-center justify-between mt-4 pt-3 border-t border-white/5">
+                    <span className="text-white/30 text-sm flex items-center gap-1.5">
+                      <Users className="w-3.5 h-3.5" strokeWidth={1.5} /> {yesCount} attending
                     </span>
                     
                     <div className="flex gap-2">
                       <button
                         onClick={() => rsvp(event.id, userRsvp === 'yes' ? 'none' : 'yes')}
-                        className={`px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-1 ${
+                        className={`px-4 py-2 rounded-full text-sm font-medium flex items-center gap-1.5 transition-all ${
                           userRsvp === 'yes' 
-                            ? 'bg-green-500 text-white' 
-                            : 'bg-white/10 text-gray-300 hover:bg-white/20'
+                            ? 'bg-green-500/15 text-green-400 border border-green-500/20' 
+                            : 'bg-white/5 text-white/40 border border-white/5 hover:bg-white/10'
                         }`}
+                        data-testid={`rsvp-yes-${event.id}`}
                       >
-                        <Check className="w-4 h-4" /> Going
+                        <Check className="w-3.5 h-3.5" strokeWidth={1.5} /> Going
                       </button>
                       <button
                         onClick={() => rsvp(event.id, userRsvp === 'no' ? 'none' : 'no')}
-                        className={`px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-1 ${
+                        className={`px-4 py-2 rounded-full text-sm font-medium flex items-center gap-1.5 transition-all ${
                           userRsvp === 'no' 
-                            ? 'bg-red-500 text-white' 
-                            : 'bg-white/10 text-gray-300 hover:bg-white/20'
+                            ? 'bg-red-500/15 text-red-400 border border-red-500/20' 
+                            : 'bg-white/5 text-white/40 border border-white/5 hover:bg-white/10'
                         }`}
+                        data-testid={`rsvp-no-${event.id}`}
                       >
-                        <X className="w-4 h-4" /> Can't
+                        <X className="w-3.5 h-3.5" strokeWidth={1.5} /> Can't
                       </button>
                     </div>
                   </div>
@@ -229,16 +236,16 @@ export default function EventsPage() {
 
       {/* Create Event Modal */}
       {showCreate && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm" onClick={() => setShowCreate(false)}>
-          <div className="bg-[#1a1a2e] rounded-2xl p-6 max-w-md mx-4 w-full max-h-[80vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
-            <h2 className="text-xl text-white font-semibold mb-4">Create Event</h2>
-            <form onSubmit={createEvent} className="space-y-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-md p-4 animate-fade-in" onClick={() => setShowCreate(false)} data-testid="create-event-modal">
+          <div className="glass-card rounded-3xl p-8 max-w-md mx-auto w-full max-h-[80vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+            <h2 className="text-xl text-white font-heading font-semibold mb-6">Create Event</h2>
+            <form onSubmit={createEvent} className="space-y-5">
               <input
                 type="text"
                 value={newEvent.title}
                 onChange={(e) => setNewEvent({ ...newEvent, title: e.target.value })}
                 placeholder="Event title"
-                className="w-full px-4 py-3 rounded-xl bg-black/40 border border-white/10 text-white placeholder-gray-500 focus:outline-none focus:border-amber-500/50"
+                className="w-full px-4 py-3 rounded-xl bg-black/40 border border-white/5 text-white placeholder-gray-500 focus:outline-none focus:border-amber-500/50"
                 required
               />
               
@@ -247,14 +254,14 @@ export default function EventsPage() {
                   type="date"
                   value={newEvent.date}
                   onChange={(e) => setNewEvent({ ...newEvent, date: e.target.value })}
-                  className="px-4 py-3 rounded-xl bg-black/40 border border-white/10 text-white focus:outline-none focus:border-amber-500/50"
+                  className="lk-input"
                   required
                 />
                 <input
                   type="time"
                   value={newEvent.time}
                   onChange={(e) => setNewEvent({ ...newEvent, time: e.target.value })}
-                  className="px-4 py-3 rounded-xl bg-black/40 border border-white/10 text-white focus:outline-none focus:border-amber-500/50"
+                  className="lk-input"
                 />
               </div>
               
@@ -262,8 +269,8 @@ export default function EventsPage() {
                 <button
                   type="button"
                   onClick={() => setNewEvent({ ...newEvent, isOnline: !newEvent.isOnline })}
-                  className={`px-4 py-2 rounded-lg text-sm ${
-                    newEvent.isOnline ? 'bg-purple-500 text-white' : 'bg-white/10 text-gray-300'
+                  className={`px-4 py-2.5 rounded-full text-sm font-medium transition-all ${
+                    newEvent.isOnline ? 'bg-purple-500/15 text-purple-400 border border-purple-500/20' : 'bg-white/5 text-white/40 border border-white/5'
                   }`}
                 >
                   Online Event
@@ -276,7 +283,7 @@ export default function EventsPage() {
                   value={newEvent.location}
                   onChange={(e) => setNewEvent({ ...newEvent, location: e.target.value })}
                   placeholder="Location"
-                  className="w-full px-4 py-3 rounded-xl bg-black/40 border border-white/10 text-white placeholder-gray-500 focus:outline-none focus:border-amber-500/50"
+                  className="lk-input w-full"
                 />
               )}
               
@@ -284,12 +291,12 @@ export default function EventsPage() {
                 value={newEvent.description}
                 onChange={(e) => setNewEvent({ ...newEvent, description: e.target.value })}
                 placeholder="Description (optional)"
-                className="w-full px-4 py-3 rounded-xl bg-black/40 border border-white/10 text-white placeholder-gray-500 focus:outline-none focus:border-amber-500/50 resize-none h-24"
+                className="lk-input w-full resize-none h-24"
               />
               
-              <div className="flex gap-3">
-                <button type="button" onClick={() => setShowCreate(false)} className="flex-1 py-3 rounded-xl bg-white/10 text-white">Cancel</button>
-                <button type="submit" className="flex-1 py-3 rounded-xl bg-gradient-to-r from-amber-400 to-yellow-500 text-black font-semibold">Create</button>
+              <div className="flex gap-3 pt-2">
+                <button type="button" onClick={() => setShowCreate(false)} className="lk-btn-ghost flex-1 py-3">Cancel</button>
+                <button type="submit" className="lk-btn-primary flex-1 py-3 bg-gradient-to-r from-amber-500 to-amber-700 text-white shadow-lg shadow-amber-500/20">Create</button>
               </div>
             </form>
           </div>

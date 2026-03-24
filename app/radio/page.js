@@ -94,7 +94,7 @@ export default function RadioPage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-[#0a0a0f] flex items-center justify-center">
-        <div className="animate-pulse text-white">Loading...</div>
+        <div className="animate-pulse text-white/40 font-heading">Loading...</div>
       </div>
     )
   }
@@ -102,23 +102,23 @@ export default function RadioPage() {
   return (
     <div className="min-h-screen bg-[#0a0a0f] pb-32">
       {/* Header */}
-      <header className="sticky top-0 z-20 bg-[#0a0a0f]/95 backdrop-blur-lg border-b border-white/10">
+      <header className="lk-page-header border-white/5">
         <div className="flex items-center justify-between p-4">
           <div className="flex items-center gap-3">
-            <button onClick={() => router.push('/')} className="p-2 rounded-full hover:bg-white/10">
+            <button onClick={() => router.push('/')} className="p-2 rounded-full hover:bg-white/5">
               <ArrowLeft className="w-5 h-5 text-white" />
             </button>
-            <h1 className="text-xl font-semibold text-white">Radio</h1>
+            <h1 className="text-xl font-heading font-semibold text-white">Radio</h1>
           </div>
           
           {/* Volume Control */}
           <div className="flex items-center gap-2">
             <button 
               onClick={handleMuteToggle}
-              className="p-2 rounded-full hover:bg-white/10"
+              className="p-2 rounded-full hover:bg-white/5"
             >
               {muted ? (
-                <VolumeX className="w-5 h-5 text-gray-400" />
+                <VolumeX className="w-5 h-5 text-white/40" />
               ) : (
                 <Volume2 className="w-5 h-5 text-white" />
               )}
@@ -156,7 +156,7 @@ export default function RadioPage() {
               >
                 <div className="w-16 h-16 rounded-full bg-[#0a0a0f] flex flex-col items-center justify-center">
                   <span className="text-white font-bold text-lg">{currentStation.frequency}</span>
-                  <span className="text-gray-400 text-xs">FM</span>
+                  <span className="text-white/40 text-xs">FM</span>
                 </div>
                 {isPlaying && (
                   <div className="absolute w-full h-full rounded-full animate-ping opacity-20" style={{ backgroundColor: currentStation.color }} />
@@ -164,9 +164,9 @@ export default function RadioPage() {
               </div>
               
               <div className="flex-1">
-                <p className="text-gray-400 text-sm">{isPlaying ? 'Now Playing' : 'Paused'}</p>
+                <p className="text-white/40 text-sm">{isPlaying ? 'Now Playing' : 'Paused'}</p>
                 <h2 className="text-white text-xl font-bold">{currentStation.name}</h2>
-                <p className="text-gray-400 text-sm">{currentStation.genre}</p>
+                <p className="text-white/40 text-sm">{currentStation.genre}</p>
               </div>
               
               <button 
@@ -219,13 +219,13 @@ export default function RadioPage() {
                   >
                     <div className="w-12 h-12 rounded-full bg-[#0a0a0f]/80 flex flex-col items-center justify-center">
                       <span className="text-white font-bold text-sm">{station.frequency}</span>
-                      <span className="text-gray-500 text-[10px]">FM</span>
+                      <span className="text-white/25 text-[10px]">FM</span>
                     </div>
                   </div>
                   
                   {/* Station Name */}
                   <h3 className="text-white text-sm font-semibold text-center leading-tight">{station.name}</h3>
-                  <p className="text-gray-400 text-xs text-center">{station.genre}</p>
+                  <p className="text-white/40 text-xs text-center">{station.genre}</p>
                 </div>
                 
                 {/* Play/Pause Overlay */}
@@ -257,12 +257,12 @@ export default function RadioPage() {
 
       {/* Radio Info */}
       <div className="p-4">
-        <div className="p-4 rounded-xl bg-white/5 border border-white/10">
+        <div className="p-4 rounded-xl bg-[#12121A] border border-white/5">
           <div className="flex items-center gap-3 mb-2">
             <RadioIcon className="w-5 h-5 text-amber-400" />
             <h3 className="text-white font-semibold">About Radio</h3>
           </div>
-          <p className="text-gray-400 text-sm">
+          <p className="text-white/40 text-sm">
             Tune into UK's best urban radio stations. Listen to the latest hits, classic tracks, and exclusive content from top DJs.
           </p>
           <p className="text-purple-400 text-sm mt-2">

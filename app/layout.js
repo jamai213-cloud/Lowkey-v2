@@ -12,7 +12,7 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en" className="dark overflow-x-hidden">
-      <body className="min-h-screen bg-[#0a0a0f] overflow-x-hidden">
+      <body className="min-h-screen bg-[#0a0a0f] overflow-x-hidden antialiased">
         <ClientLayout>{children}</ClientLayout>
       </body>
     </html>

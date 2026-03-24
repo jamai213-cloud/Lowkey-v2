@@ -177,7 +177,7 @@ export default function SearchPage() {
     }
     if (hasSentRequest(u.id)) {
       return (
-        <span className="text-gray-400 text-sm flex items-center gap-1 flex-shrink-0">
+        <span className="text-white/40 text-sm flex items-center gap-1 flex-shrink-0">
           <Clock className="w-4 h-4" /> Pending
         </span>
       )
@@ -211,54 +211,58 @@ export default function SearchPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f]">
+    <div className="min-h-screen bg-[#0a0a0f] page-enter" data-testid="search-page">
+      <div className="absolute top-0 left-0 w-[250px] h-[250px] rounded-full bg-green-500/5 blur-[100px] pointer-events-none z-0" />
+      
       {/* Header */}
-      <header className="flex items-center justify-between p-4 border-b border-white/10">
+      <header className="lk-page-header flex items-center justify-between" data-testid="search-header">
         <div className="flex items-center gap-3">
-          <button onClick={() => router.push('/')} className="p-2 rounded-full hover:bg-white/10">
-            <ArrowLeft className="w-5 h-5 text-white" />
+          <button onClick={() => router.push('/')} className="p-2 rounded-full hover:bg-white/5 transition-colors" data-testid="search-back-btn">
+            <ArrowLeft className="w-5 h-5 text-white/60" strokeWidth={1.5} />
           </button>
-          <h1 className="text-xl font-semibold text-white">Search</h1>
+          <h1 className="text-xl font-heading font-semibold text-white">Search</h1>
         </div>
         <button
           onClick={toggleSound}
-          className="p-2 rounded-full hover:bg-white/10"
+          className="p-2 rounded-full hover:bg-white/5 transition-colors"
           title={soundEnabled ? 'Mute notifications' : 'Enable notification sounds'}
+          data-testid="search-sound-toggle"
         >
           {soundEnabled ? (
-            <Volume2 className="w-5 h-5 text-amber-400" />
+            <Volume2 className="w-4 h-4 text-purple-400" strokeWidth={1.5} />
           ) : (
-            <VolumeX className="w-5 h-5 text-gray-400" />
+            <VolumeX className="w-4 h-4 text-white/30" strokeWidth={1.5} />
           )}
         </button>
       </header>
 
-      <div className="p-4">
+      <div className="p-5 relative z-[5]">
         {/* Search Input */}
-        <form onSubmit={search} className="mb-6">
+        <form onSubmit={search} className="mb-6" data-testid="search-form">
           <div className="relative">
-            <SearchIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+            <SearchIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20" strokeWidth={1.5} />
             <input
               type="text"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search members..."
-              className="w-full pl-12 pr-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-gray-400 focus:outline-none focus:border-amber-500/50"
+              className="lk-input w-full pl-11"
+              data-testid="search-input"
             />
           </div>
         </form>
 
         {/* Pending Friend Requests */}
         {pendingRequests.length > 0 && (
-          <div className="mb-6 p-4 rounded-xl bg-purple-500/10 border border-purple-500/30">
-            <h3 className="text-purple-400 font-medium mb-3 flex items-center gap-2">
-              <Heart className="w-4 h-4" /> Friend Requests ({pendingRequests.length})
+          <div className="mb-6 p-5 rounded-2xl bg-purple-500/5 border border-purple-500/15">
+            <h3 className="text-purple-400 font-heading font-medium mb-3 flex items-center gap-2">
+              <Heart className="w-4 h-4" strokeWidth={1.5} /> Friend Requests ({pendingRequests.length})
             </h3>
             <div className="space-y-2">
               {pendingRequests.map(req => (
-                <div key={req.fromUserId} className="flex items-center justify-between p-2 rounded-lg bg-white/5">
+                <div key={req.fromUserId} className="flex items-center justify-between p-3 rounded-xl bg-[#12121A] border border-white/5">
                   <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 rounded-full bg-purple-500/30 overflow-hidden">
+                    <div className="w-9 h-9 rounded-full bg-purple-500/15 overflow-hidden border border-white/5">
                       {req.fromAvatar ? (
                         <img src={req.fromAvatar} alt="" className="w-full h-full object-cover" />
                       ) : (
@@ -269,16 +273,16 @@ export default function SearchPage() {
                     </div>
                     <span className="text-white text-sm">{req.fromName}</span>
                   </div>
-                  <div className="flex gap-1">
+                  <div className="flex gap-2">
                     <button 
                       onClick={() => acceptFriendRequest(req.fromUserId)}
-                      className="px-3 py-1 rounded-lg bg-green-500 text-white text-xs"
+                      className="px-3 py-1.5 rounded-full bg-green-500/15 text-green-400 text-xs font-medium border border-green-500/15"
                     >
                       Accept
                     </button>
                     <button 
                       onClick={() => declineFriendRequest(req.fromUserId)}
-                      className="px-3 py-1 rounded-lg bg-white/10 text-gray-400 text-xs"
+                      className="px-3 py-1.5 rounded-full bg-white/5 text-white/30 text-xs border border-white/5"
                     >
                       Decline
                     </button>
@@ -290,22 +294,22 @@ export default function SearchPage() {
         )}
 
         {loading && (
-          <div className="text-center text-gray-400">Loading members...</div>
+          <div className="text-center text-white/40 font-heading animate-pulse py-8">Loading members...</div>
         )}
 
         {!loading && (
           <div className="space-y-6">
             {/* Users - All Members */}
             <div>
-              <h2 className="text-white font-semibold mb-3 flex items-center gap-2">
-                <User className="w-4 h-4" /> 
+              <h2 className="text-white font-heading font-semibold mb-3 flex items-center gap-2">
+                <User className="w-4 h-4 text-purple-400" strokeWidth={1.5} /> 
                 {query ? 'Results' : 'All Members'} 
-                <span className="text-gray-500 text-sm font-normal">({results.users.filter(u => u.id !== user?.id).length})</span>
+                <span className="text-white/25 text-sm font-normal">({results.users.filter(u => u.id !== user?.id).length})</span>
               </h2>
               {results.users.filter(u => u.id !== user?.id).length === 0 ? (
-                <div className="text-center text-gray-400 py-8">
-                  <User className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                  <p>No members found</p>
+                <div className="lk-card-elevated rounded-2xl p-8 text-center">
+                  <User className="w-12 h-12 mx-auto mb-4 text-white/15" strokeWidth={1.5} />
+                  <p className="text-white/40">No members found</p>
                 </div>
               ) : (
                 <div className="space-y-2">
@@ -315,18 +319,18 @@ export default function SearchPage() {
                       <div 
                         key={u.id} 
                         onClick={() => viewProfile(u.id)}
-                        className="flex items-center gap-3 p-3 rounded-xl bg-white/5 cursor-pointer hover:bg-white/10 transition-colors"
+                        className="flex items-center gap-3 p-4 rounded-2xl bg-[#12121A] border border-white/5 cursor-pointer hover:bg-[#1A1A24] hover:-translate-y-0.5 transition-all duration-300"
+                        data-testid={`search-result-${u.id}`}
                       >
-                        {/* Profile Picture */}
-                        <div className={`w-12 h-12 rounded-full flex items-center justify-center overflow-hidden ${
-                          u.isFounder ? 'bg-gradient-to-br from-amber-500 to-yellow-600' :
-                          u.isCreator ? 'bg-gradient-to-br from-pink-500 to-purple-500' :
-                          'bg-gradient-to-br from-purple-500 to-pink-500'
+                        <div className={`w-12 h-12 rounded-full flex items-center justify-center overflow-hidden border border-white/5 ${
+                          u.isFounder ? 'bg-gradient-to-br from-amber-500/20 to-yellow-600/20' :
+                          u.isCreator ? 'bg-gradient-to-br from-pink-500/20 to-purple-500/20' :
+                          'bg-[#1A1A24]'
                         }`}>
                           {u.avatar ? (
                             <img src={u.avatar} alt="" className="w-full h-full object-cover" />
                           ) : (
-                            <User className="w-6 h-6 text-white" />
+                            <User className="w-5 h-5 text-white/30" strokeWidth={1.5} />
                           )}
                         </div>
                         <div className="flex-1 min-w-0">
@@ -336,14 +340,14 @@ export default function SearchPage() {
                               <badge.icon className={`w-4 h-4 flex-shrink-0 ${badge.color}`} />
                             )}
                             {u.isCreator && !u.isFounder && (
-                              <span className="text-xs px-1.5 py-0.5 rounded bg-pink-500/20 text-pink-400 flex-shrink-0">Creator</span>
+                              <span className="text-[10px] px-2 py-0.5 rounded-full bg-pink-500/10 text-pink-400 flex-shrink-0 border border-pink-500/15">Creator</span>
                             )}
                             {u.profilePrivacy === 'private' && (
-                              <Lock className="w-3 h-3 text-gray-400" />
+                              <Lock className="w-3 h-3 text-white/30" strokeWidth={1.5} />
                             )}
                           </div>
                           {u.bio && (
-                            <p className="text-gray-400 text-sm truncate">{u.bio}</p>
+                            <p className="text-white/30 text-sm truncate">{u.bio}</p>
                           )}
                         </div>
                         {getFriendButton(u)}
@@ -359,7 +363,7 @@ export default function SearchPage() {
 
       {/* Profile View Modal */}
       {showProfileModal && selectedUser && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4" onClick={() => setShowProfileModal(false)}>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-md animate-fade-in p-4" onClick={() => setShowProfileModal(false)}>
           <div className="bg-[#1a1a2e] rounded-2xl max-w-md w-full max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
             {/* Profile Header */}
             <div className="relative">
@@ -394,10 +398,10 @@ export default function SearchPage() {
               
               {/* Privacy Notice for Private Profiles */}
               {selectedUser.profilePrivacy === 'private' && !isFriend(selectedUser.id) && !selectedUser.isPublic && (
-                <div className="mt-4 p-4 rounded-xl bg-white/5 border border-white/10 text-center">
-                  <Lock className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-                  <p className="text-gray-400 text-sm">This profile is private</p>
-                  <p className="text-gray-500 text-xs mt-1">Send a friend request to see more</p>
+                <div className="mt-4 p-4 rounded-xl bg-[#12121A] border border-white/5 text-center">
+                  <Lock className="w-8 h-8 text-white/40 mx-auto mb-2" />
+                  <p className="text-white/40 text-sm">This profile is private</p>
+                  <p className="text-white/25 text-xs mt-1">Send a friend request to see more</p>
                   {!isFriend(selectedUser.id) && !hasSentRequest(selectedUser.id) && (
                     <button 
                       onClick={() => sendFriendRequest(selectedUser.id)}
@@ -414,7 +418,7 @@ export default function SearchPage() {
                 <div className="mt-4 p-4 rounded-xl bg-pink-500/10 border border-pink-500/30 text-center">
                   <Sparkles className="w-8 h-8 text-pink-400 mx-auto mb-2" />
                   <p className="text-pink-400 text-sm font-medium">Creator Content</p>
-                  <p className="text-gray-400 text-xs mt-1">Subscribe to unlock full profile</p>
+                  <p className="text-white/40 text-xs mt-1">Subscribe to unlock full profile</p>
                   <button className="mt-3 px-4 py-2 rounded-lg bg-pink-500 text-white text-sm font-medium">
                     Subscribe
                   </button>
@@ -428,7 +432,7 @@ export default function SearchPage() {
                   {(selectedUser.aboutMe || selectedUser.bio) && (
                     <div className="mt-4">
                       <h3 className="text-white font-medium mb-2 text-sm">About Me</h3>
-                      <p className="text-gray-400 text-sm">{selectedUser.aboutMe || selectedUser.bio}</p>
+                      <p className="text-white/40 text-sm">{selectedUser.aboutMe || selectedUser.bio}</p>
                     </div>
                   )}
 
@@ -437,19 +441,19 @@ export default function SearchPage() {
                     {selectedUser.age && (
                       <div className="p-2 rounded-lg bg-white/5 text-center">
                         <p className="text-white font-bold text-sm">{selectedUser.age}</p>
-                        <p className="text-gray-400 text-xs">Age</p>
+                        <p className="text-white/40 text-xs">Age</p>
                       </div>
                     )}
                     {selectedUser.location && (
                       <div className="p-2 rounded-lg bg-white/5 text-center">
                         <p className="text-white font-bold text-sm truncate">{selectedUser.location}</p>
-                        <p className="text-gray-400 text-xs">Location</p>
+                        <p className="text-white/40 text-xs">Location</p>
                       </div>
                     )}
                     {selectedUser.gender && (
                       <div className="p-2 rounded-lg bg-white/5 text-center">
                         <p className="text-white font-bold text-sm truncate">{selectedUser.gender}</p>
-                        <p className="text-gray-400 text-xs">Gender</p>
+                        <p className="text-white/40 text-xs">Gender</p>
                       </div>
                     )}
                   </div>
@@ -458,7 +462,7 @@ export default function SearchPage() {
                   {selectedUser.lookingFor && (
                     <div className="mt-4">
                       <h3 className="text-white font-medium mb-2 text-sm">Looking For</h3>
-                      <p className="text-gray-400 text-sm">{selectedUser.lookingFor}</p>
+                      <p className="text-white/40 text-sm">{selectedUser.lookingFor}</p>
                     </div>
                   )}
 
@@ -467,13 +471,13 @@ export default function SearchPage() {
                     <div className="mt-4 grid grid-cols-2 gap-2">
                       {selectedUser.relationshipStatus && (
                         <div className="p-2 rounded-lg bg-white/5">
-                          <p className="text-gray-400 text-xs">Status</p>
+                          <p className="text-white/40 text-xs">Status</p>
                           <p className="text-white text-sm">{selectedUser.relationshipStatus}</p>
                         </div>
                       )}
                       {selectedUser.sexuality && (
                         <div className="p-2 rounded-lg bg-white/5">
-                          <p className="text-gray-400 text-xs">Sexuality</p>
+                          <p className="text-white/40 text-xs">Sexuality</p>
                           <p className="text-white text-sm">{selectedUser.sexuality}</p>
                         </div>
                       )}
@@ -510,10 +514,10 @@ export default function SearchPage() {
                       <h3 className="text-white font-medium mb-2 text-sm">Lifestyle</h3>
                       <div className="flex flex-wrap gap-2">
                         {selectedUser.smoking && (
-                          <span className="px-2 py-1 rounded-full bg-gray-500/20 text-gray-400 text-xs">{selectedUser.smoking}</span>
+                          <span className="px-2 py-1 rounded-full bg-gray-500/20 text-white/40 text-xs">{selectedUser.smoking}</span>
                         )}
                         {selectedUser.drinking && (
-                          <span className="px-2 py-1 rounded-full bg-gray-500/20 text-gray-400 text-xs">{selectedUser.drinking}</span>
+                          <span className="px-2 py-1 rounded-full bg-gray-500/20 text-white/40 text-xs">{selectedUser.drinking}</span>
                         )}
                       </div>
                     </div>
@@ -551,11 +555,11 @@ export default function SearchPage() {
                   <div className="flex gap-4 mt-4 text-center">
                     <div className="flex-1 p-3 rounded-xl bg-white/5">
                       <p className="text-white font-bold">{selectedUser.friends?.length || 0}</p>
-                      <p className="text-gray-400 text-xs">Friends</p>
+                      <p className="text-white/40 text-xs">Friends</p>
                     </div>
                     <div className="flex-1 p-3 rounded-xl bg-white/5">
                       <p className="text-white font-bold">{selectedUser.galleryCount || 0}</p>
-                      <p className="text-gray-400 text-xs">Photos</p>
+                      <p className="text-white/40 text-xs">Photos</p>
                     </div>
                   </div>
                   
@@ -617,7 +621,7 @@ export default function SearchPage() {
                     Message
                   </button>
                 ) : hasSentRequest(selectedUser.id) ? (
-                  <button disabled className="flex-1 py-3 rounded-xl bg-white/10 text-gray-400 font-medium">
+                  <button disabled className="flex-1 py-3 rounded-xl bg-white/10 text-white/40 font-medium">
                     Request Sent
                   </button>
                 ) : (

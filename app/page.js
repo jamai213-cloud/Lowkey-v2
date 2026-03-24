@@ -105,30 +105,32 @@ const LockModal = ({ isOpen, onClose }) => {
   if (!isOpen) return null
   
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm" onClick={onClose}>
-      <div className="glass-card rounded-2xl p-6 max-w-sm mx-4 shadow-2xl" onClick={e => e.stopPropagation()}>
-        <div className="flex justify-between items-start mb-4">
-          <div className="w-14 h-14 rounded-full bg-gradient-to-br from-purple-500/30 to-pink-500/30 flex items-center justify-center border border-purple-500/30">
-            <Lock className="w-7 h-7 text-purple-400" />
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-md p-4 animate-fade-in" onClick={onClose} data-testid="lock-modal">
+      <div className="glass-card rounded-3xl p-8 max-w-sm mx-auto shadow-2xl" onClick={e => e.stopPropagation()}>
+        <div className="flex justify-between items-start mb-6">
+          <div className="w-14 h-14 rounded-2xl bg-purple-500/10 flex items-center justify-center border border-purple-500/15">
+            <Lock className="w-7 h-7 text-purple-400" strokeWidth={1.5} />
           </div>
-          <button onClick={onClose} className="text-gray-400 hover:text-white transition-colors">
+          <button onClick={onClose} className="p-1 rounded-full hover:bg-white/5 text-white/30 hover:text-white transition-colors" data-testid="lock-modal-close">
             <X className="w-5 h-5" />
           </button>
         </div>
-        <h3 className="text-xl font-semibold text-white mb-2">Feature Locked</h3>
-        <p className="text-gray-400 mb-6">
+        <h3 className="text-xl font-heading font-semibold text-white mb-2">Feature Locked</h3>
+        <p className="text-white/40 text-sm mb-8 leading-relaxed">
           Finish verification to unlock this feature. Upload your verification photo and complete the steps.
         </p>
         <div className="space-y-3">
           <button 
             onClick={() => { onClose(); router.push('/verification'); }}
-            className="w-full py-3 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 text-white font-semibold hover:opacity-90 transition-opacity"
+            className="lk-btn-primary w-full py-4 bg-gradient-to-r from-purple-500 to-purple-700 text-white shadow-lg shadow-purple-500/20"
+            data-testid="start-verification-btn"
           >
             Start Verification
           </button>
           <button 
             onClick={onClose}
-            className="w-full py-3 rounded-xl bg-white/5 border border-white/10 text-gray-300 font-medium hover:bg-white/10 transition-colors"
+            className="lk-btn-ghost w-full py-3"
+            data-testid="maybe-later-btn"
           >
             Maybe Later
           </button>
@@ -166,19 +168,19 @@ const OnboardingSlide = ({ isOpen, onDismiss }) => {
         
         {/* Intro */}
         <div className="mb-8">
-          <p className="text-gray-300 text-sm leading-relaxed mb-4">
+          <p className="text-white/60 text-sm leading-relaxed mb-4">
             Lowkey is a curated digital space where connection, creativity, and nightlife culture exist together — intentionally.
           </p>
-          <p className="text-gray-400 text-sm italic">
+          <p className="text-white/40 text-sm italic">
             This isn't just about matching profiles.<br />
             It's about <span className="text-white">how</span> and <span className="text-white">where</span> you connect.
           </p>
         </div>
         
         {/* What We Offer */}
-        <div className="glass-card rounded-2xl p-5 mb-6 border border-white/10">
-          <h2 className="text-amber-400 text-sm font-semibold uppercase tracking-wider mb-4">What Lowkey Offers</h2>
-          <p className="text-gray-400 text-xs mb-4">A multi-layered experience designed for different moods, moments, and levels of expression:</p>
+        <div className="glass-card rounded-2xl p-5 mb-6 border border-white/5">
+          <h2 className="lk-label text-purple-400 mb-4">What Lowkey Offers</h2>
+          <p className="text-white/30 text-xs mb-4">A multi-layered experience designed for different moods, moments, and levels of expression:</p>
           <ul className="space-y-3 text-gray-300 text-sm">
             <li className="flex items-start gap-3">
               <span className="text-amber-400 mt-0.5">•</span>
@@ -207,8 +209,8 @@ const OnboardingSlide = ({ isOpen, onDismiss }) => {
         </div>
         
         {/* What We Expect */}
-        <div className="glass-card rounded-2xl p-5 mb-6 border border-white/10">
-          <h2 className="text-purple-400 text-sm font-semibold uppercase tracking-wider mb-4">What Lowkey Expects</h2>
+        <div className="glass-card rounded-2xl p-5 mb-6 border border-white/5">
+          <h2 className="lk-label text-purple-400 mb-4">What Lowkey Expects</h2>
           <p className="text-gray-400 text-xs mb-4">To protect the experience and the people in it, Lowkey expects:</p>
           <ul className="space-y-2 text-gray-300 text-sm">
             <li className="flex items-start gap-3">
@@ -240,11 +242,12 @@ const OnboardingSlide = ({ isOpen, onDismiss }) => {
           <p className="text-amber-400 text-sm mt-1">It's for people who want more than surface-level connection.</p>
         </div>
         
-        {/* Continue Button - Fixed at bottom */}
+        {/* Continue Button */}
         <div className="mt-auto">
           <button 
             onClick={onDismiss}
-            className="w-full py-4 rounded-xl bg-gradient-to-r from-amber-400 to-yellow-500 text-black font-semibold hover:opacity-90 transition-opacity"
+            className="lk-btn-primary w-full py-4 bg-gradient-to-r from-purple-500 to-purple-700 text-white shadow-lg shadow-purple-500/20"
+            data-testid="onboarding-continue-btn"
           >
             Continue
           </button>
@@ -262,8 +265,7 @@ const AfterDarkDisclaimer = ({ isOpen, onAccept }) => {
   if (!isOpen) return null
   
   return (
-    <div className="fixed inset-0 z-50 bg-[#0a0a0f]">
-      {/* Animated Background - consistent with app style */}
+    <div className="fixed inset-0 z-50 bg-[#0a0a0f]" data-testid="afterdark-disclaimer">
       <div className="animated-bg">
         <div className="blob blob-1" />
         <div className="blob blob-2" />
@@ -276,39 +278,36 @@ const AfterDarkDisclaimer = ({ isOpen, onAccept }) => {
       
       <div className="relative z-10 min-h-screen flex flex-col items-center justify-center p-6">
         <div className="max-w-md w-full text-center">
-          {/* Icon */}
-          <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-purple-500/20 flex items-center justify-center border border-purple-500/30">
-            <Moon className="w-10 h-10 text-purple-400" />
+          <div className="w-20 h-20 mx-auto mb-6 rounded-2xl bg-orange-500/10 flex items-center justify-center border border-orange-500/15">
+            <Moon className="w-10 h-10 text-orange-400" strokeWidth={1.5} />
           </div>
           
-          {/* Header */}
-          <h1 className="text-2xl font-bold text-white mb-2">After Dark on Lowkey</h1>
-          <p className="text-purple-400 text-sm mb-8">Private. Discreet. Anonymous.</p>
+          <h1 className="text-2xl font-heading font-bold text-white mb-2">After Dark on Lowkey</h1>
+          <p className="text-orange-400 text-sm mb-8">Private. Discreet. Anonymous.</p>
           
-          {/* Content */}
-          <div className="glass-card rounded-2xl p-5 mb-6 border border-white/10 text-left">
-            <p className="text-gray-300 text-sm leading-relaxed mb-4">
+          <div className="glass-card rounded-2xl p-5 mb-6 border border-white/5 text-left">
+            <p className="text-white/60 text-sm leading-relaxed mb-4">
               After Dark spaces are designed for privacy, discretion, and anonymous expression.
             </p>
             
-            <div className="border-l-2 border-purple-500 pl-4 mb-4">
+            <div className="border-l-2 border-orange-500/50 pl-4 mb-4">
               <p className="text-white text-sm font-medium mb-2">
                 Respect and consent are mandatory at all times.
               </p>
-              <p className="text-gray-400 text-sm">
+              <p className="text-white/40 text-sm">
                 Harassment, coercion, or non-consensual behaviour is not tolerated and will result in removal.
               </p>
             </div>
             
-            <p className="text-gray-500 text-xs italic">
+            <p className="text-white/25 text-xs italic">
               After Dark is optional and unlocked only after verification.
             </p>
           </div>
           
-          {/* Accept Button */}
           <button 
             onClick={onAccept}
-            className="w-full py-4 rounded-xl bg-gradient-to-r from-purple-600 to-purple-800 text-white font-semibold hover:opacity-90 transition-opacity"
+            className="lk-btn-primary w-full py-4 bg-gradient-to-r from-orange-500 to-orange-700 text-white shadow-lg shadow-orange-500/20"
+            data-testid="afterdark-accept-btn"
           >
             I Understand · Enter After Dark
           </button>
@@ -326,45 +325,38 @@ const MainLoungeInfo = ({ isOpen, onClose, onEnter }) => {
   if (!isOpen) return null
   
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4" onClick={onClose}>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-md p-4 animate-fade-in" onClick={onClose} data-testid="lounge-info-modal">
       <div className="max-w-sm w-full" onClick={e => e.stopPropagation()}>
-        {/* Animated Background - subtle */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute top-1/4 left-1/4 w-64 h-64 rounded-full bg-purple-500/10 blur-3xl" />
-          <div className="absolute bottom-1/4 right-1/4 w-64 h-64 rounded-full bg-pink-500/10 blur-3xl" />
-        </div>
-        
-        <div className="relative glass-card rounded-2xl p-6 border border-white/10">
-          {/* Icon */}
-          <div className="w-14 h-14 mx-auto mb-4 rounded-full bg-purple-500/20 flex items-center justify-center border border-purple-500/30">
-            <Sofa className="w-7 h-7 text-purple-400" />
+        <div className="relative glass-card rounded-3xl p-8 border border-white/5">
+          <div className="w-14 h-14 mx-auto mb-5 rounded-2xl bg-cyan-500/10 flex items-center justify-center border border-cyan-500/15">
+            <Sofa className="w-7 h-7 text-cyan-400" strokeWidth={1.5} />
           </div>
           
-          {/* Content */}
-          <div className="text-center mb-6">
-            <h2 className="text-xl font-bold text-white mb-2">The Main Lounge</h2>
-            <p className="text-purple-400 text-sm mb-4">The heart of Lowkey</p>
+          <div className="text-center mb-8">
+            <h2 className="text-xl font-heading font-bold text-white mb-2">The Main Lounge</h2>
+            <p className="text-cyan-400 text-sm mb-4">The heart of Lowkey</p>
             
-            <p className="text-gray-300 text-sm leading-relaxed">
+            <p className="text-white/50 text-sm leading-relaxed">
               The central, open social space where conversation, culture, music, and community come together.
             </p>
             
-            <p className="text-gray-400 text-sm mt-3 italic">
+            <p className="text-white/30 text-sm mt-3 italic">
               A place for relaxed, real-time connection.
             </p>
           </div>
           
-          {/* Actions */}
-          <div className="space-y-2">
+          <div className="space-y-3">
             <button 
               onClick={onEnter}
-              className="w-full py-3 rounded-xl bg-gradient-to-r from-purple-600 to-purple-800 text-white font-semibold hover:opacity-90 transition-opacity"
+              className="lk-btn-primary w-full py-3.5 bg-gradient-to-r from-cyan-500 to-cyan-700 text-white shadow-lg shadow-cyan-500/20"
+              data-testid="enter-lounge-btn"
             >
               Enter Lounge
             </button>
             <button 
               onClick={onClose}
-              className="w-full py-2 text-gray-400 text-sm hover:text-white transition-colors"
+              className="w-full py-2 text-white/30 text-sm hover:text-white transition-colors"
+              data-testid="lounge-maybe-later-btn"
             >
               Maybe later
             </button>
@@ -407,38 +399,40 @@ const ForgotPasswordModal = ({ isOpen, onClose }) => {
   if (!isOpen) return null
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm" onClick={onClose}>
-      <div className="glass-card rounded-2xl p-6 max-w-sm mx-4 w-full" onClick={e => e.stopPropagation()}>
-        <div className="flex justify-between items-center mb-4">
-          <h3 className="text-xl font-semibold text-white">Reset Password</h3>
-          <button onClick={onClose} className="text-gray-400 hover:text-white">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-md p-4 animate-fade-in" onClick={onClose} data-testid="forgot-password-modal">
+      <div className="glass-card rounded-3xl p-8 max-w-sm mx-auto w-full" onClick={e => e.stopPropagation()}>
+        <div className="flex justify-between items-center mb-6">
+          <h3 className="text-xl font-heading font-semibold text-white">Reset Password</h3>
+          <button onClick={onClose} className="p-1 rounded-full hover:bg-white/5 text-white/30 hover:text-white transition-colors" data-testid="close-forgot-modal">
             <X className="w-5 h-5" />
           </button>
         </div>
         
         {sent ? (
           <div className="text-center py-4">
-            <div className="w-16 h-16 rounded-full bg-green-500/20 flex items-center justify-center mx-auto mb-4">
-              <CheckCircle className="w-8 h-8 text-green-400" />
+            <div className="w-16 h-16 rounded-2xl bg-green-500/10 flex items-center justify-center mx-auto mb-4 border border-green-500/15">
+              <CheckCircle className="w-8 h-8 text-green-400" strokeWidth={1.5} />
             </div>
-            <p className="text-gray-300">If an account exists with that email, a reset link has been sent.</p>
+            <p className="text-white/50 text-sm">If an account exists with that email, a reset link has been sent.</p>
           </div>
         ) : (
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <p className="text-gray-400 text-sm">Enter your email and we'll send you a link to reset your password.</p>
+          <form onSubmit={handleSubmit} className="space-y-5">
+            <p className="text-white/40 text-sm">Enter your email and we'll send you a link to reset your password.</p>
             <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="your@email.com"
-              className="w-full px-4 py-3 rounded-xl bg-black/40 border border-white/10 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500/50"
+              className="lk-input w-full"
               required
+              data-testid="forgot-email-input"
             />
             {error && <p className="text-red-400 text-sm">{error}</p>}
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3 rounded-xl bg-gradient-to-r from-amber-400 to-yellow-500 text-black font-semibold disabled:opacity-50"
+              className="lk-btn-primary w-full py-4 bg-gradient-to-r from-purple-500 to-purple-700 text-white disabled:opacity-50 shadow-lg shadow-purple-500/20"
+              data-testid="send-reset-link-btn"
             >
               {loading ? 'Sending...' : 'Send Reset Link'}
             </button>
@@ -472,116 +466,115 @@ const AuthPage = ({ onLogin }) => {
         ? { identifier: email, password }
         : { email, password, displayName }
 
-      console.log('Attempting login with:', endpoint)
-      
       const res = await fetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body)
       })
 
-      console.log('Response status:', res.status)
       const data = await res.json()
-      console.log('Response data:', data)
 
       if (!res.ok) {
-        console.log('Login failed:', data.error)
         setError(data.error || 'Something went wrong')
         setLoading(false)
         return
       }
 
-      console.log('Login successful, saving to localStorage')
       localStorage.setItem('lowkey_user', JSON.stringify(data.user))
       localStorage.setItem('lowkey_token', data.token)
-      console.log('Calling onLogin')
       onLogin(data.user)
     } catch (err) {
-      console.error('Login error:', err)
       setError('Network error. Please try again.')
     }
     setLoading(false)
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden">
+    <div className="min-h-screen flex items-center justify-center p-6 relative overflow-hidden" data-testid="auth-page">
       <AnimatedBackground />
       
-      <div className="relative z-10 w-full max-w-md">
+      <div className="relative z-10 w-full max-w-md animate-fade-in-up">
         {/* Logo */}
-        <div className="flex flex-col items-center mb-10">
+        <div className="flex flex-col items-center mb-12">
           <LowKeyLogo size="xl" />
-          <p className="text-pink-200/80 mt-6 text-xl font-light tracking-wide">Grown chats. Real nights. Private parties.</p>
+          <p className="text-purple-200/70 mt-8 text-lg font-light tracking-wide text-center" style={{ fontFamily: 'Figtree, sans-serif' }}>
+            Grown chats. Real nights. Private parties.
+          </p>
         </div>
 
         {/* Auth Card */}
-        <div className="glass-card rounded-3xl p-6 shadow-2xl">
+        <div className="glass-card rounded-3xl p-8 shadow-2xl" data-testid="auth-card">
           {/* Tabs */}
-          <div className="flex mb-6 bg-black/30 rounded-xl p-1">
+          <div className="flex mb-8 bg-[#0A0A0F]/60 rounded-full p-1">
             <button
               onClick={() => setIsLogin(true)}
-              className={`flex-1 py-3 rounded-lg font-semibold transition-all ${
+              data-testid="auth-signin-tab"
+              className={`flex-1 py-3 rounded-full font-semibold transition-all duration-300 font-heading ${
                 isLogin 
-                  ? 'bg-gradient-to-r from-amber-400 to-yellow-500 text-black' 
-                  : 'text-gray-300 hover:text-white'
+                  ? 'bg-gradient-to-r from-purple-500 to-purple-700 text-white shadow-lg shadow-purple-500/25' 
+                  : 'text-gray-400 hover:text-white'
               }`}
             >
               Sign In
             </button>
             <button
               onClick={() => setIsLogin(false)}
-              className={`flex-1 py-3 rounded-lg font-semibold transition-all ${
+              data-testid="auth-join-tab"
+              className={`flex-1 py-3 rounded-full font-semibold transition-all duration-300 font-heading ${
                 !isLogin 
-                  ? 'bg-gradient-to-r from-amber-400 to-yellow-500 text-black' 
-                  : 'text-gray-300 hover:text-white'
+                  ? 'bg-gradient-to-r from-purple-500 to-purple-700 text-white shadow-lg shadow-purple-500/25' 
+                  : 'text-gray-400 hover:text-white'
               }`}
             >
               Join
             </button>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-5">
             {!isLogin && (
               <div>
-                <label className="block text-gray-300 text-sm mb-2">Display Name</label>
+                <label className="lk-label block mb-2">Display Name</label>
                 <input
                   type="text"
                   value={displayName}
                   onChange={(e) => setDisplayName(e.target.value)}
-                  className="w-full px-4 py-3 rounded-xl bg-black/40 border border-white/10 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500/50 transition-colors"
+                  className="lk-input w-full"
                   placeholder="Your display name"
                   required={!isLogin}
+                  data-testid="auth-display-name-input"
                 />
               </div>
             )}
 
             <div>
-              <label className="block text-gray-300 text-sm mb-2">Email</label>
+              <label className="lk-label block mb-2">Email</label>
               <input
                 type={isLogin ? 'text' : 'email'}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-4 py-3 rounded-xl bg-black/40 border border-white/10 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500/50 transition-colors uppercase"
+                className="lk-input w-full uppercase"
                 placeholder={isLogin ? 'Email or display name' : 'your@email.com'}
                 required
+                data-testid="auth-email-input"
               />
             </div>
 
             <div>
-              <label className="block text-gray-300 text-sm mb-2">Password</label>
+              <label className="lk-label block mb-2">Password</label>
               <div className="relative">
                 <input
                   type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full px-4 py-3 rounded-xl bg-black/40 border border-white/10 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500/50 transition-colors pr-12"
+                  className="lk-input w-full pr-12"
                   placeholder="••••••••"
                   required
+                  data-testid="auth-password-input"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white transition-colors"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-white/30 hover:text-white transition-colors"
                 >
                   {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                 </button>
@@ -595,14 +588,15 @@ const AuthPage = ({ onLogin }) => {
                     type="checkbox"
                     checked={rememberMe}
                     onChange={(e) => setRememberMe(e.target.checked)}
-                    className="w-4 h-4 rounded border-gray-600 bg-black/40 text-purple-500 focus:ring-purple-500"
+                    className="w-4 h-4 rounded border-white/10 bg-[#1A1A24] text-purple-500 focus:ring-purple-500"
                   />
-                  <span className="text-gray-300 text-sm">Remember me</span>
+                  <span className="text-white/50 text-sm">Remember me</span>
                 </label>
                 <button 
                   type="button" 
                   onClick={() => setShowForgotPassword(true)}
-                  className="text-amber-400 text-sm hover:underline"
+                  className="text-purple-400 text-sm hover:text-purple-300 transition-colors"
+                  data-testid="auth-forgot-password-btn"
                 >
                   Forgot password?
                 </button>
@@ -610,7 +604,7 @@ const AuthPage = ({ onLogin }) => {
             )}
 
             {error && (
-              <div className="p-3 rounded-xl bg-red-500/20 border border-red-500/50 text-red-300 text-sm">
+              <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-sm" data-testid="auth-error">
                 {error}
               </div>
             )}
@@ -618,14 +612,15 @@ const AuthPage = ({ onLogin }) => {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3 rounded-xl bg-gradient-to-r from-amber-400 to-yellow-500 text-black font-semibold hover:opacity-90 transition-opacity disabled:opacity-50"
+              className="lk-btn-primary w-full py-4 bg-gradient-to-r from-purple-500 to-purple-700 text-white text-base disabled:opacity-50 shadow-lg shadow-purple-500/20"
+              data-testid="auth-submit-btn"
             >
               {loading ? 'Please wait...' : (isLogin ? 'Sign In' : 'Join Now')}
             </button>
           </form>
 
-          <p className="text-center text-gray-500 text-xs mt-6">
-            Powered by <span className="text-purple-400">3DK</span> + <span className="text-amber-400">King Tense</span>
+          <p className="text-center text-white/20 text-xs mt-8 tracking-wide">
+            Powered by <span className="text-purple-400/60">3DK</span> + <span className="text-purple-400/60">King Tense</span>
           </p>
         </div>
       </div>
@@ -657,12 +652,12 @@ const Tile = ({ icon: Icon, label, colorClass, isLocked, onClick }) => {
 const NotificationBell = ({ count, onClick, hasNew }) => (
   <button 
     onClick={onClick} 
-    className={`relative p-2 rounded-full hover:bg-white/10 transition-all duration-300 ${hasNew ? 'animate-pulse' : ''}`}
+    className={`relative p-2 rounded-full hover:bg-white/5 transition-all duration-300 ${hasNew ? 'animate-pulse' : ''}`}
     data-testid="notification-bell"
   >
-    <Bell className={`w-5 h-5 transition-colors ${count > 0 ? 'text-amber-400' : 'text-gray-300'}`} />
+    <Bell className={`w-5 h-5 transition-colors ${count > 0 ? 'text-purple-400' : 'text-white/40'}`} strokeWidth={1.5} />
     {count > 0 && (
-      <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] rounded-full bg-red-500 flex items-center justify-center text-white text-xs font-bold px-1 animate-bounce">
+      <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] rounded-full bg-gradient-to-br from-red-500 to-red-600 flex items-center justify-center text-white text-[10px] font-bold px-1 shadow-lg shadow-red-500/30">
         {count > 99 ? '99+' : count}
       </span>
     )}
@@ -1060,14 +1055,14 @@ const HomePage = ({ user, onLogout, setUser }) => {
   ]
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f] relative">
-      {/* Background glow - pointer-events-none ensures it doesn't block clicks */}
-      <div className="absolute top-0 left-0 w-[500px] h-[500px] rounded-full bg-gradient-to-br from-pink-500/20 via-purple-500/15 to-transparent blur-3xl pointer-events-none z-0" />
+    <div className="min-h-screen bg-[#0a0a0f] relative page-enter" data-testid="home-page">
+      {/* Background glow */}
+      <div className="absolute top-0 left-0 w-[400px] h-[400px] rounded-full bg-purple-500/10 blur-[120px] pointer-events-none z-0" />
+      <div className="absolute bottom-0 right-0 w-[300px] h-[300px] rounded-full bg-cyan-500/5 blur-[100px] pointer-events-none z-0" />
       
       {/* Header */}
-      <header className="relative z-10 flex items-center justify-between p-3 border-b border-white/5">
+      <header className="lk-page-header relative z-10 flex items-center justify-between" data-testid="home-header">
         <div className="flex items-center">
-          {/* Logo slot - responsive sizing with animation */}
           <div className="lk-logoSlot">
             <img 
               src="https://customer-assets.emergentagent.com/job_9cfb4bde-566c-4101-8a52-a8ca747e74ca/artifacts/xjtcpb4e_095E7AA1-912D-48A9-A667-A5A89F16DBD7.png" 
@@ -1076,22 +1071,23 @@ const HomePage = ({ user, onLogout, setUser }) => {
           </div>
         </div>
         
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-1.5">
           {user.verified && (
-            <span className="hidden sm:flex items-center gap-1 px-2 py-1 rounded-full bg-green-500/20 border border-green-500/30 text-green-400 text-xs">
+            <span className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-green-500/10 border border-green-500/20 text-green-400 text-xs font-medium">
               <CheckCircle className="w-3 h-3" />
               Verified
             </span>
           )}
           <button
             onClick={toggleSound}
-            className="p-2 rounded-full hover:bg-white/10 transition-colors"
+            className="p-2 rounded-full hover:bg-white/5 transition-colors"
             title={soundEnabled ? 'Mute notification sounds' : 'Enable notification sounds'}
+            data-testid="sound-toggle-btn"
           >
             {soundEnabled ? (
-              <Volume2 className="w-4 h-4 text-amber-400" />
+              <Volume2 className="w-4 h-4 text-purple-400" strokeWidth={1.5} />
             ) : (
-              <VolumeX className="w-4 h-4 text-gray-500" />
+              <VolumeX className="w-4 h-4 text-white/30" strokeWidth={1.5} />
             )}
           </button>
           <NotificationBell 
@@ -1099,43 +1095,45 @@ const HomePage = ({ user, onLogout, setUser }) => {
             onClick={() => setShowNotifications(!showNotifications)} 
             hasNew={hasNewNotification}
           />
-          <button onClick={() => router.push('/admin')} className="p-2 rounded-full hover:bg-white/10 transition-colors">
-            <Settings className="w-4 h-4 text-gray-400" />
+          <button onClick={() => router.push('/admin')} className="p-2 rounded-full hover:bg-white/5 transition-colors" data-testid="settings-btn">
+            <Settings className="w-4 h-4 text-white/40" strokeWidth={1.5} />
           </button>
-          <button onClick={onLogout} className="p-2 rounded-full hover:bg-white/10 transition-colors">
-            <LogOut className="w-4 h-4 text-gray-400" />
+          <button onClick={onLogout} className="p-2 rounded-full hover:bg-white/5 transition-colors" data-testid="logout-btn">
+            <LogOut className="w-4 h-4 text-white/40" strokeWidth={1.5} />
           </button>
         </div>
       </header>
 
       {/* Notifications Dropdown */}
       {showNotifications && (
-        <div className="absolute top-16 right-4 z-30 w-96 glass-card rounded-xl shadow-2xl max-h-[80vh] overflow-hidden" data-testid="notifications-dropdown">
+        <div className="absolute top-16 right-4 z-30 w-96 max-w-[calc(100vw-2rem)] lk-card-elevated rounded-2xl overflow-hidden animate-fade-in" data-testid="notifications-dropdown">
           {/* Header */}
-          <div className="p-4 border-b border-white/10 flex items-center justify-between sticky top-0 bg-[#1a1a2e]/95 backdrop-blur-sm">
-            <h3 className="text-white font-semibold flex items-center gap-2">
-              <Bell className="w-4 h-4 text-amber-400" />
+          <div className="p-5 border-b border-white/5 flex items-center justify-between sticky top-0 bg-[#1A1A24]/95 backdrop-blur-md">
+            <h3 className="text-white font-heading font-semibold flex items-center gap-2">
+              <Bell className="w-4 h-4 text-purple-400" strokeWidth={1.5} />
               Notifications
               {unreadCount > 0 && (
-                <span className="text-xs px-2 py-0.5 rounded-full bg-red-500/20 text-red-400">
+                <span className="text-[10px] px-2 py-0.5 rounded-full bg-purple-500/15 text-purple-400 font-medium">
                   {unreadCount} new
                 </span>
               )}
             </h3>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-3">
               {notifications.some(n => !n.read) && (
                 <button 
                   onClick={markAllNotificationsRead}
-                  className="text-xs text-amber-400 hover:text-amber-300 transition-colors"
+                  className="text-xs text-purple-400 hover:text-purple-300 transition-colors"
+                  data-testid="mark-all-read-btn"
                 >
                   Mark all read
                 </button>
               )}
               <button 
                 onClick={() => setShowNotifications(false)}
-                className="p-1 rounded-full hover:bg-white/10"
+                className="p-1 rounded-full hover:bg-white/5"
+                data-testid="close-notifications-btn"
               >
-                <X className="w-4 h-4 text-gray-400" />
+                <X className="w-4 h-4 text-white/40" strokeWidth={1.5} />
               </button>
             </div>
           </div>
@@ -1256,29 +1254,31 @@ const HomePage = ({ user, onLogout, setUser }) => {
         </div>
       )}
 
-      {/* Stories Panel - Mobile Optimized */}
-      <div className="relative z-[5] px-4 pt-4">
+      {/* Stories Panel */}
+      <div className="relative z-[5] px-5 pt-5">
         <div 
-          className="flex gap-3 overflow-x-auto pb-3 -mx-4 px-4"
+          className="flex gap-4 overflow-x-auto pb-4 -mx-5 px-5"
           style={{ 
             WebkitOverflowScrolling: 'touch', 
             scrollbarWidth: 'none', 
             msOverflowStyle: 'none',
             scrollSnapType: 'x mandatory'
           }}
+          data-testid="stories-panel"
         >
-          {/* Add Story Button - Always First */}
+          {/* Add Story Button */}
           <button
             onClick={() => setShowAddStory(true)}
-            className="flex-none flex flex-col items-center gap-1"
+            className="flex-none flex flex-col items-center gap-1.5"
             style={{ scrollSnapAlign: 'start' }}
+            data-testid="add-story-btn"
           >
-            <div className="relative w-16 h-16 rounded-full p-0.5 bg-gradient-to-br from-amber-400 to-yellow-500">
+            <div className="relative w-[68px] h-[68px] rounded-full p-[2px] bg-gradient-to-br from-purple-500 to-purple-700">
               <div className="w-full h-full rounded-full bg-[#0a0a0f] flex items-center justify-center">
-                <Plus className="w-7 h-7 text-amber-400" />
+                <Plus className="w-6 h-6 text-purple-400" strokeWidth={1.5} />
               </div>
             </div>
-            <span className="text-white text-xs">Add Story</span>
+            <span className="text-white/50 text-[10px] font-medium">Add Story</span>
           </button>
           
           {/* User Stories */}
@@ -1292,33 +1292,32 @@ const HomePage = ({ user, onLogout, setUser }) => {
               <button
                 key={storyGroup.userId}
                 onClick={() => viewStory(storyGroup)}
-                className="flex-none flex flex-col items-center gap-1 scroll-snap-align-start"
+                className="flex-none flex flex-col items-center gap-1.5 scroll-snap-align-start"
                 style={{ scrollSnapAlign: 'start' }}
+                data-testid={`story-${storyGroup.userId}`}
               >
-                <div className={`relative w-16 h-16 rounded-full p-0.5 ${hasUnviewed ? 'bg-gradient-to-br from-pink-500 via-purple-500 to-amber-500' : 'bg-white/20'}`}>
-                  <div className="w-full h-full rounded-full bg-[#0a0a0f] p-0.5">
-                    <div className="w-full h-full rounded-full overflow-hidden bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
+                <div className={`relative w-[68px] h-[68px] rounded-full p-[2px] ${hasUnviewed ? 'bg-gradient-to-br from-purple-500 via-pink-500 to-orange-400' : 'bg-white/10'}`}>
+                  <div className="w-full h-full rounded-full bg-[#0a0a0f] p-[2px]">
+                    <div className="w-full h-full rounded-full overflow-hidden bg-[#1A1A24] flex items-center justify-center">
                       {storyGroup.avatar ? (
                         <img src={storyGroup.avatar} alt="" className="w-full h-full object-cover" />
                       ) : (
-                        <User className="w-6 h-6 text-white" />
+                        <User className="w-5 h-5 text-white/40" strokeWidth={1.5} />
                       )}
                     </div>
                   </div>
-                  {/* Video indicator */}
                   {isVideo && (
-                    <div className="absolute bottom-0 right-0 w-5 h-5 rounded-full bg-black/80 flex items-center justify-center border border-white/20">
+                    <div className="absolute bottom-0 right-0 w-5 h-5 rounded-full bg-[#12121A] flex items-center justify-center border border-white/10">
                       <Play className="w-3 h-3 text-white fill-white" />
                     </div>
                   )}
-                  {/* Image indicator for photos */}
                   {!isVideo && latestStory?.mediaUrl && (
-                    <div className="absolute bottom-0 right-0 w-5 h-5 rounded-full bg-black/80 flex items-center justify-center border border-white/20">
-                      <ImageIcon className="w-3 h-3 text-white" />
+                    <div className="absolute bottom-0 right-0 w-5 h-5 rounded-full bg-[#12121A] flex items-center justify-center border border-white/10">
+                      <ImageIcon className="w-3 h-3 text-white/60" />
                     </div>
                   )}
                 </div>
-                <span className="text-white text-xs truncate w-16 text-center">
+                <span className="text-white/50 text-[10px] font-medium truncate w-[68px] text-center">
                   {isOwn ? 'You' : storyGroup.displayName?.split(' ')[0] || 'User'}
                 </span>
               </button>
@@ -1569,10 +1568,10 @@ const HomePage = ({ user, onLogout, setUser }) => {
       )}
 
       {/* Main Content */}
-      <main className="relative z-[5] p-4 pb-24">
-        {/* Tiles Grid - 3 columns with consistent styling */}
-        <div className="grid grid-cols-3 gap-3 mb-6">
-          {tiles.map((tile) => {
+      <main className="relative z-[5] px-5 py-6 pb-28">
+        {/* Tiles Grid - 3 columns with premium styling */}
+        <div className="grid grid-cols-3 gap-3 mb-8" data-testid="tiles-grid">
+          {tiles.map((tile, idx) => {
             const IconComponent = tile.icon
             const isLocked = lockedFeatures.includes(tile.id) && !user.verified
             return (
@@ -1580,30 +1579,31 @@ const HomePage = ({ user, onLogout, setUser }) => {
                 key={tile.id}
                 type="button"
                 onClick={() => handleTileClick(tile.id, tile.path)}
-                className="relative aspect-[4/3] rounded-2xl overflow-hidden transition-transform duration-200 active:scale-95 cursor-pointer"
+                data-testid={`tile-${tile.id}`}
+                className="relative aspect-[4/3] rounded-2xl overflow-hidden transition-transform duration-300 hover:-translate-y-1 active:scale-95 cursor-pointer group"
                 style={{
-                  background: `linear-gradient(135deg, ${tile.color}15, ${tile.color}05)`,
-                  border: `1px solid ${tile.color}40`,
-                  boxShadow: `0 4px 20px ${tile.color}10`
+                  background: `linear-gradient(135deg, ${tile.color}10, ${tile.color}04)`,
+                  border: `1px solid ${tile.color}25`,
+                  animationDelay: `${idx * 40}ms`
                 }}
               >
-                <div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
+                <div className="absolute inset-0 flex flex-col items-center justify-center gap-2.5">
                   <div 
-                    className="w-10 h-10 rounded-xl flex items-center justify-center"
-                    style={{ backgroundColor: `${tile.color}25` }}
+                    className="w-11 h-11 rounded-xl flex items-center justify-center transition-transform duration-300 group-hover:scale-110"
+                    style={{ backgroundColor: `${tile.color}15` }}
                   >
-                    <IconComponent className="w-5 h-5" style={{ color: tile.color }} />
+                    <IconComponent className="w-5 h-5" style={{ color: tile.color }} strokeWidth={1.5} />
                   </div>
-                  <span className="text-white text-xs font-medium">{tile.label}</span>
+                  <span className="text-white/80 text-xs font-medium tracking-wide">{tile.label}</span>
                 </div>
                 {isLocked && (
-                  <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
-                    <Lock className="w-5 h-5 text-gray-400" />
+                  <div className="absolute inset-0 bg-[#0A0A0F]/70 flex items-center justify-center backdrop-blur-sm">
+                    <Lock className="w-5 h-5 text-white/30" strokeWidth={1.5} />
                   </div>
                 )}
                 {tile.id === 'notices' && noticeUnreadCount > 0 && (
-                  <div className="absolute top-2 right-2 w-5 h-5 rounded-full bg-red-500 flex items-center justify-center">
-                    <span className="text-white text-xs font-bold">{noticeUnreadCount}</span>
+                  <div className="absolute top-2 right-2 w-5 h-5 rounded-full bg-red-500 flex items-center justify-center shadow-lg shadow-red-500/30">
+                    <span className="text-white text-[10px] font-bold">{noticeUnreadCount}</span>
                   </div>
                 )}
               </button>
@@ -1612,30 +1612,30 @@ const HomePage = ({ user, onLogout, setUser }) => {
         </div>
 
         {/* Tagline */}
-        <div className="mb-6">
-          <p className="text-gray-400 text-sm">A private space for adults. Connection happens at your own pace.</p>
-          <p className="text-gray-500 text-xs mt-1">Share what you want • Say what you feel • Respect boundaries</p>
+        <div className="mb-6 px-1" data-testid="home-tagline">
+          <p className="text-white/30 text-sm leading-relaxed">A private space for adults. Connection happens at your own pace.</p>
+          <p className="text-white/15 text-xs mt-2">Share what you want  ·  Say what you feel  ·  Respect boundaries</p>
         </div>
       </main>
 
       {/* Bottom Navigation */}
-      <nav className="fixed bottom-0 left-0 right-0 z-20 bg-[#0a0a0f]/95 backdrop-blur-lg border-t border-white/5">
-        <div className="flex items-center justify-around py-3">
-          <button className="flex flex-col items-center gap-1 px-4 py-1 text-white">
-            <Home className="w-5 h-5" />
-            <span className="text-xs">Home</span>
+      <nav className="fixed bottom-0 left-0 right-0 z-20 bg-[#12121A]/90 backdrop-blur-xl border-t border-white/5" data-testid="bottom-nav">
+        <div className="flex items-center justify-around py-3 max-w-lg mx-auto">
+          <button className="flex flex-col items-center gap-1 px-4 py-1 text-purple-400" data-testid="nav-home">
+            <Home className="w-5 h-5" strokeWidth={1.5} />
+            <span className="text-[10px] font-medium">Home</span>
           </button>
-          <button onClick={() => router.push('/lounge')} className="flex flex-col items-center gap-1 px-4 py-1 text-gray-500 hover:text-white transition-colors">
-            <Sofa className="w-5 h-5" />
-            <span className="text-xs">Lounge</span>
+          <button onClick={() => router.push('/lounge')} className="flex flex-col items-center gap-1 px-4 py-1 text-white/30 hover:text-cyan-400 transition-colors" data-testid="nav-lounge">
+            <Sofa className="w-5 h-5" strokeWidth={1.5} />
+            <span className="text-[10px] font-medium">Lounge</span>
           </button>
-          <button onClick={() => handleTileClick('afterdark', '/afterdark')} className="flex flex-col items-center gap-1 px-4 py-1 text-gray-500 hover:text-white transition-colors">
-            <Moon className="w-5 h-5" />
-            <span className="text-xs">After Dark</span>
+          <button onClick={() => handleTileClick('afterdark', '/afterdark')} className="flex flex-col items-center gap-1 px-4 py-1 text-white/30 hover:text-orange-400 transition-colors" data-testid="nav-afterdark">
+            <Moon className="w-5 h-5" strokeWidth={1.5} />
+            <span className="text-[10px] font-medium">After Dark</span>
           </button>
-          <button onClick={() => router.push('/profile')} className="flex flex-col items-center gap-1 px-4 py-1 text-gray-500 hover:text-white transition-colors">
-            <User className="w-5 h-5" />
-            <span className="text-xs">Profile</span>
+          <button onClick={() => router.push('/profile')} className="flex flex-col items-center gap-1 px-4 py-1 text-white/30 hover:text-stone-300 transition-colors" data-testid="nav-profile">
+            <User className="w-5 h-5" strokeWidth={1.5} />
+            <span className="text-[10px] font-medium">Profile</span>
           </button>
         </div>
       </nav>

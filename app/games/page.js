@@ -156,7 +156,7 @@ const SnakeGame = ({ onClose }) => {
     <div className="fixed inset-0 z-50 bg-black flex flex-col items-center justify-center p-4">
       <div className="flex justify-between items-center w-full max-w-xs mb-3">
         <h2 className="text-xl text-white font-bold">🐍 Snake</h2>
-        <button onClick={onClose} className="p-2 rounded-full hover:bg-white/10">
+        <button onClick={onClose} className="p-2 rounded-full hover:bg-white/5">
           <X className="w-6 h-6 text-white" />
         </button>
       </div>
@@ -535,7 +535,7 @@ const PacManGame = ({ onClose }) => {
     <div className="fixed inset-0 z-50 bg-black flex flex-col items-center justify-center p-4">
       <div className="flex justify-between items-center w-full max-w-xs mb-3">
         <h2 className="text-xl text-white font-bold">👻 Pac-Man</h2>
-        <button onClick={onClose} className="p-2 rounded-full hover:bg-white/10">
+        <button onClick={onClose} className="p-2 rounded-full hover:bg-white/5">
           <X className="w-6 h-6 text-white" />
         </button>
       </div>
@@ -716,11 +716,11 @@ const IceBreakerGame = ({ onClose, user }) => {
 
   return (
     <div className="fixed inset-0 z-50 bg-gradient-to-br from-purple-900/95 to-pink-900/95 backdrop-blur-lg flex flex-col">
-      <div className="flex items-center justify-between p-4 border-b border-white/10">
+      <div className="lk-page-header flex items-center justify-between">
         <h2 className="text-xl text-white font-bold flex items-center gap-2">
           💘 Ice Breaker
         </h2>
-        <button onClick={onClose} className="p-2 rounded-full hover:bg-white/10">
+        <button onClick={onClose} className="p-2 rounded-full hover:bg-white/5">
           <X className="w-6 h-6 text-white" />
         </button>
       </div>
@@ -734,12 +734,12 @@ const IceBreakerGame = ({ onClose, user }) => {
             {loading ? (
               <div className="text-center py-8">
                 <div className="w-8 h-8 border-2 border-pink-500 border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
-                <p className="text-gray-400">Loading friends...</p>
+                <p className="text-white/40">Loading friends...</p>
               </div>
             ) : friends.length === 0 ? (
               <div className="text-center py-8">
-                <p className="text-gray-400">No friends yet</p>
-                <p className="text-gray-500 text-sm mt-1">Add friends from the Search or Friends page to play together!</p>
+                <p className="text-white/40">No friends yet</p>
+                <p className="text-white/25 text-sm mt-1">Add friends from the Search or Friends page to play together!</p>
               </div>
             ) : (
               <div className="space-y-2">
@@ -760,7 +760,7 @@ const IceBreakerGame = ({ onClose, user }) => {
                     </div>
                     <div className="flex-1 text-left">
                       <p className="text-white font-medium">{friend.displayName || 'User'}</p>
-                      <p className="text-gray-400 text-sm">
+                      <p className="text-white/40 text-sm">
                         {inviteSent && selectedFriend?.id === friend.id ? 'Invite sent! Waiting...' : 'Tap to invite'}
                       </p>
                     </div>
@@ -810,11 +810,11 @@ const IceBreakerGame = ({ onClose, user }) => {
                 <div className="space-y-4">
                   <div className="grid grid-cols-2 gap-4">
                     <div className="bg-white/10 rounded-xl p-4">
-                      <p className="text-gray-400 text-xs mb-1">Your answer</p>
+                      <p className="text-white/40 text-xs mb-1">Your answer</p>
                       <p className="text-white font-medium">{currentQuestion.options[myAnswers[myAnswers.length - 1]]}</p>
                     </div>
                     <div className="bg-white/10 rounded-xl p-4">
-                      <p className="text-gray-400 text-xs mb-1">{selectedFriend?.displayName}'s answer</p>
+                      <p className="text-white/40 text-xs mb-1">{selectedFriend?.displayName}'s answer</p>
                       <p className="text-white font-medium">{currentQuestion.options[theirAnswers[theirAnswers.length - 1]]}</p>
                     </div>
                   </div>
@@ -842,7 +842,7 @@ const IceBreakerGame = ({ onClose, user }) => {
             <h3 className="text-2xl text-white font-bold">Game Complete!</h3>
             
             <div className="bg-white/10 rounded-2xl p-6">
-              <p className="text-gray-400 mb-2">Your compatibility with {selectedFriend?.displayName}</p>
+              <p className="text-white/40 mb-2">Your compatibility with {selectedFriend?.displayName}</p>
               <p className="text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-purple-400">
                 {getCompatibility()}%
               </p>
@@ -850,11 +850,11 @@ const IceBreakerGame = ({ onClose, user }) => {
 
             <div className="grid grid-cols-2 gap-4">
               <div className="bg-white/10 rounded-xl p-4">
-                <p className="text-gray-400 text-sm">Your Score</p>
+                <p className="text-white/40 text-sm">Your Score</p>
                 <p className="text-2xl text-amber-400 font-bold">{score.me}</p>
               </div>
               <div className="bg-white/10 rounded-xl p-4">
-                <p className="text-gray-400 text-sm">{selectedFriend?.displayName}</p>
+                <p className="text-white/40 text-sm">{selectedFriend?.displayName}</p>
                 <p className="text-2xl text-pink-400 font-bold">{score.them}</p>
               </div>
             </div>
@@ -984,11 +984,11 @@ const TicTacToeGame = ({ onClose, user }) => {
 
   return (
     <div className="fixed inset-0 z-50 bg-gradient-to-br from-purple-900/95 to-indigo-900/95 backdrop-blur-lg flex flex-col">
-      <div className="flex items-center justify-between p-4 border-b border-white/10">
+      <div className="lk-page-header flex items-center justify-between">
         <h2 className="text-xl text-white font-bold flex items-center gap-2">
           ⭕ Tic-Tac-Toe
         </h2>
-        <button onClick={onClose} className="p-2 rounded-full hover:bg-white/10">
+        <button onClick={onClose} className="p-2 rounded-full hover:bg-white/5">
           <X className="w-6 h-6 text-white" />
         </button>
       </div>
@@ -1002,12 +1002,12 @@ const TicTacToeGame = ({ onClose, user }) => {
             {loading ? (
               <div className="text-center py-8">
                 <div className="w-8 h-8 border-2 border-purple-500 border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
-                <p className="text-gray-400">Loading friends...</p>
+                <p className="text-white/40">Loading friends...</p>
               </div>
             ) : friends.length === 0 ? (
               <div className="text-center py-8">
-                <p className="text-gray-400">No friends yet</p>
-                <p className="text-gray-500 text-sm mt-1">Add friends to play together!</p>
+                <p className="text-white/40">No friends yet</p>
+                <p className="text-white/25 text-sm mt-1">Add friends to play together!</p>
               </div>
             ) : (
               <div className="space-y-2">
@@ -1028,7 +1028,7 @@ const TicTacToeGame = ({ onClose, user }) => {
                     </div>
                     <div className="flex-1 text-left">
                       <p className="text-white font-medium">{friend.displayName || 'User'}</p>
-                      <p className="text-gray-400 text-sm">
+                      <p className="text-white/40 text-sm">
                         {inviteSent && selectedFriend?.id === friend.id ? 'Invite sent! Waiting...' : 'Tap to invite'}
                       </p>
                     </div>
@@ -1052,7 +1052,7 @@ const TicTacToeGame = ({ onClose, user }) => {
                 </div>
                 <span className="text-white text-sm">You</span>
               </div>
-              <span className="text-gray-500">vs</span>
+              <span className="text-white/25">vs</span>
               <div className="flex items-center gap-2">
                 <div className="w-8 h-8 rounded-full bg-gradient-to-br from-pink-500 to-purple-500 flex items-center justify-center overflow-hidden">
                   {selectedFriend?.avatar ? (
@@ -1129,7 +1129,7 @@ export default function GamesPage() {
 
   if (loading || !user) {
     return <div className="min-h-screen bg-[#0a0a0f] flex items-center justify-center">
-      <div className="animate-pulse text-white">Loading...</div>
+      <div className="animate-pulse text-white/40 font-heading">Loading...</div>
     </div>
   }
 
@@ -1141,24 +1141,24 @@ export default function GamesPage() {
   ]
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f]">
-      <header className="flex items-center gap-3 p-4 border-b border-white/10">
-        <button onClick={() => router.push('/')} className="p-2 rounded-full hover:bg-white/10">
+    <div className="min-h-screen bg-[#0a0a0f] page-enter">
+      <header className="lk-page-header flex items-center gap-3">
+        <button onClick={() => router.push('/')} className="p-2 rounded-full hover:bg-white/5">
           <ArrowLeft className="w-5 h-5 text-white" />
         </button>
-        <h1 className="text-xl font-semibold text-white">Games</h1>
+        <h1 className="text-xl font-heading font-semibold text-white">Games</h1>
       </header>
       <div className="p-4 space-y-4">
         {games.map(game => (
           <button key={game.id} onClick={() => setActiveGame(game.id)}
-            className="w-full p-4 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition-colors">
+            className="w-full p-4 rounded-2xl bg-[#12121A] border border-white/5 hover:bg-white/5 transition-colors">
             <div className="flex items-center gap-4">
               <div className={`w-14 h-14 rounded-xl bg-gradient-to-br ${game.color} flex items-center justify-center text-2xl`}>
                 {game.icon}
               </div>
               <div className="flex-1 text-left">
                 <h3 className="text-white font-semibold">{game.name}</h3>
-                <p className="text-gray-400 text-sm">{game.desc}</p>
+                <p className="text-white/40 text-sm">{game.desc}</p>
               </div>
             </div>
           </button>

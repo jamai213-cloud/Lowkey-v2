@@ -1,24 +1,29 @@
- 'use client';
+ 'use client'
 
-import { useState, useEffect, useRef } from 'react'
-import { useRouter } from 'next/navigation'
-import { ArrowLeft, Send, Users, Image, Lock, MessageSquare, PoundSterling, Star, Upload, X, Loader2 } from 'lucide-react'
+import { useState, useEffect, useRef, useCallback } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
+import { ArrowLeft, Send, Users, MessageCircle, Clock, Sparkles, Lock, AlertTriangle, Hash, Flame, Star, TrendingUp, Crown, MessageSquare, ChevronRight, Plus, Heart, Smile, Image as ImageIcon, X, UserPlus, Volume2, VolumeX, Menu, Trash2 } from 'lucide-react'
+
+export const dynamic = 'force-dynamic'
 
 export default function LoungePage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const loungeId = searchParams?.get('id') || 'main'
   const [user, setUser] = useState(null)
-  const [lounge, setLounge] = useState(null)
   const [messages, setMessages] = useState([])
-  const [posts, setPosts] = useState([])
   const [newMessage, setNewMessage] = useState('')
   const [loading, setLoading] = useState(true)
-  const [showPostForm, setShowPostForm] = useState(false)
-  const [newPost, setNewPost] = useState({ imageData: '', caption: '', price: '', preview: null })
-  const [uploading, setUploading] = useState(false)
-  const [activeTab, setActiveTab] = useState('chat') // chat, posts
+  const [sending, setSending] = useState(false)
+  const [showMembers, setShowMembers] = useState(false)
+  const [members, setMembers] = useState([])
+  const [onlineCount, setOnlineCount] = useState(0)
+  const [lounges, setLounges] = useState([])
+  const [showLoungeList, setShowLoungeList] = useState(!searchParams?.get('id'))
   const messagesEndRef = useRef(null)
-  const pollRef = useRef(null)
-  const fileInputRef = useRef(null)
+  const chatContainerRef = useRef(null)
+  
+  const isFounder = user?.email?.toLowerCase() === 'kinglowkey@hotmail.com'
 
   useEffect(() => {
     const storedUser = localStorage.getItem('lowkey_user')
@@ -28,419 +33,290 @@ export default function LoungePage() {
     }
     const userData = JSON.parse(storedUser)
     setUser(userData)
-    fetchLounge(userData.id)
-    fetchPosts()
-
-    return () => {
-      if (pollRef.current) clearInterval(pollRef.current)
+    fetchLounges()
+    if (searchParams?.get('id')) {
+      fetchMessages(loungeId, userData.id)
+    } else {
+      setLoading(false)
     }
-  }, [])
+  }, [loungeId])
 
-  const fetchLounge = async (userId) => {
-    try {
-      const res = await fetch('/api/main-lounge')
-      if (res.ok) {
-        const data = await res.json()
-        setLounge(data)
-        
-        // Auto-join if not member
-        if (!data.members?.includes(userId)) {
-          await fetch('/api/main-lounge/join', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ userId })
-          })
-        }
-        
-        fetchMessages()
-        startPolling()
-      }
-    } catch (err) {
-      console.error('Failed to fetch lounge')
-    }
-    setLoading(false)
+  useEffect(() => {
+    scrollToBottom()
+  }, [messages])
+
+  useEffect(() => {
+    if (!searchParams?.get('id')) return
+    const interval = setInterval(() => {
+      if (user) fetchMessages(loungeId, user.id)
+    }, 5000)
+    return () => clearInterval(interval)
+  }, [loungeId, user])
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }
 
-  const fetchMessages = async () => {
+  const fetchLounges = async () => {
     try {
-      const res = await fetch('/api/main-lounge/messages')
+      const res = await fetch('/api/lounges')
       if (res.ok) {
         const data = await res.json()
-        setMessages(data)
+        setLounges(data)
+      }
+    } catch (err) {
+      console.error('Failed to fetch lounges')
+    }
+  }
+
+  const fetchMessages = async (lid, userId) => {
+    try {
+      const res = await fetch(`/api/lounges/${lid}/messages?userId=${userId}`)
+      if (res.ok) {
+        const data = await res.json()
+        setMessages(data.messages || [])
+        setOnlineCount(data.onlineCount || 0)
+        setMembers(data.members || [])
       }
     } catch (err) {
       console.error('Failed to fetch messages')
     }
-  }
-
-  const fetchPosts = async () => {
-    try {
-      const res = await fetch('/api/main-lounge/posts')
-      if (res.ok) {
-        const data = await res.json()
-        setPosts(data)
-      }
-    } catch (err) {
-      console.error('Failed to fetch posts')
-    }
-  }
-
-  const startPolling = () => {
-    if (pollRef.current) clearInterval(pollRef.current)
-    pollRef.current = setInterval(fetchMessages, 3000)
+    setLoading(false)
   }
 
   const sendMessage = async (e) => {
     e.preventDefault()
-    if (!newMessage.trim()) return
+    if (!newMessage.trim() || sending) return
+    setSending(true)
 
     try {
-      const res = await fetch('/api/main-lounge/messages', {
+      const res = await fetch(`/api/lounges/${loungeId}/messages`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          senderId: user.id,
-          senderName: user.displayName,
-          content: newMessage.trim()
+          userId: user.id,
+          displayName: user.displayName,
+          content: newMessage.trim(),
+          avatar: user.avatar || user.profilePicture
         })
       })
       if (res.ok) {
         setNewMessage('')
-        fetchMessages()
+        fetchMessages(loungeId, user.id)
       }
     } catch (err) {
       console.error('Failed to send message')
     }
+    setSending(false)
   }
 
-  // Handle file selection for post
-  const handlePostFileSelect = (e) => {
-    const file = e.target.files?.[0]
-    if (!file) return
-
-    if (!file.type.startsWith('image/')) {
-      alert('Please select an image file')
-      return
-    }
-
-    if (file.size > 10 * 1024 * 1024) {
-      alert('Image too large. Max 10MB allowed.')
-      return
-    }
-
-    const reader = new FileReader()
-    reader.onloadend = () => {
-      setNewPost({ ...newPost, imageData: reader.result, preview: reader.result })
-    }
-    reader.readAsDataURL(file)
-  }
-
-  const createPost = async (e) => {
-    e.preventDefault()
-    if (!newPost.imageData) return
-
-    setUploading(true)
+  const deleteMessage = async (messageId) => {
+    if (!isFounder) return
     try {
-      const res = await fetch('/api/main-lounge/posts', {
-        method: 'POST',
+      const res = await fetch(`/api/lounges/${loungeId}/messages/${messageId}`, {
+        method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          creatorId: user.id,
-          imageUrl: newPost.imageData,
-          caption: newPost.caption,
-          price: parseFloat(newPost.price) || 0
-        })
+        body: JSON.stringify({ founderId: user.id })
       })
       if (res.ok) {
-        setNewPost({ imageData: '', caption: '', price: '', preview: null })
-        setShowPostForm(false)
-        fetchPosts()
+        setMessages(messages.filter(m => m.id !== messageId))
       }
     } catch (err) {
-      console.error('Failed to create post')
+      console.error('Failed to delete message')
     }
-    setUploading(false)
   }
 
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [messages])
+  const enterLounge = (lid) => {
+    setShowLoungeList(false)
+    router.push(`/lounge?id=${lid}`)
+  }
 
   if (loading) {
     return (
       <div className="min-h-screen bg-[#0a0a0f] flex items-center justify-center">
-        <div className="animate-pulse text-white">Loading...</div>
+        <div className="animate-pulse text-cyan-400/60 font-heading">Loading...</div>
       </div>
     )
   }
 
-  return (
-    <div className="min-h-screen bg-[#0a0a0f] flex flex-col">
-      {/* Header */}
-      <header className="flex items-center justify-between p-4 border-b border-white/10">
-        <div className="flex items-center gap-3">
-          <button onClick={() => router.push('/')} className="p-2 rounded-full hover:bg-white/10">
-            <ArrowLeft className="w-5 h-5 text-white" />
+  // Lounge Selection View
+  if (showLoungeList) {
+    return (
+      <div className="min-h-screen bg-[#0a0a0f] page-enter" data-testid="lounge-list">
+        <div className="absolute top-0 right-0 w-[300px] h-[300px] rounded-full bg-cyan-500/8 blur-[100px] pointer-events-none z-0" />
+        
+        <header className="lk-page-header flex items-center gap-3" data-testid="lounge-header">
+          <button onClick={() => router.push('/')} className="p-2 rounded-full hover:bg-white/5 transition-colors" data-testid="lounge-back-btn">
+            <ArrowLeft className="w-5 h-5 text-white/60" strokeWidth={1.5} />
           </button>
           <div>
-            <h1 className="text-xl font-semibold text-white">LowKey Lounge</h1>
-            <p className="text-gray-400 text-xs">{lounge?.memberCount || 0} members online</p>
+            <h1 className="text-xl font-heading font-semibold text-white">Lounges</h1>
+            <p className="text-white/30 text-xs">Choose a room to join</p>
+          </div>
+        </header>
+
+        <div className="p-5 space-y-3">
+          {lounges.length === 0 ? (
+            <div className="lk-card-elevated rounded-2xl p-8 text-center">
+              <MessageCircle className="w-12 h-12 text-cyan-500/30 mx-auto mb-4" strokeWidth={1.5} />
+              <p className="text-white/40">No lounges available yet</p>
+            </div>
+          ) : (
+            lounges.map((lounge) => (
+              <button
+                key={lounge.id}
+                onClick={() => enterLounge(lounge.id)}
+                className="w-full text-left p-5 rounded-2xl bg-[#12121A] border border-white/5 hover:bg-[#1A1A24] hover:-translate-y-0.5 transition-all duration-300 group"
+                data-testid={`lounge-item-${lounge.id}`}
+              >
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-xl bg-cyan-500/10 flex items-center justify-center border border-cyan-500/15 group-hover:border-cyan-500/30 transition-colors">
+                    <Hash className="w-5 h-5 text-cyan-400" strokeWidth={1.5} />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h3 className="text-white font-heading font-semibold truncate">{lounge.name}</h3>
+                    <p className="text-white/30 text-sm truncate">{lounge.description || 'Open conversation space'}</p>
+                  </div>
+                  <div className="flex items-center gap-1.5 text-cyan-400/60 text-xs shrink-0">
+                    <Users className="w-3.5 h-3.5" strokeWidth={1.5} />
+                    <span>{lounge.memberCount || 0}</span>
+                  </div>
+                </div>
+              </button>
+            ))
+          )}
+        </div>
+      </div>
+    )
+  }
+
+  // Chat View
+  return (
+    <div className="min-h-screen bg-[#0a0a0f] flex flex-col page-enter" data-testid="lounge-chat">
+      <header className="lk-page-header flex items-center justify-between" data-testid="lounge-chat-header">
+        <div className="flex items-center gap-3">
+          <button onClick={() => { setShowLoungeList(true); router.push('/lounge'); }} className="p-2 rounded-full hover:bg-white/5 transition-colors" data-testid="lounge-chat-back">
+            <ArrowLeft className="w-5 h-5 text-white/60" strokeWidth={1.5} />
+          </button>
+          <div>
+            <h1 className="text-lg font-heading font-semibold text-white flex items-center gap-2">
+              <Hash className="w-4 h-4 text-cyan-400" strokeWidth={1.5} />
+              {lounges.find(l => l.id === loungeId)?.name || 'Lounge'}
+            </h1>
+            <p className="text-white/30 text-xs flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
+              {onlineCount} online
+            </p>
           </div>
         </div>
-        <div className="flex items-center gap-2">
-          <Users className="w-5 h-5 text-gray-400" />
+        
+        <div className="flex items-center gap-1">
+          <button 
+            onClick={() => setShowMembers(!showMembers)}
+            className="p-2 rounded-full hover:bg-white/5 transition-colors"
+            data-testid="show-members-btn"
+          >
+            <Users className="w-4 h-4 text-white/40" strokeWidth={1.5} />
+          </button>
         </div>
       </header>
 
-      {/* Tabs */}
-      <div className="flex border-b border-white/10">
-        <button
-          onClick={() => setActiveTab('chat')}
-          className={`flex-1 py-3 text-sm font-medium ${activeTab === 'chat' ? 'text-amber-400 border-b-2 border-amber-400' : 'text-gray-400'}`}
-        >
-          <MessageSquare className="w-4 h-4 inline mr-2" />
-          Chat
-        </button>
-        <button
-          onClick={() => setActiveTab('posts')}
-          className={`flex-1 py-3 text-sm font-medium ${activeTab === 'posts' ? 'text-amber-400 border-b-2 border-amber-400' : 'text-gray-400'}`}
-        >
-          <Image className="w-4 h-4 inline mr-2" />
-          Creator Posts
-        </button>
-      </div>
-
-      {activeTab === 'chat' ? (
-        <>
-          {/* Chat Messages */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-3">
-            {messages.length === 0 ? (
-              <div className="text-center text-gray-400 mt-8">
-                <p>Welcome to the LowKey Lounge!</p>
-                <p className="text-sm">Be the first to say something...</p>
-              </div>
-            ) : (
-              messages.map((msg) => (
-                <div
-                  key={msg.id}
-                  className={`flex items-end gap-2 ${msg.senderId === user?.id ? 'justify-end' : 'justify-start'}`}
-                >
-                  {/* Avatar for other users - show on left */}
-                  {msg.senderId !== user?.id && (
-                    <div className="w-8 h-8 rounded-full bg-purple-500/30 flex-shrink-0 overflow-hidden">
-                      {msg.senderAvatar ? (
-                        <img src={msg.senderAvatar} alt="" className="w-full h-full object-cover" />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center text-purple-400 text-xs font-bold">
-                          {msg.senderName?.charAt(0)?.toUpperCase() || '?'}
-                        </div>
-                      )}
-                    </div>
-                  )}
-                  <div
-                    className={`max-w-[70%] px-4 py-2 rounded-2xl ${
-                      msg.senderId === user?.id
-                        ? 'bg-amber-500 text-black'
-                        : 'bg-white/10 text-white'
-                    }`}
-                  >
-                    {msg.senderId !== user?.id && (
-                      <p className="text-xs font-medium opacity-70 mb-1">{msg.senderName}</p>
-                    )}
-                    <p>{msg.content}</p>
-                    <p className={`text-xs mt-1 ${msg.senderId === user?.id ? 'text-black/60' : 'text-gray-400'}`}>
-                      {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                    </p>
-                  </div>
-                  {/* Avatar for current user - show on right */}
-                  {msg.senderId === user?.id && (
-                    <div className="w-8 h-8 rounded-full bg-amber-500/30 flex-shrink-0 overflow-hidden">
-                      {user.avatar ? (
-                        <img src={user.avatar} alt="" className="w-full h-full object-cover" />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center text-amber-400 text-xs font-bold">
-                          {user.displayName?.charAt(0)?.toUpperCase() || '?'}
-                        </div>
-                      )}
-                    </div>
+      {/* Members Panel */}
+      {showMembers && (
+        <div className="bg-[#12121A] border-b border-white/5 p-4 animate-fade-in" data-testid="members-panel">
+          <div className="flex items-center gap-2 mb-3">
+            <span className="lk-label text-cyan-400">Members ({members.length})</span>
+          </div>
+          <div className="flex gap-3 overflow-x-auto pb-1" style={{ scrollbarWidth: 'none' }}>
+            {members.map((member) => (
+              <div key={member.id} className="flex flex-col items-center gap-1 flex-shrink-0">
+                <div className="w-10 h-10 rounded-full bg-[#1A1A24] flex items-center justify-center overflow-hidden border border-white/5">
+                  {member.avatar ? (
+                    <img src={member.avatar} alt="" className="w-full h-full object-cover" />
+                  ) : (
+                    <Users className="w-4 h-4 text-white/30" strokeWidth={1.5} />
                   )}
                 </div>
-              ))
-            )}
-            <div ref={messagesEndRef} />
-          </div>
-
-          {/* Message Input */}
-          <form onSubmit={sendMessage} className="p-4 border-t border-white/10">
-            <div className="flex gap-2">
-              <input
-                type="text"
-                value={newMessage}
-                onChange={(e) => setNewMessage(e.target.value)}
-                placeholder="Type a message..."
-                className="flex-1 px-4 py-3 rounded-full bg-white/10 border border-white/10 text-white placeholder-gray-400 focus:outline-none focus:border-amber-500/50"
-              />
-              <button
-                type="submit"
-                disabled={!newMessage.trim()}
-                className="p-3 rounded-full bg-amber-500 text-black disabled:opacity-50"
-              >
-                <Send className="w-5 h-5" />
-              </button>
-            </div>
-          </form>
-        </>
-      ) : (
-        <>
-          {/* Creator Posts */}
-          <div className="flex-1 overflow-y-auto p-4">
-            {/* Create Post Button - Only for Creators */}
-            {user?.isCreator ? (
-              <button
-                onClick={() => setShowPostForm(true)}
-                className="w-full mb-4 py-3 rounded-xl bg-gradient-to-r from-pink-500 to-purple-500 text-white font-semibold flex items-center justify-center gap-2"
-              >
-                <Image className="w-5 h-5" /> Post a Tease
-              </button>
-            ) : (
-              <div className="mb-4 p-4 rounded-xl bg-pink-500/10 border border-pink-500/30 text-center">
-                <Star className="w-6 h-6 text-pink-400 mx-auto mb-2" />
-                <p className="text-white text-sm font-medium">Want to post content?</p>
-                <p className="text-gray-400 text-xs">Contact the founder to become a creator</p>
+                <span className="text-white/40 text-[10px] truncate w-12 text-center">{member.displayName?.split(' ')[0]}</span>
               </div>
-            )}
-
-            {/* Posts Grid */}
-            {posts.length === 0 ? (
-              <div className="text-center text-gray-400 mt-8">
-                <Image className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                <p>No creator posts yet</p>
-                <p className="text-sm">Be the first to share!</p>
-              </div>
-            ) : (
-              <div className="grid grid-cols-2 gap-3">
-                {posts.map((post) => (
-                  <div key={post.id} className="relative rounded-xl overflow-hidden bg-white/5 border border-white/10">
-                    {/* Blurred Image with LowKey overlay */}
-                    <div className="relative aspect-square">
-                      <img 
-                        src={post.imageData || post.imageUrl} 
-                        alt="Teaser" 
-                        className="w-full h-full object-cover blur-lg"
-                      />
-                      {/* LowKey Logo Overlay */}
-                      <div className="absolute inset-0 flex items-center justify-center bg-black/40">
-                        <div className="text-center">
-                          <img 
-                            src="https://customer-assets.emergentagent.com/job_9cfb4bde-566c-4101-8a52-a8ca747e74ca/artifacts/xjtcpb4e_095E7AA1-912D-48A9-A667-A5A89F16DBD7.png" 
-                            alt="LowKey" 
-                            className="w-12 h-12 mx-auto mb-2 opacity-80"
-                          />
-                          <Lock className="w-6 h-6 mx-auto text-white/60" />
-                        </div>
-                      </div>
-                    </div>
-                    {/* Post Info */}
-                    <div className="p-3">
-                      <p className="text-white text-sm font-medium truncate">{post.creatorName}</p>
-                      {post.caption && <p className="text-gray-400 text-xs truncate">{post.caption}</p>}
-                      {post.price > 0 && (
-                        <div className="flex items-center gap-1 mt-2 text-amber-400 text-sm font-semibold">
-                          <PoundSterling className="w-4 h-4" />
-                          {post.price.toFixed(2)}
-                        </div>
-                      )}
-                      <button className="w-full mt-2 py-2 rounded-lg bg-pink-500/20 text-pink-400 text-xs font-medium">
-                        Subscribe to View
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        </>
-      )}
-
-      {/* Hidden file input for post upload */}
-      <input
-        ref={fileInputRef}
-        type="file"
-        accept="image/*"
-        onChange={handlePostFileSelect}
-        className="hidden"
-      />
-
-      {/* Post Form Modal - Device Upload Only */}
-      {showPostForm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm" onClick={() => { setShowPostForm(false); setNewPost({ imageData: '', caption: '', price: '', preview: null }); }}>
-          <div className="bg-[#1a1a2e] rounded-2xl p-6 max-w-sm mx-4 w-full max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl text-white font-semibold">Create Tease Post</h2>
-              <button onClick={() => { setShowPostForm(false); setNewPost({ imageData: '', caption: '', price: '', preview: null }); }} className="p-2 rounded-full hover:bg-white/10">
-                <X className="w-5 h-5 text-gray-400" />
-              </button>
-            </div>
-            <form onSubmit={createPost} className="space-y-4">
-              {/* Image Upload - Device Only */}
-              {newPost.preview ? (
-                <div className="relative">
-                  <img src={newPost.preview} alt="Preview" className="w-full h-48 object-cover rounded-xl" />
-                  <button 
-                    type="button"
-                    onClick={() => setNewPost({ ...newPost, imageData: '', preview: null })}
-                    className="absolute top-2 right-2 p-1.5 rounded-full bg-black/60 text-white"
-                  >
-                    <X className="w-4 h-4" />
-                  </button>
-                </div>
-              ) : (
-                <button
-                  type="button"
-                  onClick={() => fileInputRef.current?.click()}
-                  className="w-full h-48 rounded-xl border-2 border-dashed border-white/20 flex flex-col items-center justify-center gap-3 hover:border-pink-500/50 hover:bg-white/5 transition-colors"
-                >
-                  <Upload className="w-10 h-10 text-gray-400" />
-                  <span className="text-gray-400">Tap to upload from device</span>
-                  <span className="text-gray-500 text-sm">Images only</span>
-                </button>
-              )}
-
-              <textarea
-                value={newPost.caption}
-                onChange={(e) => setNewPost({ ...newPost, caption: e.target.value })}
-                placeholder="Caption (optional)"
-                className="w-full px-4 py-3 rounded-xl bg-black/40 border border-white/10 text-white placeholder-gray-500 focus:outline-none focus:border-pink-500/50 resize-none h-20"
-              />
-              <div className="relative">
-                <PoundSterling className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                <input
-                  type="number"
-                  step="0.01"
-                  min="0"
-                  value={newPost.price}
-                  onChange={(e) => setNewPost({ ...newPost, price: e.target.value })}
-                  placeholder="Set your price (£)"
-                  className="w-full pl-12 pr-4 py-3 rounded-xl bg-black/40 border border-white/10 text-white placeholder-gray-500 focus:outline-none focus:border-pink-500/50"
-                />
-              </div>
-              <p className="text-gray-400 text-xs">Your image will be blurred with the LowKey logo. Subscribers can view full content. LowKey takes 20%.</p>
-              <div className="flex gap-3">
-                <button type="button" onClick={() => { setShowPostForm(false); setNewPost({ imageData: '', caption: '', price: '', preview: null }); }} className="flex-1 py-3 rounded-xl bg-white/10 text-white">Cancel</button>
-                <button 
-                  type="submit" 
-                  disabled={!newPost.imageData || uploading}
-                  className="flex-1 py-3 rounded-xl bg-gradient-to-r from-pink-500 to-purple-500 text-white font-semibold disabled:opacity-50 flex items-center justify-center gap-2"
-                >
-                  {uploading ? <Loader2 className="w-5 h-5 animate-spin" /> : null}
-                  {uploading ? 'Posting...' : 'Post'}
-                </button>
-              </div>
-            </form>
+            ))}
           </div>
         </div>
       )}
+
+      {/* Messages */}
+      <div 
+        ref={chatContainerRef}
+        className="flex-1 overflow-y-auto p-4 space-y-4 pb-24"
+        data-testid="messages-container"
+      >
+        {messages.length === 0 ? (
+          <div className="flex flex-col items-center justify-center h-64 text-white/30">
+            <MessageCircle className="w-12 h-12 mb-3 opacity-30" strokeWidth={1.5} />
+            <p className="text-sm">No messages yet. Start the conversation!</p>
+          </div>
+        ) : (
+          messages.map((msg) => {
+            const isOwn = msg.userId === user?.id
+            return (
+              <div key={msg.id} className={`flex gap-3 ${isOwn ? 'flex-row-reverse' : ''}`} data-testid={`message-${msg.id}`}>
+                <div className="w-9 h-9 rounded-full bg-[#1A1A24] flex items-center justify-center overflow-hidden flex-shrink-0 border border-white/5">
+                  {msg.avatar ? (
+                    <img src={msg.avatar} alt="" className="w-full h-full object-cover" />
+                  ) : (
+                    <Users className="w-4 h-4 text-white/30" strokeWidth={1.5} />
+                  )}
+                </div>
+                <div className={`max-w-[75%] ${isOwn ? 'items-end' : ''}`}>
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className={`text-xs font-medium ${isOwn ? 'text-cyan-400' : 'text-white/60'}`}>
+                      {msg.displayName || 'User'}
+                    </span>
+                    <span className="text-white/15 text-[10px]">
+                      {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    </span>
+                    {isFounder && !isOwn && (
+                      <button onClick={() => deleteMessage(msg.id)} className="text-white/15 hover:text-red-400 transition-colors">
+                        <Trash2 className="w-3 h-3" />
+                      </button>
+                    )}
+                  </div>
+                  <div className={`rounded-2xl px-4 py-2.5 text-sm leading-relaxed ${
+                    isOwn 
+                      ? 'bg-cyan-500/15 text-white border border-cyan-500/15' 
+                      : 'bg-[#12121A] text-white/80 border border-white/5'
+                  }`}>
+                    {msg.content}
+                  </div>
+                </div>
+              </div>
+            )
+          })
+        )}
+        <div ref={messagesEndRef} />
+      </div>
+
+      {/* Message Input */}
+      <div className="fixed bottom-0 left-0 right-0 z-20 bg-[#12121A]/90 backdrop-blur-xl border-t border-white/5 p-4" data-testid="message-input-area">
+        <form onSubmit={sendMessage} className="flex gap-3">
+          <input
+            type="text"
+            value={newMessage}
+            onChange={(e) => setNewMessage(e.target.value)}
+            placeholder="Type a message..."
+            className="lk-input flex-1"
+            data-testid="message-input"
+          />
+          <button
+            type="submit"
+            disabled={sending || !newMessage.trim()}
+            className="p-3 rounded-xl bg-cyan-500/15 text-cyan-400 hover:bg-cyan-500/25 transition-colors disabled:opacity-30 border border-cyan-500/15"
+            data-testid="send-message-btn"
+          >
+            <Send className="w-5 h-5" strokeWidth={1.5} />
+          </button>
+        </form>
+      </div>
     </div>
   )
 }
-

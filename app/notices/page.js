@@ -106,7 +106,7 @@ export default function NoticesPage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-[#0a0a0f] flex items-center justify-center">
-        <div className="animate-pulse text-white">Loading...</div>
+        <div className="animate-pulse text-white/40 font-heading">Loading...</div>
       </div>
     )
   }
@@ -114,21 +114,21 @@ export default function NoticesPage() {
   const unreadCount = notices.filter(n => !readNotices.includes(n.id)).length
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f]">
+    <div className="min-h-screen bg-[#0a0a0f] page-enter">
       {/* Header */}
-      <header className="flex items-center justify-between p-4 border-b border-white/10">
+      <header className="lk-page-header flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <button onClick={() => router.push('/')} className="p-2 rounded-full hover:bg-white/10">
+          <button onClick={() => router.push('/')} className="p-2 rounded-full hover:bg-white/5">
             <ArrowLeft className="w-5 h-5 text-white" />
           </button>
-          <h1 className="text-xl font-semibold text-white">Notices</h1>
+          <h1 className="text-xl font-heading font-semibold text-white">Notices</h1>
         </div>
         <div className="flex items-center gap-2">
           {unreadCount > 0 && (
             <>
               <button 
                 onClick={markAllAsRead}
-                className="px-3 py-1 rounded-full bg-white/10 text-gray-300 text-xs font-medium hover:bg-white/20"
+                className="px-3 py-1 rounded-full bg-white/10 text-white/60 text-xs font-medium hover:bg-white/20"
               >
                 Mark all read
               </button>
@@ -150,7 +150,7 @@ export default function NoticesPage() {
         </div>
 
         {notices.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-64 text-gray-400">
+          <div className="flex flex-col items-center justify-center h-64 text-white/40">
             <Bell className="w-16 h-16 mb-4 opacity-50" />
             <p className="text-lg">No notices yet</p>
             <p className="text-sm mt-1">Check back for updates!</p>
@@ -166,7 +166,7 @@ export default function NoticesPage() {
                   onClick={() => markAsRead(notice.id)}
                   className={`w-full text-left p-4 rounded-xl border transition-colors cursor-pointer ${
                     isRead 
-                      ? 'bg-white/5 border-white/10' 
+                      ? 'bg-[#12121A] border-white/5' 
                       : 'bg-amber-500/10 border-amber-500/30'
                   }`}
                 >
@@ -181,10 +181,10 @@ export default function NoticesPage() {
                       )}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <h3 className={`font-semibold ${isRead ? 'text-gray-300' : 'text-white'}`}>
+                      <h3 className={`font-semibold ${isRead ? 'text-white/60' : 'text-white'}`}>
                         {notice.title}
                       </h3>
-                      <p className="text-gray-400 text-sm mt-1 break-words">
+                      <p className="text-white/40 text-sm mt-1 break-words">
                         {notice.content}
                       </p>
                       <div className="flex items-center gap-2 mt-2 flex-wrap">
@@ -192,8 +192,8 @@ export default function NoticesPage() {
                           <Crown className="w-3 h-3" />
                           <span>{notice.postedBy || 'Founder'}</span>
                         </div>
-                        <span className="text-gray-600">•</span>
-                        <div className="flex items-center gap-1 text-gray-500 text-xs">
+                        <span className="text-white/15">•</span>
+                        <div className="flex items-center gap-1 text-white/25 text-xs">
                           <Clock className="w-3 h-3" />
                           {new Date(notice.createdAt).toLocaleDateString()}
                         </div>
@@ -202,7 +202,7 @@ export default function NoticesPage() {
                     {isFounder && (
                       <button 
                         onClick={(e) => deleteNotice(notice.id, e)}
-                        className="p-2 rounded-lg hover:bg-red-500/20 text-gray-400 hover:text-red-400 transition-colors"
+                        className="p-2 rounded-lg hover:bg-red-500/20 text-white/40 hover:text-red-400 transition-colors"
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>

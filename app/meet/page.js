@@ -74,7 +74,7 @@ export default function MeetPage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-[#0a0a0f] flex items-center justify-center">
-        <div className="animate-pulse text-white">Loading...</div>
+        <div className="animate-pulse text-white/40 font-heading">Loading...</div>
       </div>
     )
   }
@@ -82,15 +82,15 @@ export default function MeetPage() {
   // Quiet mode message
   if (user?.quietMode) {
     return (
-      <div className="min-h-screen bg-[#0a0a0f]">
-        <header className="flex items-center gap-3 p-4 border-b border-white/10">
-          <button onClick={() => router.push('/')} className="p-2 rounded-full hover:bg-white/10">
+      <div className="min-h-screen bg-[#0a0a0f] page-enter">
+        <header className="lk-page-header flex items-center gap-3">
+          <button onClick={() => router.push('/')} className="p-2 rounded-full hover:bg-white/5">
             <ArrowLeft className="w-5 h-5 text-white" />
           </button>
-          <h1 className="text-xl font-semibold text-white">Meet</h1>
+          <h1 className="text-xl font-heading font-semibold text-white">Meet</h1>
         </header>
         
-        <div className="flex flex-col items-center justify-center h-64 text-gray-400 p-4">
+        <div className="flex flex-col items-center justify-center h-64 text-white/40 p-4">
           <div className="w-16 h-16 rounded-full bg-purple-500/20 flex items-center justify-center mb-4">
             <User className="w-8 h-8 text-purple-400" />
           </div>
@@ -108,30 +108,30 @@ export default function MeetPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f]">
+    <div className="min-h-screen bg-[#0a0a0f] page-enter">
       {/* Header */}
-      <header className="flex items-center justify-between p-4 border-b border-white/10">
+      <header className="lk-page-header flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <button onClick={() => router.push('/')} className="p-2 rounded-full hover:bg-white/10">
+          <button onClick={() => router.push('/')} className="p-2 rounded-full hover:bg-white/5">
             <ArrowLeft className="w-5 h-5 text-white" />
           </button>
-          <h1 className="text-xl font-semibold text-white">Meet</h1>
+          <h1 className="text-xl font-heading font-semibold text-white">Meet</h1>
         </div>
         <button 
           onClick={() => fetchSuggestions(user.id)}
-          className="p-2 rounded-full hover:bg-white/10"
+          className="p-2 rounded-full hover:bg-white/5"
         >
-          <RefreshCw className="w-5 h-5 text-gray-400" />
+          <RefreshCw className="w-5 h-5 text-white/40" />
         </button>
       </header>
 
       <div className="p-4">
-        <p className="text-gray-400 text-sm mb-4">
+        <p className="text-white/40 text-sm mb-4">
           People you might want to connect with
         </p>
 
         {suggestions.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-64 text-gray-400">
+          <div className="flex flex-col items-center justify-center h-64 text-white/40">
             <User className="w-16 h-16 mb-4 opacity-50" />
             <p className="text-lg">No suggestions right now</p>
             <p className="text-sm mt-1">Check back later!</p>
@@ -144,14 +144,14 @@ export default function MeetPage() {
               return (
                 <div 
                   key={person.id}
-                  className="flex items-center gap-4 p-4 rounded-xl bg-white/5 border border-white/10"
+                  className="flex items-center gap-4 p-4 rounded-xl bg-[#12121A] border border-white/5"
                 >
                   <div className="w-14 h-14 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
                     <User className="w-7 h-7 text-white" />
                   </div>
                   <div className="flex-1">
                     <h3 className="text-white font-medium">{person.displayName}</h3>
-                    <p className="text-gray-400 text-sm">
+                    <p className="text-white/40 text-sm">
                       {person.verified && '✓ Verified'}
                     </p>
                   </div>

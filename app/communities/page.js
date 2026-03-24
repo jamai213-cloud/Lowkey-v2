@@ -187,7 +187,7 @@ export default function CommunitiesPage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-[#0a0a0f] flex items-center justify-center">
-        <div className="animate-pulse text-white">Loading...</div>
+        <div className="animate-pulse text-white/40 font-heading">Loading...</div>
       </div>
     )
   }
@@ -197,17 +197,17 @@ export default function CommunitiesPage() {
   return (
     <div className="min-h-screen bg-[#0a0a0f] flex flex-col">
       {/* Header */}
-      <header className="flex items-center justify-between p-4 border-b border-white/10">
+      <header className="lk-page-header flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <button onClick={() => selectedCommunity ? setSelectedCommunity(null) : router.push('/')} className="p-2 rounded-full hover:bg-white/10">
+          <button onClick={() => selectedCommunity ? setSelectedCommunity(null) : router.push('/')} className="p-2 rounded-full hover:bg-white/5">
             <ArrowLeft className="w-5 h-5 text-white" />
           </button>
           <div>
-            <h1 className="text-xl font-semibold text-white">
+            <h1 className="text-xl font-heading font-semibold text-white">
               {selectedCommunity ? selectedCommunity.name : 'Groups'}
             </h1>
             {selectedCommunity && (
-              <p className="text-gray-400 text-xs">{selectedCommunity.members?.length || 0} members</p>
+              <p className="text-white/40 text-xs">{selectedCommunity.members?.length || 0} members</p>
             )}
           </div>
         </div>
@@ -238,7 +238,7 @@ export default function CommunitiesPage() {
           <div className="flex gap-3 mb-4">
             <button
               onClick={() => setShowCreate(true)}
-              className="flex-1 py-3 rounded-xl bg-gradient-to-r from-amber-400 to-yellow-500 text-black font-semibold flex items-center justify-center gap-2"
+              className="flex-1 py-3 lk-btn-primary bg-gradient-to-r from-purple-500 to-purple-700 text-white shadow-lg shadow-purple-500/20 flex items-center justify-center gap-2"
             >
               <Plus className="w-5 h-5" /> Create
             </button>
@@ -259,7 +259,7 @@ export default function CommunitiesPage() {
           </div>
 
           {communities.length === 0 ? (
-            <div className="text-center text-gray-400 mt-8">
+            <div className="text-center text-white/40 mt-8">
               <Users className="w-12 h-12 mx-auto mb-4 opacity-50" />
               <p>No groups yet</p>
               <p className="text-sm">Create one or join with code!</p>
@@ -270,7 +270,7 @@ export default function CommunitiesPage() {
                 <button
                   key={community.id}
                   onClick={() => loadCommunity(community)}
-                  className="w-full p-4 rounded-xl bg-white/5 border border-white/10 text-left hover:bg-white/10 transition-colors"
+                  className="w-full p-4 rounded-xl bg-[#12121A] border border-white/5 text-left hover:bg-white/5 transition-colors"
                 >
                   <div className="flex items-center gap-3">
                     <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center flex-shrink-0">
@@ -286,7 +286,7 @@ export default function CommunitiesPage() {
                           <span className="text-xs px-2 py-0.5 rounded-full bg-red-500/20 text-red-400 flex-shrink-0">Code Expired</span>
                         )}
                       </div>
-                      <p className="text-gray-400 text-sm truncate">{community.description || 'No description'}</p>
+                      <p className="text-white/40 text-sm truncate">{community.description || 'No description'}</p>
                     </div>
                   </div>
                 </button>
@@ -299,7 +299,7 @@ export default function CommunitiesPage() {
         <>
           <div className="flex-1 overflow-y-auto p-4 space-y-3">
             {messages.length === 0 ? (
-              <div className="text-center text-gray-400 mt-8">
+              <div className="text-center text-white/40 mt-8">
                 <MessageSquare className="w-12 h-12 mx-auto mb-4 opacity-50" />
                 <p>No messages yet</p>
                 <p className="text-sm">Start the conversation!</p>
@@ -321,7 +321,7 @@ export default function CommunitiesPage() {
                       <p className="text-xs font-medium opacity-70 mb-1">{msg.senderName}</p>
                     )}
                     <p className="break-words">{msg.content}</p>
-                    <p className={`text-xs mt-1 ${msg.senderId === user.id ? 'text-black/60' : 'text-gray-400'}`}>
+                    <p className={`text-xs mt-1 ${msg.senderId === user.id ? 'text-black/60' : 'text-white/40'}`}>
                       {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                     </p>
                   </div>
@@ -332,14 +332,14 @@ export default function CommunitiesPage() {
           </div>
 
           {/* Message Input */}
-          <form onSubmit={sendMessage} className="p-4 border-t border-white/10">
+          <form onSubmit={sendMessage} className="p-4 border-t border-white/5">
             <div className="flex gap-2">
               <input
                 type="text"
                 value={newMessage}
                 onChange={(e) => setNewMessage(e.target.value)}
                 placeholder="Type a message..."
-                className="flex-1 px-4 py-3 rounded-full bg-white/10 border border-white/10 text-white placeholder-gray-400 focus:outline-none focus:border-amber-500/50"
+                className="flex-1 px-4 py-3 rounded-full bg-white/10 border border-white/5 text-white placeholder-gray-400 focus:outline-none focus:border-amber-500/50"
               />
               <button
                 type="submit"
@@ -355,8 +355,8 @@ export default function CommunitiesPage() {
 
       {/* Create Community Modal */}
       {showCreate && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm" onClick={() => setShowCreate(false)}>
-          <div className="bg-[#1a1a2e] rounded-2xl p-6 max-w-sm mx-4 w-full" onClick={e => e.stopPropagation()}>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-md animate-fade-in" onClick={() => setShowCreate(false)}>
+          <div className="glass-card rounded-3xl p-8 max-w-sm mx-4 w-full" onClick={e => e.stopPropagation()}>
             <h2 className="text-xl text-white font-semibold mb-4">Create Group</h2>
             <form onSubmit={createCommunity} className="space-y-4">
               <input
@@ -364,14 +364,14 @@ export default function CommunitiesPage() {
                 value={newCommunity.name}
                 onChange={(e) => setNewCommunity({ ...newCommunity, name: e.target.value })}
                 placeholder="Group name"
-                className="w-full px-4 py-3 rounded-xl bg-black/40 border border-white/10 text-white placeholder-gray-500 focus:outline-none focus:border-amber-500/50"
+                className="w-full px-4 py-3 rounded-xl bg-black/40 border border-white/5 text-white placeholder-gray-500 focus:outline-none focus:border-amber-500/50"
                 required
               />
               <textarea
                 value={newCommunity.description}
                 onChange={(e) => setNewCommunity({ ...newCommunity, description: e.target.value })}
                 placeholder="Description (optional)"
-                className="w-full px-4 py-3 rounded-xl bg-black/40 border border-white/10 text-white placeholder-gray-500 focus:outline-none focus:border-amber-500/50 resize-none h-24"
+                className="w-full px-4 py-3 rounded-xl bg-black/40 border border-white/5 text-white placeholder-gray-500 focus:outline-none focus:border-amber-500/50 resize-none h-24"
               />
               <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20">
                 <div className="flex items-start gap-2">
@@ -381,7 +381,7 @@ export default function CommunitiesPage() {
               </div>
               <div className="flex gap-3">
                 <button type="button" onClick={() => setShowCreate(false)} className="flex-1 py-3 rounded-xl bg-white/10 text-white">Cancel</button>
-                <button type="submit" className="flex-1 py-3 rounded-xl bg-gradient-to-r from-amber-400 to-yellow-500 text-black font-semibold">Create</button>
+                <button type="submit" className="flex-1 py-3 lk-btn-primary bg-gradient-to-r from-purple-500 to-purple-700 text-white shadow-lg shadow-purple-500/20">Create</button>
               </div>
             </form>
           </div>
@@ -390,8 +390,8 @@ export default function CommunitiesPage() {
 
       {/* Join Community Modal */}
       {showJoin && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm" onClick={() => { setShowJoin(false); setJoinError('') }}>
-          <div className="bg-[#1a1a2e] rounded-2xl p-6 max-w-sm mx-4 w-full" onClick={e => e.stopPropagation()}>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-md animate-fade-in" onClick={() => { setShowJoin(false); setJoinError('') }}>
+          <div className="glass-card rounded-3xl p-8 max-w-sm mx-4 w-full" onClick={e => e.stopPropagation()}>
             <h2 className="text-xl text-white font-semibold mb-4">Join Group</h2>
             <form onSubmit={joinCommunity} className="space-y-4">
               <input
@@ -399,7 +399,7 @@ export default function CommunitiesPage() {
                 value={joinCode}
                 onChange={(e) => { setJoinCode(e.target.value.toUpperCase()); setJoinError('') }}
                 placeholder="Enter invite code"
-                className="w-full px-4 py-3 rounded-xl bg-black/40 border border-white/10 text-white placeholder-gray-500 focus:outline-none focus:border-amber-500/50 text-center text-xl tracking-widest"
+                className="w-full px-4 py-3 rounded-xl bg-black/40 border border-white/5 text-white placeholder-gray-500 focus:outline-none focus:border-amber-500/50 text-center text-xl tracking-widest"
                 maxLength={6}
                 required
               />
@@ -411,10 +411,10 @@ export default function CommunitiesPage() {
                   </div>
                 </div>
               )}
-              <p className="text-gray-400 text-xs text-center">Ask the group admin for the invite code</p>
+              <p className="text-white/40 text-xs text-center">Ask the group admin for the invite code</p>
               <div className="flex gap-3">
                 <button type="button" onClick={() => { setShowJoin(false); setJoinError('') }} className="flex-1 py-3 rounded-xl bg-white/10 text-white">Cancel</button>
-                <button type="submit" className="flex-1 py-3 rounded-xl bg-gradient-to-r from-amber-400 to-yellow-500 text-black font-semibold">Join</button>
+                <button type="submit" className="flex-1 py-3 lk-btn-primary bg-gradient-to-r from-purple-500 to-purple-700 text-white shadow-lg shadow-purple-500/20">Join</button>
               </div>
             </form>
           </div>

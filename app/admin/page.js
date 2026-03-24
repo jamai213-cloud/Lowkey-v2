@@ -58,14 +58,14 @@ export default function AdminPage() {
       <header className="flex items-center gap-4 mb-6">
         <button
           onClick={() => router.push('/')}
-          className="p-2 rounded-full hover:bg-white/10 transition-colors"
+          className="p-2 rounded-full hover:bg-white/5 transition-colors"
         >
           <ArrowLeft className="w-5 h-5 text-white" />
         </button>
         <h1 className="text-xl font-bold text-white">Admin - User Verification</h1>
         <button
           onClick={fetchUsers}
-          className="ml-auto p-2 rounded-full hover:bg-white/10 transition-colors"
+          className="ml-auto p-2 rounded-full hover:bg-white/5 transition-colors"
         >
           <RefreshCw className={`w-5 h-5 text-white ${loading ? 'animate-spin' : ''}`} />
         </button>
@@ -73,9 +73,9 @@ export default function AdminPage() {
 
       <div className="space-y-3">
         {loading ? (
-          <div className="text-center text-gray-400 py-8">Loading users...</div>
+          <div className="text-center text-white/40 py-8">Loading users...</div>
         ) : users.length === 0 ? (
-          <div className="text-center text-gray-400 py-8">No users found</div>
+          <div className="text-center text-white/40 py-8">No users found</div>
         ) : (
           users.map((user) => (
             <div
@@ -88,7 +88,7 @@ export default function AdminPage() {
                 </div>
                 <div>
                   <div className="text-white font-medium">{user.displayName}</div>
-                  <div className="text-gray-400 text-sm">{user.email}</div>
+                  <div className="text-white/40 text-sm">{user.email}</div>
                 </div>
               </div>
               
@@ -116,7 +116,7 @@ export default function AdminPage() {
       </div>
 
       <div className="mt-6 p-4 rounded-xl bg-purple-500/10 border border-purple-500/20">
-        <p className="text-gray-300 text-sm">
+        <p className="text-white/60 text-sm">
           <strong className="text-purple-400">Note:</strong> Toggle verification status to test locked features.
           Locked features for unverified users: Radio, Music, After Dark
         </p>

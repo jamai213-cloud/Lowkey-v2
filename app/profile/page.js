@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { ArrowLeft, User, Mail, Calendar, Shield, Moon, LogOut, Star, Crown, PoundSterling, Users, Settings, Image, Music, Palette, Plus, Lock, Eye, EyeOff, Video, Check, UserCheck, Gem, Play, Edit, Heart, Gift, X, Upload, Camera, Loader2 } from 'lucide-react'
 
 const VERIFICATION_TIERS = {
-  'new': { name: 'New Member', icon: Users, color: 'text-gray-400', bgColor: 'bg-gray-500/20' },
+  'new': { name: 'New Member', icon: Users, color: 'text-white/40', bgColor: 'bg-gray-500/20' },
   'verified': { name: 'Verified', icon: Check, color: 'text-blue-400', bgColor: 'bg-blue-500/20' },
   'trusted': { name: 'Trusted', icon: UserCheck, color: 'text-green-400', bgColor: 'bg-green-500/20' },
   'inner-circle': { name: 'Inner Circle', icon: Gem, color: 'text-amber-400', bgColor: 'bg-amber-500/20' }
@@ -397,7 +397,7 @@ export default function ProfilePage() {
   if (loading || !user) {
     return (
       <div className="min-h-screen bg-[#0a0a0f] flex items-center justify-center">
-        <div className="animate-pulse text-white">Loading...</div>
+        <div className="animate-pulse text-white/40 font-heading">Loading...</div>
       </div>
     )
   }
@@ -408,25 +408,25 @@ export default function ProfilePage() {
   const isOwnProfile = true // This page always shows the current user's profile
 
   return (
-    <div className="min-h-screen" style={{ background: `linear-gradient(180deg, ${currentSkin.colors[0]}, ${currentSkin.colors[1]})` }}>
+    <div className="min-h-screen page-enter" style={{ background: `linear-gradient(180deg, ${currentSkin.colors[0]}, ${currentSkin.colors[1]})` }} data-testid="profile-page">
       {/* Header */}
-      <header className="flex items-center justify-between p-4 border-b border-white/10">
+      <header className="lk-page-header flex items-center justify-between" data-testid="profile-header">
         <div className="flex items-center gap-3">
-          <button onClick={() => router.push('/')} className="p-2 rounded-full hover:bg-white/10">
-            <ArrowLeft className="w-5 h-5 text-white" />
+          <button onClick={() => router.push('/')} className="p-2 rounded-full hover:bg-white/5 transition-colors" data-testid="profile-back-btn">
+            <ArrowLeft className="w-5 h-5 text-white/60" strokeWidth={1.5} />
           </button>
-          <h1 className="text-xl font-semibold text-white">Profile</h1>
+          <h1 className="text-xl font-heading font-semibold text-white">Profile</h1>
         </div>
-        <div className="flex items-center gap-2">
-          <button onClick={() => router.push('/profile/edit')} className="p-2 rounded-full hover:bg-white/10">
-            <Edit className="w-5 h-5 text-blue-400" />
+        <div className="flex items-center gap-1.5">
+          <button onClick={() => router.push('/profile/edit')} className="p-2 rounded-full hover:bg-white/5 transition-colors" data-testid="profile-edit-btn">
+            <Edit className="w-4 h-4 text-blue-400" strokeWidth={1.5} />
           </button>
-          <button onClick={() => setShowSkins(true)} className="p-2 rounded-full hover:bg-white/10">
-            <Palette className="w-5 h-5 text-purple-400" />
+          <button onClick={() => setShowSkins(true)} className="p-2 rounded-full hover:bg-white/5 transition-colors" data-testid="profile-skins-btn">
+            <Palette className="w-4 h-4 text-purple-400" strokeWidth={1.5} />
           </button>
           {isFounder && (
-            <button onClick={() => router.push('/founder')} className="p-2 rounded-full bg-amber-500/20">
-              <Crown className="w-5 h-5 text-amber-400" />
+            <button onClick={() => router.push('/founder')} className="p-2 rounded-xl bg-amber-500/10 border border-amber-500/15" data-testid="founder-btn">
+              <Crown className="w-4 h-4 text-amber-400" strokeWidth={1.5} />
             </button>
           )}
         </div>
@@ -463,7 +463,7 @@ export default function ProfilePage() {
             )}
           </div>
           <h2 className="text-2xl font-bold text-white">{user.displayName}</h2>
-          {user.bio && <p className="text-gray-400 text-center mt-1">{user.bio}</p>}
+          {user.bio && <p className="text-white/40 text-center mt-1">{user.bio}</p>}
           
           {/* Badges */}
           <div className="flex flex-wrap items-center justify-center gap-2 mt-3">
@@ -487,7 +487,7 @@ export default function ProfilePage() {
             <div className="mt-3 flex items-center gap-2 px-3 py-2 rounded-full bg-white/10">
               <Play className="w-4 h-4 text-green-400" />
               <span className="text-white text-sm">{user.profileSong.title}</span>
-              <span className="text-gray-400 text-xs">- {user.profileSong.artist}</span>
+              <span className="text-white/40 text-xs">- {user.profileSong.artist}</span>
             </div>
           )}
 
@@ -501,12 +501,12 @@ export default function ProfilePage() {
         </div>
 
         {/* Tabs */}
-        <div className="flex border-b border-white/10 mb-4">
+        <div className="flex border-b border-white/5 mb-4">
           {['profile', 'gallery', 'stories'].map(tab => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`flex-1 py-2 text-sm font-medium capitalize ${activeTab === tab ? 'text-amber-400 border-b-2 border-amber-400' : 'text-gray-400'}`}
+              className={`flex-1 py-2 text-sm font-medium capitalize ${activeTab === tab ? 'text-amber-400 border-b-2 border-amber-400' : 'text-white/40'}`}
             >
               {tab}
             </button>
@@ -542,11 +542,11 @@ export default function ProfilePage() {
                 </h3>
                 <div className="grid grid-cols-2 gap-3">
                   <div className="p-3 rounded-xl bg-black/30">
-                    <p className="text-gray-400 text-xs">Price</p>
+                    <p className="text-white/40 text-xs">Price</p>
                     <p className="text-white font-bold">£{user.subscriptionPrice?.toFixed(2) || '4.99'}/mo</p>
                   </div>
                   <div className="p-3 rounded-xl bg-black/30">
-                    <p className="text-gray-400 text-xs">Earnings</p>
+                    <p className="text-white/40 text-xs">Earnings</p>
                     <p className="text-green-400 font-bold">£{earnings?.totalEarnings?.toFixed(2) || '0.00'}</p>
                   </div>
                 </div>
@@ -554,13 +554,13 @@ export default function ProfilePage() {
             )}
 
             <div className="space-y-3">
-              <div className="flex items-center gap-4 p-4 rounded-xl bg-white/5 border border-white/10">
-                <Mail className="w-5 h-5 text-gray-400" />
-                <div><p className="text-gray-400 text-sm">Email</p><p className="text-white">{user.email}</p></div>
+              <div className="flex items-center gap-4 p-4 rounded-xl bg-[#12121A] border border-white/5">
+                <Mail className="w-5 h-5 text-white/40" />
+                <div><p className="text-white/40 text-sm">Email</p><p className="text-white">{user.email}</p></div>
               </div>
-              <div className="flex items-center gap-4 p-4 rounded-xl bg-white/5 border border-white/10">
-                <Users className="w-5 h-5 text-gray-400" />
-                <div className="flex-1"><p className="text-gray-400 text-sm">Friends</p><p className="text-white">{user.friends?.length || 0}</p></div>
+              <div className="flex items-center gap-4 p-4 rounded-xl bg-[#12121A] border border-white/5">
+                <Users className="w-5 h-5 text-white/40" />
+                <div className="flex-1"><p className="text-white/40 text-sm">Friends</p><p className="text-white">{user.friends?.length || 0}</p></div>
                 <button onClick={() => router.push('/friends')} className="text-amber-400 text-sm">View</button>
               </div>
             </div>
@@ -578,13 +578,13 @@ export default function ProfilePage() {
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => updateGalleryPrivacy('public')}
-                  className={`px-3 py-1.5 rounded-lg text-xs ${galleryPrivacy === 'public' ? 'bg-amber-500 text-black' : 'bg-white/10 text-gray-400'}`}
+                  className={`px-3 py-1.5 rounded-lg text-xs ${galleryPrivacy === 'public' ? 'bg-amber-500 text-black' : 'bg-white/10 text-white/40'}`}
                 >
                   <Eye className="w-3 h-3 inline mr-1" /> Public
                 </button>
                 <button
                   onClick={() => updateGalleryPrivacy('friends')}
-                  className={`px-3 py-1.5 rounded-lg text-xs ${galleryPrivacy === 'friends' ? 'bg-amber-500 text-black' : 'bg-white/10 text-gray-400'}`}
+                  className={`px-3 py-1.5 rounded-lg text-xs ${galleryPrivacy === 'friends' ? 'bg-amber-500 text-black' : 'bg-white/10 text-white/40'}`}
                 >
                   <Lock className="w-3 h-3 inline mr-1" /> Friends
                 </button>
@@ -595,7 +595,7 @@ export default function ProfilePage() {
             </div>
 
             {gallery.length === 0 ? (
-              <div className="text-center py-8 text-gray-400">
+              <div className="text-center py-8 text-white/40">
                 <Image className="w-12 h-12 mx-auto mb-2 opacity-50" />
                 <p>No media yet</p>
               </div>
@@ -650,17 +650,17 @@ export default function ProfilePage() {
               <Plus className="w-5 h-5" /> Add Story
             </button>
 
-            <p className="text-gray-400 text-xs mb-3">Your stories (visible for 24hrs)</p>
+            <p className="text-white/40 text-xs mb-3">Your stories (visible for 24hrs)</p>
 
             {stories.length === 0 ? (
-              <div className="text-center py-8 text-gray-400">
+              <div className="text-center py-8 text-white/40">
                 <Moon className="w-12 h-12 mx-auto mb-2 opacity-50" />
                 <p>No active stories</p>
               </div>
             ) : (
               <div className="space-y-3">
                 {stories.map(story => (
-                  <div key={story.id} className="p-3 rounded-xl bg-white/5 border border-white/10">
+                  <div key={story.id} className="p-3 rounded-xl bg-[#12121A] border border-white/5">
                     <div className="flex items-center gap-3">
                       {story.type === 'text' ? (
                         <div className="w-16 h-16 rounded-lg flex items-center justify-center text-white text-xs p-2" style={{ backgroundColor: story.backgroundColor }}>
@@ -671,7 +671,7 @@ export default function ProfilePage() {
                       )}
                       <div className="flex-1">
                         <p className="text-white text-sm">{story.privacy === 'friends' ? '🔒 Friends only' : '🌍 Everyone'}</p>
-                        <p className="text-gray-400 text-xs">{story.views?.length || 0} views</p>
+                        <p className="text-white/40 text-xs">{story.views?.length || 0} views</p>
                       </div>
                     </div>
                   </div>
@@ -738,9 +738,9 @@ export default function ProfilePage() {
                   onClick={() => fileInputRef.current?.click()}
                   className="w-full h-48 rounded-xl border-2 border-dashed border-white/20 flex flex-col items-center justify-center gap-3 hover:border-amber-500/50 hover:bg-white/5 transition-colors"
                 >
-                  <Upload className="w-10 h-10 text-gray-400" />
-                  <span className="text-gray-400">Tap to select from device</span>
-                  <span className="text-gray-500 text-sm">Photos or videos</span>
+                  <Upload className="w-10 h-10 text-white/40" />
+                  <span className="text-white/40">Tap to select from device</span>
+                  <span className="text-white/25 text-sm">Photos or videos</span>
                 </button>
               )}
               
@@ -748,7 +748,7 @@ export default function ProfilePage() {
               {uploadData.preview && uploadData.type === 'photo' && (
                 <>
                   <div>
-                    <label className="text-gray-400 text-xs mb-2 block">Filter</label>
+                    <label className="text-white/40 text-xs mb-2 block">Filter</label>
                     <div className="flex gap-2 overflow-x-auto pb-2">
                       {FILTERS.map(filter => (
                         <button
@@ -767,7 +767,7 @@ export default function ProfilePage() {
                   </div>
                   
                   <div>
-                    <label className="text-gray-400 text-xs mb-2 block">Blur Level</label>
+                    <label className="text-white/40 text-xs mb-2 block">Blur Level</label>
                     <div className="flex gap-2">
                       {BLUR_LEVELS.map(level => (
                         <button
@@ -792,7 +792,7 @@ export default function ProfilePage() {
                 value={uploadData.caption} 
                 onChange={e => setUploadData({ ...uploadData, caption: e.target.value })} 
                 placeholder="Caption (optional)" 
-                className="w-full px-4 py-3 rounded-xl bg-black/40 border border-white/10 text-white placeholder-gray-500" 
+                className="w-full px-4 py-3 rounded-xl bg-black/40 border border-white/5 text-white placeholder-gray-500" 
               />
               
               <div className="flex gap-3">
@@ -890,9 +890,9 @@ export default function ProfilePage() {
                       onClick={() => storyFileInputRef.current?.click()}
                       className="w-full h-48 rounded-xl border-2 border-dashed border-white/20 flex flex-col items-center justify-center gap-3 hover:border-amber-500/50 hover:bg-white/5 transition-colors"
                     >
-                      <Upload className="w-10 h-10 text-gray-400" />
-                      <span className="text-gray-400">Tap to select {storyData.type}</span>
-                      <span className="text-gray-500 text-sm">From your device</span>
+                      <Upload className="w-10 h-10 text-white/40" />
+                      <span className="text-white/40">Tap to select {storyData.type}</span>
+                      <span className="text-white/25 text-sm">From your device</span>
                     </button>
                   )}
                 </>
@@ -902,7 +902,7 @@ export default function ProfilePage() {
               {storyData.preview && storyData.type === 'photo' && (
                 <>
                   <div>
-                    <label className="text-gray-400 text-xs mb-2 block">Filter</label>
+                    <label className="text-white/40 text-xs mb-2 block">Filter</label>
                     <div className="flex gap-2 overflow-x-auto pb-2">
                       {FILTERS.map(filter => (
                         <button
@@ -921,7 +921,7 @@ export default function ProfilePage() {
                   </div>
                   
                   <div>
-                    <label className="text-gray-400 text-xs mb-2 block">Blur Level</label>
+                    <label className="text-white/40 text-xs mb-2 block">Blur Level</label>
                     <div className="flex gap-2">
                       {BLUR_LEVELS.map(level => (
                         <button
@@ -944,7 +944,7 @@ export default function ProfilePage() {
               {/* Background color for text stories */}
               {storyData.type === 'text' && (
                 <div>
-                  <label className="text-gray-400 text-xs mb-2 block">Background</label>
+                  <label className="text-white/40 text-xs mb-2 block">Background</label>
                   <div className="flex gap-2 flex-wrap">
                     {['#1a1a2e', '#2d1b4e', '#0c2340', '#3d1c02', '#0d2818', '#3d2b2b', '#1a0a2e', '#2d2006'].map(color => (
                       <button
@@ -962,13 +962,13 @@ export default function ProfilePage() {
               <div className="flex gap-2">
                 <button 
                   onClick={() => setStoryData({ ...storyData, privacy: 'everyone' })} 
-                  className={`flex-1 py-2 rounded-lg text-xs ${storyData.privacy === 'everyone' ? 'bg-green-500 text-white' : 'bg-white/10 text-gray-400'}`}
+                  className={`flex-1 py-2 rounded-lg text-xs ${storyData.privacy === 'everyone' ? 'bg-green-500 text-white' : 'bg-white/10 text-white/40'}`}
                 >
                   <Eye className="w-3 h-3 inline mr-1" /> Everyone
                 </button>
                 <button 
                   onClick={() => setStoryData({ ...storyData, privacy: 'friends' })} 
-                  className={`flex-1 py-2 rounded-lg text-xs ${storyData.privacy === 'friends' ? 'bg-blue-500 text-white' : 'bg-white/10 text-gray-400'}`}
+                  className={`flex-1 py-2 rounded-lg text-xs ${storyData.privacy === 'friends' ? 'bg-blue-500 text-white' : 'bg-white/10 text-white/40'}`}
                 >
                   <Lock className="w-3 h-3 inline mr-1" /> Friends Only
                 </button>
@@ -1015,7 +1015,7 @@ export default function ProfilePage() {
             <h2 className="text-xl text-white font-semibold mb-4">Profile Skins</h2>
             <div className="space-y-3">
               {skins.skins.map(skin => (
-                <div key={skin.id} className="p-3 rounded-xl border border-white/10" style={{ background: `linear-gradient(135deg, ${skin.colors[0]}, ${skin.colors[1]})` }}>
+                <div key={skin.id} className="p-3 rounded-xl border border-white/5" style={{ background: `linear-gradient(135deg, ${skin.colors[0]}, ${skin.colors[1]})` }}>
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-white font-medium">{skin.name}</p>
@@ -1051,12 +1051,12 @@ export default function ProfilePage() {
               <h2 className="text-xl text-white font-semibold flex items-center gap-2">
                 <Gift className="w-5 h-5 text-pink-400" /> Send a Tip
               </h2>
-              <button onClick={() => setShowTipModal(false)} className="p-2 rounded-full hover:bg-white/10">
-                <X className="w-5 h-5 text-gray-400" />
+              <button onClick={() => setShowTipModal(false)} className="p-2 rounded-full hover:bg-white/5">
+                <X className="w-5 h-5 text-white/40" />
               </button>
             </div>
 
-            <p className="text-gray-400 text-sm mb-4">Show your appreciation with a tip. 80% goes to the creator.</p>
+            <p className="text-white/40 text-sm mb-4">Show your appreciation with a tip. 80% goes to the creator.</p>
 
             {/* Quick Amounts */}
             <div className="grid grid-cols-3 gap-2 mb-4">
@@ -1067,7 +1067,7 @@ export default function ProfilePage() {
                   className={`py-3 rounded-xl font-semibold transition-colors ${
                     tipAmount === t.amount
                       ? 'bg-gradient-to-r from-pink-500 to-purple-500 text-white'
-                      : 'bg-white/10 text-gray-300 hover:bg-white/20'
+                      : 'bg-white/10 text-white/60 hover:bg-white/20'
                   }`}
                 >
                   {t.label}
@@ -1077,43 +1077,43 @@ export default function ProfilePage() {
 
             {/* Custom Amount */}
             <div className="mb-4">
-              <label className="text-gray-400 text-sm mb-2 block">Or enter custom amount</label>
+              <label className="text-white/40 text-sm mb-2 block">Or enter custom amount</label>
               <div className="relative">
-                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">£</span>
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-white/40">£</span>
                 <input
                   type="number"
                   min="1"
                   value={tipAmount}
                   onChange={(e) => setTipAmount(Math.max(1, parseInt(e.target.value) || 1))}
-                  className="w-full pl-8 pr-4 py-3 rounded-xl bg-black/40 border border-white/10 text-white placeholder-gray-500 focus:outline-none focus:border-pink-500/50"
+                  className="w-full pl-8 pr-4 py-3 rounded-xl bg-black/40 border border-white/5 text-white placeholder-gray-500 focus:outline-none focus:border-pink-500/50"
                 />
               </div>
             </div>
 
             {/* Message */}
             <div className="mb-4">
-              <label className="text-gray-400 text-sm mb-2 block">Add a message (optional)</label>
+              <label className="text-white/40 text-sm mb-2 block">Add a message (optional)</label>
               <input
                 type="text"
                 value={tipMessage}
                 onChange={(e) => setTipMessage(e.target.value)}
                 placeholder="Thanks for the great content!"
-                className="w-full px-4 py-3 rounded-xl bg-black/40 border border-white/10 text-white placeholder-gray-500 focus:outline-none focus:border-pink-500/50"
+                className="w-full px-4 py-3 rounded-xl bg-black/40 border border-white/5 text-white placeholder-gray-500 focus:outline-none focus:border-pink-500/50"
               />
             </div>
 
             {/* Summary */}
-            <div className="p-4 rounded-xl bg-white/5 border border-white/10 mb-4">
+            <div className="p-4 rounded-xl bg-[#12121A] border border-white/5 mb-4">
               <div className="flex justify-between text-sm mb-2">
-                <span className="text-gray-400">Tip amount</span>
+                <span className="text-white/40">Tip amount</span>
                 <span className="text-white">£{tipAmount.toFixed(2)}</span>
               </div>
               <div className="flex justify-between text-sm mb-2">
-                <span className="text-gray-400">Platform fee (20%)</span>
-                <span className="text-gray-400">-£{(tipAmount * 0.20).toFixed(2)}</span>
+                <span className="text-white/40">Platform fee (20%)</span>
+                <span className="text-white/40">-£{(tipAmount * 0.20).toFixed(2)}</span>
               </div>
-              <div className="flex justify-between text-sm pt-2 border-t border-white/10">
-                <span className="text-gray-400">Creator receives</span>
+              <div className="flex justify-between text-sm pt-2 border-t border-white/5">
+                <span className="text-white/40">Creator receives</span>
                 <span className="text-green-400 font-semibold">£{(tipAmount * 0.80).toFixed(2)}</span>
               </div>
             </div>
