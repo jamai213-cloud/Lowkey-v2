@@ -1099,6 +1099,15 @@ const HomePage = ({ user, onLogout, setUser }) => {
         </div>
         
         <div className="flex items-center gap-1">
+          {/* Credit Balance Indicator */}
+          <button
+            onClick={() => router.push('/wallet')}
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full bg-[#D4A54A]/[0.06] border border-[#D4A54A]/15 hover:border-[#D4A54A]/30 transition-colors mr-0.5"
+            data-testid="credit-balance-btn"
+          >
+            <Wallet className="w-3.5 h-3.5 text-[#D4A54A]/70" strokeWidth={1.5} />
+            <span className="text-[#D4A54A]/80 text-[11px] font-bold font-heading">{user.credits || 0}</span>
+          </button>
           {user.verified && (
             <span className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#9333EA]/8 border border-[#9333EA]/15 text-[#9333EA]/70 text-[10px] font-semibold tracking-wide">
               <CheckCircle className="w-3 h-3" />
@@ -1599,20 +1608,19 @@ const HomePage = ({ user, onLogout, setUser }) => {
       <main className="relative z-[5] pb-28">
 
         {/* --- PEOPLE ONLINE --- */}
-        <section className="px-5 pt-5" data-testid="people-online-section">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-[#10B981]" />
-              <span className="text-white/70 text-sm font-heading font-semibold">People Online</span>
-              <span className="text-[#10B981] text-xs font-medium">{members.length}</span>
+        <section className="pt-5 pb-2" data-testid="people-online-section">
+          <div className="px-5 flex items-center justify-between mb-4">
+            <div className="flex items-baseline gap-2.5">
+              <span className="text-white/90 text-[15px] font-heading font-bold">People Online</span>
+              <span className="text-[#10B981] text-xs font-semibold">{members.length}</span>
             </div>
-            <button onClick={() => router.push('/search')} className="text-[11px] text-[#9333EA]/60 hover:text-[#9333EA] font-medium transition-colors" data-testid="see-all-members">
+            <button onClick={() => router.push('/search')} className="text-[11px] text-[#9333EA]/50 hover:text-[#9333EA] font-semibold transition-colors" data-testid="see-all-members">
               See all
             </button>
           </div>
 
           <div 
-            className="flex gap-4 overflow-x-auto pb-2 -mx-5 px-5"
+            className="flex gap-3 overflow-x-auto pb-3 px-5"
             style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', WebkitOverflowScrolling: 'touch' }}
             data-testid="people-online-scroll"
           >
@@ -1620,29 +1628,29 @@ const HomePage = ({ user, onLogout, setUser }) => {
               <button
                 key={m.id}
                 onClick={() => router.push(`/search?view=${m.id}`)}
-                className="flex-none flex flex-col items-center gap-1.5 group"
+                className="flex-none flex flex-col items-center gap-2 group"
                 data-testid={`online-user-${m.id}`}
               >
                 <div className="relative">
-                  <div className="w-16 h-16 rounded-full bg-[#141420] overflow-hidden border-2 border-white/[0.06] group-hover:border-[#9333EA]/30 transition-colors">
+                  <div className="w-[60px] h-[60px] rounded-full bg-[#12121A] overflow-hidden ring-2 ring-white/[0.06] group-hover:ring-[#9333EA]/25 transition-all">
                     {m.avatar || m.profilePicture ? (
                       <img src={m.avatar || m.profilePicture} alt="" className="w-full h-full object-cover" />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center text-white/25 text-base font-semibold">
+                      <div className="w-full h-full flex items-center justify-center text-white/20 text-lg font-bold">
                         {m.displayName?.charAt(0)?.toUpperCase() || '?'}
                       </div>
                     )}
                   </div>
-                  <div className="absolute bottom-0.5 right-0.5 w-3.5 h-3.5 rounded-full bg-[#10B981] border-[2.5px] border-[#08080D]" />
+                  <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-[#10B981] ring-[2.5px] ring-[#08080D]" />
                 </div>
-                <span className="text-white/45 text-[11px] font-medium truncate w-16 text-center group-hover:text-white/70 transition-colors">
+                <span className="text-white/35 text-[10px] font-medium truncate w-[60px] text-center group-hover:text-white/60 transition-colors">
                   {m.displayName?.split(' ')[0]?.slice(0, 8) || 'User'}
                 </span>
               </button>
             ))}
             {members.length === 0 && (
-              <div className="flex items-center justify-center w-full py-6 text-white/20 text-sm">
-                No members yet
+              <div className="flex items-center justify-center w-full py-8 text-white/15 text-sm">
+                No members online right now
               </div>
             )}
           </div>
@@ -1705,50 +1713,46 @@ const HomePage = ({ user, onLogout, setUser }) => {
         )}
 
         {/* --- ACTIVE LOUNGES --- */}
-        <section className="px-5 pt-1" data-testid="active-lounges-section">
+        <section className="px-5 pt-2" data-testid="active-lounges-section">
           <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2">
-              <Sofa className="w-4 h-4 text-[#9333EA]/40" strokeWidth={1.5} />
-              <span className="text-white/50 text-sm font-heading font-semibold tracking-wide">Active Lounges</span>
-            </div>
-            <button onClick={() => handleTileClick('lounge', '/lounge')} className="text-[11px] text-[#9333EA]/50 hover:text-[#9333EA] font-medium transition-colors" data-testid="see-all-lounges">
+            <span className="text-white/90 text-[15px] font-heading font-bold">Active Lounges</span>
+            <button onClick={() => handleTileClick('lounge', '/lounge')} className="text-[11px] text-[#9333EA]/50 hover:text-[#9333EA] font-semibold transition-colors" data-testid="see-all-lounges">
               See all
             </button>
           </div>
 
           <div className="space-y-3">
-            {loungesList.slice(0, 4).map((lounge, idx) => {
-              const accentColors = ['#3B82F6', '#D4A54A', '#E8364E', '#9333EA', '#E84393', '#10B981']
-              const accentNames = ['blue', 'gold', 'red', 'purple', 'pink', 'emerald']
-              const accent = accentColors[idx % accentColors.length]
+            {loungesList.slice(0, 3).map((lounge, idx) => {
+              const accents = ['#9333EA', '#3B82F6', '#E8364E', '#D4A54A', '#E84393', '#10B981']
+              const accentNames = ['purple', 'blue', 'red', 'gold', 'pink', 'emerald']
+              const accent = accents[idx % accents.length]
               const accentName = accentNames[idx % accentNames.length]
               const memberCount = lounge.memberCount || lounge.members?.length || 0
+              const desc = lounge.description || 'Open conversation space'
               return (
                 <button
                   key={lounge.id}
                   onClick={() => router.push(`/lounge?id=${lounge.id}`)}
-                  className="lounge-card w-full text-left p-5"
+                  className="lounge-card w-full text-left px-5 py-4"
                   data-accent={accentName}
                   data-testid={`home-lounge-${lounge.id}`}
                 >
-                  <div className="flex items-start justify-between mb-1">
-                    <h3 className="text-white font-heading font-bold text-lg leading-tight">{lounge.name || 'Main Lounge'}</h3>
-                    {memberCount > 0 && (
-                      <span className="flex items-center gap-1.5 text-[10px] font-medium shrink-0 mt-1" style={{ color: `${accent}` }}>
-                        <span className="live-dot" style={{ background: accent }} />
-                        Live
-                      </span>
-                    )}
-                  </div>
-                  <p className="text-white/25 text-sm mb-3">{lounge.description || 'Open conversation space'}</p>
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-1.5 text-white/20 text-xs">
-                      <Users className="w-3.5 h-3.5" strokeWidth={1.5} />
-                      <span>{memberCount} online</span>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <h3 className="text-white font-heading font-bold text-base truncate">{lounge.name || 'Main Lounge'}</h3>
+                        {memberCount > 0 && (
+                          <span className="flex items-center gap-1 shrink-0">
+                            <span className="live-dot" style={{ background: accent }} />
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-white/25 text-[13px] truncate">{desc}</p>
                     </div>
-                    <span className="text-xs font-semibold tracking-wide" style={{ color: accent }}>
-                      Join &rarr;
-                    </span>
+                    <div className="flex items-center gap-1 text-white/20 text-xs pl-3 shrink-0">
+                      <Users className="w-3.5 h-3.5" strokeWidth={1.5} />
+                      <span>{memberCount}</span>
+                    </div>
                   </div>
                 </button>
               )
@@ -1756,24 +1760,18 @@ const HomePage = ({ user, onLogout, setUser }) => {
             {loungesList.length === 0 && (
               <button
                 onClick={() => handleTileClick('lounge', '/lounge')}
-                className="lounge-card w-full text-left p-5"
+                className="lounge-card w-full text-left px-5 py-4"
                 data-accent="purple"
                 data-testid="home-lounge-main"
               >
-                <div className="flex items-start justify-between mb-1">
-                  <h3 className="text-white font-heading font-bold text-lg">Main Lounge</h3>
-                  <span className="flex items-center gap-1.5 text-[10px] text-[#9333EA] font-medium shrink-0 mt-1">
-                    <span className="live-dot" style={{ background: '#9333EA' }} />
-                    Live
-                  </span>
-                </div>
-                <p className="text-white/25 text-sm mb-3">The heart of LowKey — conversation, culture, music</p>
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-1.5 text-white/20 text-xs">
-                    <Users className="w-3.5 h-3.5" strokeWidth={1.5} />
-                    <span>0 online</span>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1">
+                      <h3 className="text-white font-heading font-bold text-base">Main Lounge</h3>
+                      <span className="live-dot" style={{ background: '#9333EA' }} />
+                    </div>
+                    <p className="text-white/25 text-[13px]">Conversation, culture, music</p>
                   </div>
-                  <span className="text-xs font-semibold tracking-wide text-[#9333EA]">Join &rarr;</span>
                 </div>
               </button>
             )}

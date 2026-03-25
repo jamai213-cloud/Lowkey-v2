@@ -294,6 +294,13 @@ function LoungePageContent() {
         
         <div className="flex items-center gap-1">
           <button 
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#D4A54A]/[0.06] border border-[#D4A54A]/15 hover:border-[#D4A54A]/30 transition-colors text-[#D4A54A]/70 text-[11px] font-semibold"
+            data-testid="take-private-btn"
+          >
+            <Lock className="w-3 h-3" strokeWidth={2} />
+            Go Private
+          </button>
+          <button 
             onClick={() => setShowMembers(!showMembers)}
             className="p-2 rounded-full hover:bg-white/5 transition-colors"
             data-testid="show-members-btn"
@@ -320,6 +327,11 @@ function LoungePageContent() {
                   )}
                 </div>
                 <span className="text-white/40 text-[10px] truncate w-12 text-center">{member.displayName?.split(' ')[0]}</span>
+                {member.id !== user?.id && (
+                  <button className="text-[8px] text-[#D4A54A]/60 hover:text-[#D4A54A] font-semibold transition-colors" data-testid={`tip-member-${member.id}`}>
+                    Tip
+                  </button>
+                )}
               </div>
             ))}
           </div>

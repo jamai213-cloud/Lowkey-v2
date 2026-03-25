@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { ArrowLeft, Search as SearchIcon, User, Users, Calendar, UserPlus, Check, Crown, Sparkles, X, Clock, Eye, Lock, Heart, ChevronLeft, ChevronRight, Volume2, VolumeX } from 'lucide-react'
+import { ArrowLeft, Search as SearchIcon, User, Users, Calendar, UserPlus, Check, Crown, Sparkles, X, Clock, Eye, Lock, Heart, ChevronLeft, ChevronRight, Volume2, VolumeX, Wallet, MessageSquare } from 'lucide-react'
 import { useNotifications } from '../contexts/NotificationContext'
 
 export default function SearchPage() {
@@ -596,15 +596,24 @@ export default function SearchPage() {
                     <div className="mt-4">
                       <h3 className="text-white font-medium mb-2 text-sm">Gallery</h3>
                       <div className="grid grid-cols-3 gap-1">
-                        {selectedUser.gallery.slice(0, 6).map((img, i) => (
-                          <div 
-                            key={i} 
-                            className="aspect-square rounded-lg overflow-hidden bg-white/5 cursor-pointer hover:opacity-80 transition-opacity"
-                            onClick={() => { setLightboxImage(img); setLightboxIndex(i); }}
-                          >
-                            <img src={img.imageData || img.url} alt="" className="w-full h-full object-cover" />
-                          </div>
-                        ))}
+                        {selectedUser.gallery.slice(0, 6).map((img, i) => {
+                          const isLocked = i >= 3 && !isFriend(selectedUser.id)
+                          return (
+                            <div 
+                              key={i} 
+                              className="aspect-square rounded-lg overflow-hidden bg-white/5 cursor-pointer hover:opacity-80 transition-opacity relative"
+                              onClick={() => { if (!isLocked) { setLightboxImage(img); setLightboxIndex(i); } }}
+                            >
+                              <img src={img.imageData || img.url} alt="" className={`w-full h-full object-cover ${isLocked ? 'blur-lg scale-110' : ''}`} />
+                              {isLocked && (
+                                <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/40">
+                                  <Lock className="w-4 h-4 text-[#D4A54A]/80 mb-1" strokeWidth={1.5} />
+                                  <span className="text-[9px] text-[#D4A54A]/70 font-semibold">Unlock</span>
+                                </div>
+                              )}
+                            </div>
+                          )
+                        })}
                       </div>
                     </div>
                   )}
@@ -616,23 +625,41 @@ export default function SearchPage() {
                 {isFriend(selectedUser.id) ? (
                   <button 
                     onClick={() => router.push(`/messages?user=${selectedUser.id}`)}
-                    className="flex-1 py-3 rounded-xl bg-amber-500 text-black font-medium"
+                    className="flex-1 py-3 rounded-xl bg-[#9333EA]/15 text-[#9333EA] border border-[#9333EA]/20 font-medium text-sm"
                   >
                     Message
                   </button>
                 ) : hasSentRequest(selectedUser.id) ? (
-                  <button disabled className="flex-1 py-3 rounded-xl bg-white/10 text-white/40 font-medium">
+                  <button disabled className="flex-1 py-3 rounded-xl bg-white/5 text-white/30 border border-white/5 font-medium text-sm">
                     Request Sent
                   </button>
                 ) : (
                   <button 
                     onClick={() => sendFriendRequest(selectedUser.id)}
-                    className="flex-1 py-3 rounded-xl bg-amber-500 text-black font-medium"
+                    className="flex-1 py-3 rounded-xl bg-[#9333EA]/15 text-[#9333EA] border border-[#9333EA]/20 font-medium text-sm"
                   >
-                    Send Friend Request
+                    Connect
                   </button>
                 )}
+                <button 
+                  className="py-3 px-4 rounded-xl bg-[#D4A54A]/[0.08] text-[#D4A54A]/80 border border-[#D4A54A]/15 font-medium text-sm flex items-center gap-1.5 hover:border-[#D4A54A]/30 transition-colors"
+                  data-testid="tip-user-btn"
+                >
+                  <Wallet className="w-3.5 h-3.5" strokeWidth={1.5} />
+                  Tip
+                </button>
               </div>
+
+              {/* Take Private Button */}
+              {isFriend(selectedUser.id) && (
+                <button 
+                  className="mt-2 w-full py-3 rounded-xl bg-[#E8364E]/[0.06] text-[#E8364E]/70 border border-[#E8364E]/12 font-medium text-sm flex items-center justify-center gap-2 hover:border-[#E8364E]/25 transition-colors"
+                  data-testid="take-private-profile-btn"
+                >
+                  <Lock className="w-3.5 h-3.5" strokeWidth={1.5} />
+                  Take Private
+                </button>
+              )}
             </div>
           </div>
         </div>
