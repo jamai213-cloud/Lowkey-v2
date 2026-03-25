@@ -1,62 +1,68 @@
 # Lowkey App - Product Requirements Document
 
 ## Original Problem Statement
-Build and maintain "Lowkey" - a private social platform for adults featuring curated connections, lounges, events, and after-dark spaces. The app uses Next.js 14 (App Router), MongoDB, and is deployed on Vercel.
+Build and maintain "Lowkey" - a private social platform for adults featuring curated connections, lounges, events, and after-dark spaces. Next.js 14 (App Router), MongoDB, deployed on Vercel.
 
-## Latest Requirement: Match Reference Screenshot UI
-The user provided 5 reference screenshots showing a premium nightlife-themed UI with large lounge cards, fire emoji Live indicators, tag pills, "Join Lounge" buttons, search functionality, and clean People Online sections. All changes are visual-only.
+## Latest Requirement: Neon Electric Premium UI
+The user rejected the initial heavy/dense color scheme. New direction: **smooth electric premium feel with neon borders**. Different accent colors per page unified in dark tone. Nightlife feel, adulting premium social dating chill spot. No duplicate buttons. No heavy solid gradient fills — only neon outlined buttons and glass-morphism.
 
 ## Architecture
 - **Framework**: Next.js 14 (App Router), monolithic
-- **Database**: MongoDB
+- **Database**: MongoDB (local for preview, Atlas for production)
 - **Deployment**: Vercel (user's production) / Emergent Preview (dev)
-- **Styling**: Tailwind CSS + custom design system in globals.css
+- **Styling**: Tailwind CSS + custom neon design system in globals.css
 - **API Proxy**: FastAPI on port 8001 proxies /api/* to Next.js on port 3000
+
+## Design System
+- **Background**: `#08080D` (near-black)
+- **Cards**: Glass-morphism with backdrop-blur, semi-transparent
+- **Borders**: Neon accent colors at ~25% opacity, glowing on hover to ~45%
+- **Buttons**: `neon-btn` class — transparent fill, colored border + box-shadow glow
+- **Inputs**: `lk-input-neon` class — dark bg, purple glow on focus
+- **Accents per page**: Home = purple, Lounge = blue/cycling, After Dark = gold, Profile = emerald
+- **Color palette**: `#9333EA` (purple), `#3B82F6` (blue), `#D4A54A` (gold), `#E8364E` (red), `#10B981` (emerald), `#E84393` (pink)
+- **Animated background**: Very subtle blurred blobs at 3-18% opacity with slow drift animations
 
 ## What's Been Implemented
 
-### UI Upgrade - Phase 2: Reference Screenshot Matching (March 2026) - COMPLETED
-- [x] Home page lounge cards: bold titles, "Live" + fire emoji, tag pills, colored "Join Lounge" buttons, user counts
-- [x] Lounge list page: "Find your vibe" subtitle, search bar with real-time filtering, stats line (X active, X people online)
-- [x] Purple "+" FAB button for create lounge
-- [x] People Online: larger avatars (w-16), green online dots, better spacing, purple "See all"
-- [x] New Matches section: purple "NEW" badge, star icon header, "See all" link
-- [x] Consistent accent colors cycling: blue, gold, red, purple, pink, emerald
-- [x] Backend proxy: FastAPI on 8001 proxies all /api/* to Next.js on 3000
-
-### UI Upgrade - Phase 1: Design System (March 2026) - COMPLETED
-- [x] Global design system: CSS variables, glass-morphism, animations, glow effects
-- [x] Font system: Manrope (headings) + Figtree (body) via Google Fonts
-- [x] Auth page: Animated background, glass card, gold accent
-- [x] Home dashboard: scroll-based layout (Stories, People Online, Matches, Lounges, Quick Access)
-- [x] Lounge page: accent-themed cards
-- [x] All pages: page-enter animation, lk-page-header, data-testid attributes
+### Neon UI Redesign (March 2026) - COMPLETED
+- [x] Glass-morphism card system with neon accent borders (6 colors)
+- [x] Auth page: neon purple theme, glass card, neon outlined Sign In/Join buttons
+- [x] Animated background with ultra-subtle blobs (not dense)
+- [x] Home page scroll layout: Stories → People Online → Active Lounges → Quick Access
+- [x] Lounge cards: glass cards with accent-colored neon borders, "Live" indicator, "Join →" text link
+- [x] Lounge list page: search bar, stats, neon input, purple FAB
+- [x] People Online: 64px avatars, green online dots, purple "See all"
+- [x] Quick Access: 5 tiles with neon-tinted borders per category
+- [x] Bottom nav: purple active state (Home)
+- [x] All amber/gold references converted to neon purple
+- [x] No heavy solid gradient buttons anywhere
+- [x] Backend proxy: FastAPI on 8001 → Next.js on 3000
 
 ### Previous Functional Features (Completed)
 - Radio bar layout fix
-- Professional notification system with sound
-- Event deletion for founders/creators
-- Message & status expiry (12h messages, 24h stories)
-- Dashboard stories panel + add story modal
+- Notification system with sound
+- Event deletion for founders
+- Message & status expiry
+- Dashboard stories panel
 - Mobile-friendliness sweep
-- Game stubs (Ice Breaker, Tic-Tac-Toe - client-side only)
+- Game stubs (client-side only)
 
 ## Backlog / Future Tasks
-- **P2**: Real multiplayer games (backend game sessions)
+- **P2**: Real multiplayer games
 - **P2**: Push notifications (service worker)
 - **P3**: Image compression for uploads
-- **P3**: Analytics backend integration
+- **P3**: Analytics backend
 
 ## Known Issues
-- **Code sync/deployment**: "Save to GitHub" has been unreliable. User should hard-refresh after deployments.
-- **Multiplayer games**: Currently mocked (client-side only)
+- Code sync/deployment via "Save to GitHub" has been unreliable
+- Multiplayer games are client-side only (mocked)
 
 ## Key Files
-- `/app/app/globals.css` - Design system with lounge-card CSS
-- `/app/app/page.js` - Home/Auth page (scroll-based layout)
-- `/app/app/lounge/page.js` - Lounge list (search, stats, FAB) and chat
-- `/app/backend/server.py` - FastAPI proxy (8001 -> 3000)
-- `/app/design_guidelines.json` - Design guidelines source of truth
+- `/app/app/globals.css` - Neon design system
+- `/app/app/page.js` - Home/Auth page
+- `/app/app/lounge/page.js` - Lounge list and chat
+- `/app/backend/server.py` - FastAPI proxy
 
 ## Test Credentials
 - Email: kinglowkey@hotmail.com
