@@ -187,7 +187,7 @@ export default function LoungePage() {
               placeholder="Search lounges..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="lk-input w-full pl-11 py-3"
+              className="lk-input-neon w-full pl-11 py-3"
               data-testid="lounge-search-input"
             />
           </div>
@@ -204,10 +204,10 @@ export default function LoungePage() {
         </div>
 
         {/* Lounge Cards */}
-        <div className="p-5 pt-3 space-y-4 pb-24 relative z-10">
+        <div className="p-5 pt-3 space-y-3 pb-24 relative z-10">
           {filteredLounges.length === 0 ? (
             <div className="lk-card-elevated rounded-2xl p-10 text-center">
-              <Sofa className="w-14 h-14 text-[#3B82F6]/15 mx-auto mb-4" strokeWidth={1.5} />
+              <Sofa className="w-14 h-14 text-[#9333EA]/15 mx-auto mb-4" strokeWidth={1.5} />
               <p className="text-white/30 text-sm font-heading">No lounges found</p>
               <p className="text-white/15 text-xs mt-1">Try a different search</p>
             </div>
@@ -218,64 +218,54 @@ export default function LoungePage() {
               const memberCount = lounge.memberCount || lounge.members?.length || 0
               const tags = getLoungeTags(lounge.id)
               return (
-                <div
+                <button
                   key={lounge.id}
-                  className="lounge-card w-full text-left p-6"
+                  onClick={() => enterLounge(lounge.id)}
+                  className="lounge-card w-full text-left p-5"
                   data-accent={accentName}
                   data-testid={`lounge-item-${lounge.id}`}
                 >
                   {/* Title row */}
-                  <div className="flex items-start justify-between mb-2">
+                  <div className="flex items-start justify-between mb-1">
                     <h3 className="text-white font-heading font-bold text-xl leading-tight">{lounge.name}</h3>
-                    <div className="flex items-center gap-1.5 text-white/30 text-xs shrink-0 mt-1">
+                    {memberCount > 0 && (
+                      <span className="flex items-center gap-1.5 text-[10px] font-medium shrink-0 mt-1" style={{ color: accent }}>
+                        <span className="live-dot" style={{ background: accent }} />
+                        Live
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Description */}
+                  <p className="text-white/30 text-sm mb-3">{lounge.description || 'Open conversation space'}</p>
+
+                  {/* Tags + member count row */}
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      {tags.map((tag) => (
+                        <span key={tag} className="px-2.5 py-0.5 rounded-full text-[10px] font-medium text-white/30" style={{ border: `1px solid ${accent}25`, background: `${accent}08` }}>
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                    <div className="flex items-center gap-1.5 text-white/20 text-xs">
                       <Users className="w-3.5 h-3.5" strokeWidth={1.5} />
                       <span>{memberCount}</span>
                     </div>
                   </div>
-
-                  {/* Live indicator */}
-                  {memberCount > 0 && (
-                    <div className="flex items-center gap-1.5 mb-2">
-                      <span className="live-dot" style={{ background: accent }} />
-                      <span className="text-xs font-semibold" style={{ color: accent }}>Live</span>
-                      <span className="text-sm">&#128293;</span>
-                    </div>
-                  )}
-
-                  {/* Description */}
-                  <p className="text-white/35 text-sm mb-4">{lounge.description || 'Open conversation space'}</p>
-
-                  {/* Tags */}
-                  <div className="flex items-center gap-2 mb-4">
-                    {tags.map((tag) => (
-                      <span key={tag} className="px-3 py-1 rounded-full text-[11px] font-medium bg-white/[0.05] text-white/40 border border-white/[0.06]">
-                        {tag}
-                      </span>
-                    ))}
-                  </div>
-
-                  {/* Join Button */}
-                  <button
-                    onClick={() => enterLounge(lounge.id)}
-                    className="w-full py-3 rounded-xl font-heading font-semibold text-sm text-white transition-all duration-300 hover:brightness-110"
-                    style={{ 
-                      background: `linear-gradient(135deg, ${accent}, ${accent}CC)`,
-                      boxShadow: `0 4px 20px ${accent}30`
-                    }}
-                    data-testid={`join-lounge-${lounge.id}`}
-                  >
-                    Join Lounge
-                  </button>
-                </div>
+                </button>
               )
             })
           )}
         </div>
 
-        {/* Create Lounge FAB */}
+        {/* Create Lounge FAB — neon outline style */}
         <button
-          className="fixed bottom-6 right-6 z-30 w-14 h-14 rounded-2xl bg-[#9333EA] text-white flex items-center justify-center shadow-lg transition-transform hover:scale-105"
-          style={{ boxShadow: '0 6px 24px rgba(147,51,234,0.4)' }}
+          className="fixed bottom-6 right-6 z-30 w-14 h-14 rounded-2xl bg-transparent text-[#9333EA] flex items-center justify-center transition-all hover:scale-105"
+          style={{ 
+            border: '1.5px solid rgba(147,51,234,0.5)',
+            boxShadow: '0 0 20px rgba(147,51,234,0.15), 0 0 40px rgba(147,51,234,0.05)'
+          }}
           data-testid="create-lounge-btn"
         >
           <Plus className="w-6 h-6" strokeWidth={2} />

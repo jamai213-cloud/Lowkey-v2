@@ -122,7 +122,8 @@ const LockModal = ({ isOpen, onClose }) => {
         <div className="space-y-3">
           <button 
             onClick={() => { onClose(); router.push('/verification'); }}
-            className="lk-btn-primary w-full py-4 bg-gradient-to-r from-purple-500 to-purple-700 text-white shadow-lg shadow-purple-500/20"
+            className="neon-btn w-full py-4 text-[#9333EA]"
+            style={{ border: '1.5px solid rgba(147,51,234,0.4)', boxShadow: '0 0 20px rgba(147,51,234,0.12)', background: 'rgba(147,51,234,0.06)' }}
             data-testid="start-verification-btn"
           >
             Start Verification
@@ -163,7 +164,7 @@ const OnboardingSlide = ({ isOpen, onDismiss }) => {
         {/* Header */}
         <div className="text-center mb-8 pt-8">
           <h1 className="text-3xl font-bold text-white mb-3">Welcome to LowKey</h1>
-          <p className="text-amber-400 text-lg font-medium">More than dating. A private, multi-dimensional world.</p>
+          <p className="text-[#9333EA]/60 text-lg font-medium">More than dating. A private, multi-dimensional world.</p>
         </div>
         
         {/* Intro */}
@@ -183,7 +184,7 @@ const OnboardingSlide = ({ isOpen, onDismiss }) => {
           <p className="text-white/30 text-xs mb-4">A multi-layered experience designed for different moods, moments, and levels of expression:</p>
           <ul className="space-y-3 text-gray-300 text-sm">
             <li className="flex items-start gap-3">
-              <span className="text-amber-400 mt-0.5">•</span>
+              <span className="text-[#9333EA]/50 mt-0.5">•</span>
               <span><span className="text-white">Main Lounges</span> for open conversation, community, and discovery</span>
             </li>
             <li className="flex items-start gap-3">
@@ -239,14 +240,15 @@ const OnboardingSlide = ({ isOpen, onDismiss }) => {
         {/* Closing */}
         <div className="text-center mb-8">
           <p className="text-white font-medium">Lowkey isn't for everyone.</p>
-          <p className="text-amber-400 text-sm mt-1">It's for people who want more than surface-level connection.</p>
+          <p className="text-[#9333EA]/50 text-sm mt-1">It's for people who want more than surface-level connection.</p>
         </div>
         
         {/* Continue Button */}
         <div className="mt-auto">
           <button 
             onClick={onDismiss}
-            className="lk-btn-primary w-full py-4 bg-gradient-to-r from-purple-500 to-purple-700 text-white shadow-lg shadow-purple-500/20"
+            className="neon-btn w-full py-4 text-[#9333EA]"
+            style={{ border: '1.5px solid rgba(147,51,234,0.4)', boxShadow: '0 0 20px rgba(147,51,234,0.12)', background: 'rgba(147,51,234,0.06)' }}
             data-testid="onboarding-continue-btn"
           >
             Continue
@@ -306,7 +308,8 @@ const AfterDarkDisclaimer = ({ isOpen, onAccept }) => {
           
           <button 
             onClick={onAccept}
-            className="lk-btn-primary w-full py-4 bg-gradient-to-r from-orange-500 to-orange-700 text-white shadow-lg shadow-orange-500/20"
+            className="neon-btn w-full py-4 text-[#E8364E]"
+            style={{ border: '1.5px solid rgba(232,54,78,0.4)', boxShadow: '0 0 20px rgba(232,54,78,0.12)', background: 'rgba(232,54,78,0.06)' }}
             data-testid="afterdark-accept-btn"
           >
             I Understand · Enter After Dark
@@ -348,7 +351,8 @@ const MainLoungeInfo = ({ isOpen, onClose, onEnter }) => {
           <div className="space-y-3">
             <button 
               onClick={onEnter}
-              className="lk-btn-primary w-full py-3.5 bg-gradient-to-r from-cyan-500 to-cyan-700 text-white shadow-lg shadow-cyan-500/20"
+              className="neon-btn w-full py-3.5 text-[#3B82F6]"
+              style={{ border: '1.5px solid rgba(59,130,246,0.4)', boxShadow: '0 0 20px rgba(59,130,246,0.12)', background: 'rgba(59,130,246,0.06)' }}
               data-testid="enter-lounge-btn"
             >
               Enter Lounge
@@ -431,7 +435,8 @@ const ForgotPasswordModal = ({ isOpen, onClose }) => {
             <button
               type="submit"
               disabled={loading}
-              className="lk-btn-primary w-full py-4 bg-gradient-to-r from-purple-500 to-purple-700 text-white disabled:opacity-50 shadow-lg shadow-purple-500/20"
+              className="neon-btn w-full py-4 text-[#9333EA] disabled:opacity-50"
+              style={{ border: '1.5px solid rgba(147,51,234,0.4)', boxShadow: '0 0 20px rgba(147,51,234,0.12)', background: 'rgba(147,51,234,0.06)' }}
               data-testid="send-reset-link-btn"
             >
               {loading ? 'Sending...' : 'Send Reset Link'}
@@ -497,24 +502,24 @@ const AuthPage = ({ onLogin }) => {
         {/* Logo */}
         <div className="flex flex-col items-center mb-12">
           <LowKeyLogo size="xl" />
-          <p className="text-purple-200/70 mt-8 text-lg font-light tracking-wide text-center" style={{ fontFamily: 'Figtree, sans-serif' }}>
+          <p className="text-white/40 mt-8 text-lg font-light tracking-wide text-center" style={{ fontFamily: 'Figtree, sans-serif' }}>
             Grown chats. Real nights. Private parties.
           </p>
         </div>
 
         {/* Auth Card */}
-        <div className="glass-card rounded-3xl p-8 shadow-2xl" data-testid="auth-card">
+        <div className="glass-card rounded-3xl p-8 shadow-2xl" style={{ border: '1px solid rgba(147,51,234,0.12)', boxShadow: '0 0 40px rgba(147,51,234,0.06), 0 8px 40px rgba(0,0,0,0.5)' }} data-testid="auth-card">
           {/* Tabs */}
-          <div className="flex mb-8 bg-black/40 rounded-full p-1">
+          <div className="flex mb-8 bg-white/[0.03] rounded-full p-1 border border-white/[0.04]">
             <button
               onClick={() => setIsLogin(true)}
               data-testid="auth-signin-tab"
               className={`flex-1 py-3 rounded-full font-semibold transition-all duration-300 font-heading text-sm ${
                 isLogin 
-                  ? 'bg-gradient-to-r from-[#D4A54A] to-[#B8860B] text-black shadow-lg' 
-                  : 'text-white/35 hover:text-white/60'
+                  ? 'text-white' 
+                  : 'text-white/25 hover:text-white/50'
               }`}
-              style={isLogin ? { boxShadow: '0 4px 20px rgba(212,165,74,0.3)' } : {}}
+              style={isLogin ? { background: 'rgba(147,51,234,0.15)', border: '1px solid rgba(147,51,234,0.3)', boxShadow: '0 0 16px rgba(147,51,234,0.1)' } : { border: '1px solid transparent' }}
             >
               Sign In
             </button>
@@ -523,10 +528,10 @@ const AuthPage = ({ onLogin }) => {
               data-testid="auth-join-tab"
               className={`flex-1 py-3 rounded-full font-semibold transition-all duration-300 font-heading text-sm ${
                 !isLogin 
-                  ? 'bg-gradient-to-r from-[#D4A54A] to-[#B8860B] text-black shadow-lg' 
-                  : 'text-white/35 hover:text-white/60'
+                  ? 'text-white' 
+                  : 'text-white/25 hover:text-white/50'
               }`}
-              style={!isLogin ? { boxShadow: '0 4px 20px rgba(212,165,74,0.3)' } : {}}
+              style={!isLogin ? { background: 'rgba(147,51,234,0.15)', border: '1px solid rgba(147,51,234,0.3)', boxShadow: '0 0 16px rgba(147,51,234,0.1)' } : { border: '1px solid transparent' }}
             >
               Join
             </button>
@@ -540,7 +545,7 @@ const AuthPage = ({ onLogin }) => {
                   type="text"
                   value={displayName}
                   onChange={(e) => setDisplayName(e.target.value)}
-                  className="lk-input w-full"
+                  className="lk-input-neon w-full"
                   placeholder="Your display name"
                   required={!isLogin}
                   data-testid="auth-display-name-input"
@@ -554,7 +559,7 @@ const AuthPage = ({ onLogin }) => {
                 type={isLogin ? 'text' : 'email'}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="lk-input w-full uppercase"
+                className="lk-input-neon w-full uppercase"
                 placeholder={isLogin ? 'Email or display name' : 'your@email.com'}
                 required
                 data-testid="auth-email-input"
@@ -568,7 +573,7 @@ const AuthPage = ({ onLogin }) => {
                   type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="lk-input w-full pr-12"
+                  className="lk-input-neon w-full pr-12"
                   placeholder="••••••••"
                   required
                   data-testid="auth-password-input"
@@ -576,7 +581,7 @@ const AuthPage = ({ onLogin }) => {
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-white/30 hover:text-white transition-colors"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-white/25 hover:text-white/50 transition-colors"
                 >
                   {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                 </button>
@@ -590,14 +595,14 @@ const AuthPage = ({ onLogin }) => {
                     type="checkbox"
                     checked={rememberMe}
                     onChange={(e) => setRememberMe(e.target.checked)}
-                    className="w-4 h-4 rounded border-white/10 bg-[#141420] text-[#D4A54A] focus:ring-[#D4A54A]"
+                    className="w-4 h-4 rounded border-white/10 bg-[#141420] text-[#9333EA] focus:ring-[#9333EA]"
                   />
-                  <span className="text-white/50 text-sm">Remember me</span>
+                  <span className="text-white/40 text-sm">Remember me</span>
                 </label>
                 <button 
                   type="button" 
                   onClick={() => setShowForgotPassword(true)}
-                  className="text-[#D4A54A]/70 text-sm hover:text-[#D4A54A] transition-colors"
+                  className="text-[#9333EA]/60 text-sm hover:text-[#9333EA] transition-colors"
                   data-testid="auth-forgot-password-btn"
                 >
                   Forgot password?
@@ -614,16 +619,20 @@ const AuthPage = ({ onLogin }) => {
             <button
               type="submit"
               disabled={loading}
-              className="lk-btn-primary w-full py-4 bg-gradient-to-r from-[#D4A54A] to-[#B8860B] text-black text-base font-bold disabled:opacity-50"
-              style={{ boxShadow: '0 6px 24px rgba(212,165,74,0.3)' }}
+              className="neon-btn w-full py-4 text-[#9333EA] text-base font-bold disabled:opacity-50"
+              style={{ 
+                border: '1.5px solid rgba(147,51,234,0.5)',
+                boxShadow: '0 0 20px rgba(147,51,234,0.15), 0 0 40px rgba(147,51,234,0.05)',
+                background: 'rgba(147,51,234,0.06)'
+              }}
               data-testid="auth-submit-btn"
             >
               {loading ? 'Please wait...' : (isLogin ? 'Sign In' : 'Join Now')}
             </button>
           </form>
 
-          <p className="text-center text-white/15 text-xs mt-8 tracking-wider">
-            Powered by <span className="text-[#D4A54A]/40">3DK</span> + <span className="text-[#D4A54A]/40">King Tense</span>
+          <p className="text-center text-white/10 text-xs mt-8 tracking-wider">
+            Powered by <span className="text-[#9333EA]/30">3DK</span> + <span className="text-[#9333EA]/30">King Tense</span>
           </p>
         </div>
       </div>
@@ -658,7 +667,7 @@ const NotificationBell = ({ count, onClick, hasNew }) => (
     className={`relative p-2 rounded-full hover:bg-white/5 transition-all duration-300 ${hasNew ? 'animate-pulse-soft' : ''}`}
     data-testid="notification-bell"
   >
-    <Bell className={`w-5 h-5 transition-colors ${count > 0 ? 'text-[#D4A54A]' : 'text-white/25'}`} strokeWidth={1.5} />
+    <Bell className={`w-5 h-5 transition-colors ${count > 0 ? 'text-[#9333EA]' : 'text-white/20'}`} strokeWidth={1.5} />
     {count > 0 && (
       <span className="absolute -top-1 -right-1 min-w-[17px] h-[17px] rounded-full bg-[#E8364E] flex items-center justify-center text-white text-[9px] font-bold px-1" style={{ boxShadow: '0 2px 8px rgba(232,54,78,0.45)' }}>
         {count > 99 ? '99+' : count}
@@ -1074,9 +1083,9 @@ const HomePage = ({ user, onLogout, setUser }) => {
 
   return (
     <div className="min-h-screen bg-[#08080D] relative page-enter" data-testid="home-page">
-      {/* Ambient background — subtle and layered */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[400px] rounded-full bg-[#9333EA]/[0.04] blur-[140px] pointer-events-none z-0" />
-      <div className="absolute bottom-40 right-0 w-[350px] h-[350px] rounded-full bg-[#D4A54A]/[0.03] blur-[120px] pointer-events-none z-0" />
+      {/* Ambient background — very subtle neon blurs */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[400px] rounded-full bg-[#9333EA]/[0.03] blur-[150px] pointer-events-none z-0" />
+      <div className="absolute bottom-40 right-0 w-[350px] h-[350px] rounded-full bg-[#3B82F6]/[0.02] blur-[130px] pointer-events-none z-0" />
       
       {/* Header */}
       <header className="lk-page-header relative z-10 flex items-center justify-between" data-testid="home-header">
@@ -1091,7 +1100,7 @@ const HomePage = ({ user, onLogout, setUser }) => {
         
         <div className="flex items-center gap-1">
           {user.verified && (
-            <span className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#D4A54A]/10 border border-[#D4A54A]/20 text-[#D4A54A] text-[10px] font-semibold tracking-wide">
+            <span className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#9333EA]/8 border border-[#9333EA]/15 text-[#9333EA]/70 text-[10px] font-semibold tracking-wide">
               <CheckCircle className="w-3 h-3" />
               Verified
             </span>
@@ -1103,9 +1112,9 @@ const HomePage = ({ user, onLogout, setUser }) => {
             data-testid="sound-toggle-btn"
           >
             {soundEnabled ? (
-              <Volume2 className="w-4 h-4 text-[#D4A54A]" strokeWidth={1.5} />
+              <Volume2 className="w-4 h-4 text-[#9333EA]/60" strokeWidth={1.5} />
             ) : (
-              <VolumeX className="w-4 h-4 text-white/20" strokeWidth={1.5} />
+              <VolumeX className="w-4 h-4 text-white/15" strokeWidth={1.5} />
             )}
           </button>
           <NotificationBell 
@@ -1235,14 +1244,14 @@ const HomePage = ({ user, onLogout, setUser }) => {
                     <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
                       notif.type === 'friend_request' ? 'bg-pink-500/20' :
                       notif.type === 'friend_accepted' ? 'bg-green-500/20' :
-                      notif.type === 'message' || notif.type === 'dm' ? 'bg-amber-500/20' :
+                      notif.type === 'message' || notif.type === 'dm' ? 'bg-[#3B82F6]/15' :
                       notif.type === 'tip' ? 'bg-yellow-500/20' :
                       notif.type === 'comment' ? 'bg-blue-500/20' :
                       'bg-purple-500/20'
                     }`}>
                       {notif.type === 'friend_request' && <UserPlus className="w-4 h-4 text-pink-400" />}
                       {notif.type === 'friend_accepted' && <Check className="w-4 h-4 text-green-400" />}
-                      {(notif.type === 'message' || notif.type === 'dm') && <MessageSquare className="w-4 h-4 text-amber-400" />}
+                      {(notif.type === 'message' || notif.type === 'dm') && <MessageSquare className="w-4 h-4 text-[#3B82F6]" />}
                       {notif.type === 'tip' && <Sparkles className="w-4 h-4 text-yellow-400" />}
                       {notif.type === 'comment' && <MessageSquare className="w-4 h-4 text-blue-400" />}
                       {!['friend_request', 'friend_accepted', 'message', 'dm', 'tip', 'comment'].includes(notif.type) && (
@@ -1291,9 +1300,9 @@ const HomePage = ({ user, onLogout, setUser }) => {
             style={{ scrollSnapAlign: 'start' }}
             data-testid="add-story-btn"
           >
-            <div className="relative w-[68px] h-[68px] rounded-full p-[2px] bg-gradient-to-br from-[#D4A54A] to-[#9333EA]">
+            <div className="relative w-[68px] h-[68px] rounded-full p-[2px] bg-gradient-to-br from-[#9333EA] to-[#3B82F6]">
               <div className="w-full h-full rounded-full bg-[#08080D] flex items-center justify-center">
-                <Plus className="w-6 h-6 text-[#D4A54A]" strokeWidth={1.5} />
+                <Plus className="w-6 h-6 text-[#9333EA]" strokeWidth={1.5} />
               </div>
             </div>
             <span className="text-white/35 text-[10px] font-medium">Add Story</span>
@@ -1314,7 +1323,7 @@ const HomePage = ({ user, onLogout, setUser }) => {
                 style={{ scrollSnapAlign: 'start' }}
                 data-testid={`story-${storyGroup.userId}`}
               >
-                <div className={`relative w-[68px] h-[68px] rounded-full p-[2px] ${hasUnviewed ? 'bg-gradient-to-br from-[#D4A54A] via-[#E84393] to-[#9333EA]' : 'bg-white/8'}`}>
+                <div className={`relative w-[68px] h-[68px] rounded-full p-[2px] ${hasUnviewed ? 'bg-gradient-to-br from-[#9333EA] via-[#E84393] to-[#3B82F6]' : 'bg-white/8'}`}>
                   <div className="w-full h-full rounded-full bg-[#08080D] p-[2px]">
                     <div className="w-full h-full rounded-full overflow-hidden bg-[#141420] flex items-center justify-center">
                       {storyGroup.avatar ? (
@@ -1370,7 +1379,7 @@ const HomePage = ({ user, onLogout, setUser }) => {
               <button
                 onClick={() => { setStoryType('photo'); setStoryFile(null); setStoryPreview(null); }}
                 className={`flex-1 py-3 rounded-xl flex items-center justify-center gap-2 transition-colors ${
-                  storyType === 'photo' ? 'bg-amber-500 text-black' : 'bg-white/10 text-gray-400'
+                  storyType === 'photo' ? 'bg-[#9333EA]/15 text-[#9333EA] border border-[#9333EA]/25' : 'bg-white/5 text-white/30 border border-white/5'
                 }`}
               >
                 <Camera className="w-4 h-4" /> Photo
@@ -1378,7 +1387,7 @@ const HomePage = ({ user, onLogout, setUser }) => {
               <button
                 onClick={() => { setStoryType('video'); setStoryFile(null); setStoryPreview(null); }}
                 className={`flex-1 py-3 rounded-xl flex items-center justify-center gap-2 transition-colors ${
-                  storyType === 'video' ? 'bg-amber-500 text-black' : 'bg-white/10 text-gray-400'
+                  storyType === 'video' ? 'bg-[#9333EA]/15 text-[#9333EA] border border-[#9333EA]/25' : 'bg-white/5 text-white/30 border border-white/5'
                 }`}
               >
                 <Video className="w-4 h-4" /> Video
@@ -1386,7 +1395,7 @@ const HomePage = ({ user, onLogout, setUser }) => {
               <button
                 onClick={() => { setStoryType('text'); setStoryFile(null); setStoryPreview(null); }}
                 className={`flex-1 py-3 rounded-xl flex items-center justify-center gap-2 transition-colors ${
-                  storyType === 'text' ? 'bg-amber-500 text-black' : 'bg-white/10 text-gray-400'
+                  storyType === 'text' ? 'bg-[#9333EA]/15 text-[#9333EA] border border-[#9333EA]/25' : 'bg-white/5 text-white/30 border border-white/5'
                 }`}
               >
                 <Type className="w-4 h-4" /> Text
@@ -1440,7 +1449,7 @@ const HomePage = ({ user, onLogout, setUser }) => {
                 ) : (
                   <button
                     onClick={() => storyFileInputRef.current?.click()}
-                    className="w-full aspect-[9/16] max-h-64 rounded-xl border-2 border-dashed border-white/20 flex flex-col items-center justify-center gap-3 hover:border-amber-500/50 transition-colors"
+                    className="w-full aspect-[9/16] max-h-64 rounded-xl border-2 border-dashed border-white/10 flex flex-col items-center justify-center gap-3 hover:border-[#9333EA]/30 transition-colors"
                   >
                     {storyType === 'photo' ? (
                       <Camera className="w-12 h-12 text-gray-500" />
@@ -1468,7 +1477,7 @@ const HomePage = ({ user, onLogout, setUser }) => {
                 <button
                   onClick={() => setStoryPrivacy('friends')}
                   className={`flex-1 py-2 rounded-lg text-sm ${
-                    storyPrivacy === 'friends' ? 'bg-amber-500 text-black' : 'bg-white/10 text-gray-400'
+                    storyPrivacy === 'friends' ? 'bg-[#9333EA]/15 text-[#9333EA] border border-[#9333EA]/25' : 'bg-white/5 text-white/30 border border-white/5'
                   }`}
                 >
                   Friends Only
@@ -1480,7 +1489,8 @@ const HomePage = ({ user, onLogout, setUser }) => {
             <button
               onClick={createStory}
               disabled={uploadingStory || (storyType === 'text' ? !storyText.trim() : !storyFile)}
-              className="w-full py-4 rounded-xl bg-gradient-to-r from-amber-400 to-yellow-500 text-black font-semibold flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="neon-btn w-full py-4 text-[#9333EA] font-semibold flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              style={{ border: '1.5px solid rgba(147,51,234,0.4)', boxShadow: '0 0 20px rgba(147,51,234,0.12)', background: 'rgba(147,51,234,0.06)' }}
             >
               {uploadingStory ? (
                 <>
@@ -1698,110 +1708,74 @@ const HomePage = ({ user, onLogout, setUser }) => {
         <section className="px-5 pt-1" data-testid="active-lounges-section">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
-              <MessageSquare className="w-4 h-4 text-[#9333EA]/50" strokeWidth={1.5} />
-              <span className="lk-label text-[#9333EA]/60">Active Lounges</span>
+              <Sofa className="w-4 h-4 text-[#9333EA]/40" strokeWidth={1.5} />
+              <span className="text-white/50 text-sm font-heading font-semibold tracking-wide">Active Lounges</span>
             </div>
-            <button onClick={() => handleTileClick('lounge', '/lounge')} className="text-[11px] text-[#9333EA]/60 hover:text-[#9333EA] font-medium transition-colors" data-testid="see-all-lounges">
+            <button onClick={() => handleTileClick('lounge', '/lounge')} className="text-[11px] text-[#9333EA]/50 hover:text-[#9333EA] font-medium transition-colors" data-testid="see-all-lounges">
               See all
             </button>
           </div>
 
-          <div className="space-y-4">
+          <div className="space-y-3">
             {loungesList.slice(0, 4).map((lounge, idx) => {
               const accentColors = ['#3B82F6', '#D4A54A', '#E8364E', '#9333EA', '#E84393', '#10B981']
               const accentNames = ['blue', 'gold', 'red', 'purple', 'pink', 'emerald']
               const accent = accentColors[idx % accentColors.length]
               const accentName = accentNames[idx % accentNames.length]
               const memberCount = lounge.memberCount || lounge.members?.length || 0
-              const tagMap = {
-                'night-owls': ['late night', 'vibes'],
-                'chill-vibes': ['chill', 'relaxed'],
-                'music-lovers': ['music', 'tracks'],
-                'late-night-talks': ['deep', 'late night'],
-              }
-              const tags = tagMap[lounge.id] || ['social']
               return (
-                <div
+                <button
                   key={lounge.id}
+                  onClick={() => router.push(`/lounge?id=${lounge.id}`)}
                   className="lounge-card w-full text-left p-5"
                   data-accent={accentName}
                   data-testid={`home-lounge-${lounge.id}`}
                 >
-                  {/* Title + member count */}
-                  <div className="flex items-start justify-between mb-1.5">
+                  <div className="flex items-start justify-between mb-1">
                     <h3 className="text-white font-heading font-bold text-lg leading-tight">{lounge.name || 'Main Lounge'}</h3>
-                    <div className="flex items-center gap-1 text-white/20 text-xs shrink-0 mt-0.5">
-                      <Users className="w-3.5 h-3.5" strokeWidth={1.5} />
-                      <span>{memberCount}</span>
-                    </div>
-                  </div>
-
-                  {/* Live badge */}
-                  {memberCount > 0 && (
-                    <div className="flex items-center gap-1.5 mb-2">
-                      <span className="live-dot" style={{ background: accent }} />
-                      <span className="text-[11px] font-semibold" style={{ color: accent }}>Live</span>
-                      <span className="text-xs">&#128293;</span>
-                    </div>
-                  )}
-
-                  {/* Description */}
-                  <p className="text-white/30 text-sm mb-3">{lounge.description || 'Open conversation space'}</p>
-
-                  {/* Tags */}
-                  <div className="flex items-center gap-2 mb-4">
-                    {tags.map((tag) => (
-                      <span key={tag} className="px-2.5 py-0.5 rounded-full text-[10px] font-medium bg-white/[0.04] text-white/35 border border-white/[0.05]">
-                        {tag}
+                    {memberCount > 0 && (
+                      <span className="flex items-center gap-1.5 text-[10px] font-medium shrink-0 mt-1" style={{ color: `${accent}` }}>
+                        <span className="live-dot" style={{ background: accent }} />
+                        Live
                       </span>
-                    ))}
+                    )}
                   </div>
-
-                  {/* Join button */}
-                  <button
-                    onClick={() => router.push(`/lounge?id=${lounge.id}`)}
-                    className="w-full py-2.5 rounded-xl font-heading font-semibold text-sm text-white transition-all duration-300 hover:brightness-110"
-                    style={{ 
-                      background: `linear-gradient(135deg, ${accent}, ${accent}BB)`,
-                      boxShadow: `0 4px 16px ${accent}25`
-                    }}
-                    data-testid={`join-home-lounge-${lounge.id}`}
-                  >
-                    Join Lounge
-                  </button>
-                </div>
+                  <p className="text-white/25 text-sm mb-3">{lounge.description || 'Open conversation space'}</p>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-1.5 text-white/20 text-xs">
+                      <Users className="w-3.5 h-3.5" strokeWidth={1.5} />
+                      <span>{memberCount} online</span>
+                    </div>
+                    <span className="text-xs font-semibold tracking-wide" style={{ color: accent }}>
+                      Join &rarr;
+                    </span>
+                  </div>
+                </button>
               )
             })}
             {loungesList.length === 0 && (
-              <div
+              <button
+                onClick={() => handleTileClick('lounge', '/lounge')}
                 className="lounge-card w-full text-left p-5"
-                data-accent="blue"
+                data-accent="purple"
                 data-testid="home-lounge-main"
               >
-                <div className="flex items-start justify-between mb-1.5">
+                <div className="flex items-start justify-between mb-1">
                   <h3 className="text-white font-heading font-bold text-lg">Main Lounge</h3>
+                  <span className="flex items-center gap-1.5 text-[10px] text-[#9333EA] font-medium shrink-0 mt-1">
+                    <span className="live-dot" style={{ background: '#9333EA' }} />
+                    Live
+                  </span>
                 </div>
-                <div className="flex items-center gap-1.5 mb-2">
-                  <span className="live-dot" style={{ background: '#3B82F6' }} />
-                  <span className="text-[11px] font-semibold text-[#3B82F6]">Live</span>
+                <p className="text-white/25 text-sm mb-3">The heart of LowKey — conversation, culture, music</p>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-1.5 text-white/20 text-xs">
+                    <Users className="w-3.5 h-3.5" strokeWidth={1.5} />
+                    <span>0 online</span>
+                  </div>
+                  <span className="text-xs font-semibold tracking-wide text-[#9333EA]">Join &rarr;</span>
                 </div>
-                <p className="text-white/30 text-sm mb-3">The heart of LowKey — conversation, culture, music</p>
-                <div className="flex items-center gap-2 mb-4">
-                  <span className="px-2.5 py-0.5 rounded-full text-[10px] font-medium bg-white/[0.04] text-white/35 border border-white/[0.05]">social</span>
-                  <span className="px-2.5 py-0.5 rounded-full text-[10px] font-medium bg-white/[0.04] text-white/35 border border-white/[0.05]">community</span>
-                </div>
-                <button
-                  onClick={() => handleTileClick('lounge', '/lounge')}
-                  className="w-full py-2.5 rounded-xl font-heading font-semibold text-sm text-white transition-all duration-300 hover:brightness-110"
-                  style={{ 
-                    background: 'linear-gradient(135deg, #3B82F6, #3B82F6BB)',
-                    boxShadow: '0 4px 16px rgba(59,130,246,0.25)'
-                  }}
-                  data-testid="join-home-lounge-main"
-                >
-                  Join Lounge
-                </button>
-              </div>
+              </button>
             )}
           </div>
         </section>
@@ -1810,7 +1784,7 @@ const HomePage = ({ user, onLogout, setUser }) => {
 
         {/* --- QUICK ACCESS --- */}
         <section className="px-5" data-testid="quick-access">
-          <span className="lk-label text-white/20 block mb-3">Quick Access</span>
+          <span className="text-white/20 text-[10px] font-heading tracking-widest uppercase block mb-3">Quick Access</span>
           <div className="grid grid-cols-5 gap-2">
             {[
               { icon: MessageSquare, label: 'Inbox', color: '#3B82F6', path: '/inbox', id: 'inbox' },
@@ -1824,38 +1798,42 @@ const HomePage = ({ user, onLogout, setUser }) => {
                 <button
                   key={item.id}
                   onClick={() => handleTileClick(item.id, item.path)}
-                  className="flex flex-col items-center gap-1.5 py-3 rounded-2xl bg-[#101018] border border-white/[0.03] hover:border-white/[0.08] transition-all duration-300 group"
+                  className="flex flex-col items-center gap-1.5 py-3 rounded-2xl transition-all duration-300 group"
+                  style={{
+                    background: 'rgba(12,12,20,0.5)',
+                    border: `1px solid ${item.color}15`,
+                  }}
                   data-testid={`quick-${item.id}`}
                 >
-                  <Icon className="w-[18px] h-[18px] transition-colors" style={{ color: `${item.color}88` }} strokeWidth={1.5} />
-                  <span className="text-white/30 text-[9px] font-medium">{item.label}</span>
+                  <Icon className="w-[18px] h-[18px] transition-colors" style={{ color: `${item.color}70` }} strokeWidth={1.5} />
+                  <span className="text-white/25 text-[9px] font-medium">{item.label}</span>
                 </button>
               )
             })}
           </div>
         </section>
 
-        <div className="px-5 mt-6 border-l-2 border-[#D4A54A]/10 pl-4" data-testid="home-tagline">
-          <p className="text-white/15 text-xs italic leading-relaxed">A private space for adults. Connection at your own pace.</p>
+        <div className="px-5 mt-6 border-l border-[#9333EA]/10 pl-4" data-testid="home-tagline">
+          <p className="text-white/12 text-xs italic leading-relaxed">A private space for adults. Connection at your own pace.</p>
         </div>
       </main>
 
       {/* Bottom Navigation */}
-      <nav className="fixed bottom-0 left-0 right-0 z-20 bg-[#101018]/92 backdrop-blur-2xl border-t border-white/[0.04]" data-testid="bottom-nav">
+      <nav className="fixed bottom-0 left-0 right-0 z-20 backdrop-blur-2xl border-t border-white/[0.04]" style={{ background: 'rgba(8,8,13,0.88)' }} data-testid="bottom-nav">
         <div className="flex items-center justify-around py-2.5 max-w-lg mx-auto">
           <button className="flex flex-col items-center gap-0.5 px-4 py-1.5" data-testid="nav-home">
-            <Home className="w-5 h-5 text-[#D4A54A]" strokeWidth={1.5} />
-            <span className="text-[10px] font-medium text-[#D4A54A]">Home</span>
+            <Home className="w-5 h-5 text-[#9333EA]" strokeWidth={1.5} />
+            <span className="text-[10px] font-medium text-[#9333EA]">Home</span>
           </button>
-          <button onClick={() => router.push('/lounge')} className="flex flex-col items-center gap-0.5 px-4 py-1.5 text-white/25 hover:text-[#3B82F6] transition-colors" data-testid="nav-lounge">
+          <button onClick={() => router.push('/lounge')} className="flex flex-col items-center gap-0.5 px-4 py-1.5 text-white/20 hover:text-[#3B82F6] transition-colors" data-testid="nav-lounge">
             <Sofa className="w-5 h-5" strokeWidth={1.5} />
             <span className="text-[10px] font-medium">Lounge</span>
           </button>
-          <button onClick={() => handleTileClick('afterdark', '/afterdark')} className="flex flex-col items-center gap-0.5 px-4 py-1.5 text-white/25 hover:text-[#D4A54A] transition-colors" data-testid="nav-afterdark">
+          <button onClick={() => handleTileClick('afterdark', '/afterdark')} className="flex flex-col items-center gap-0.5 px-4 py-1.5 text-white/20 hover:text-[#D4A54A] transition-colors" data-testid="nav-afterdark">
             <Moon className="w-5 h-5" strokeWidth={1.5} />
             <span className="text-[10px] font-medium">After Dark</span>
           </button>
-          <button onClick={() => router.push('/profile')} className="flex flex-col items-center gap-0.5 px-4 py-1.5 text-white/25 hover:text-white/60 transition-colors" data-testid="nav-profile">
+          <button onClick={() => router.push('/profile')} className="flex flex-col items-center gap-0.5 px-4 py-1.5 text-white/20 hover:text-white/50 transition-colors" data-testid="nav-profile">
             <User className="w-5 h-5" strokeWidth={1.5} />
             <span className="text-[10px] font-medium">Profile</span>
           </button>
