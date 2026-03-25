@@ -1,12 +1,10 @@
  'use client'
 
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useRef, useCallback, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { ArrowLeft, Send, Users, MessageCircle, Clock, Sparkles, Lock, AlertTriangle, Hash, Flame, Star, TrendingUp, Crown, MessageSquare, ChevronRight, Plus, Heart, Smile, Image as ImageIcon, X, UserPlus, Volume2, VolumeX, Menu, Trash2, Sofa, Search } from 'lucide-react'
 
-export const dynamic = 'force-dynamic'
-
-export default function LoungePage() {
+function LoungePageContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const loungeId = searchParams?.get('id') || 'main'
@@ -402,5 +400,14 @@ export default function LoungePage() {
         </form>
       </div>
     </div>
+  )
+}
+
+
+export default function LoungePage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-[#08080D]" />}>
+      <LoungePageContent />
+    </Suspense>
   )
 }
