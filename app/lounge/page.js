@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { ArrowLeft, Send, Users, MessageCircle, Clock, Sparkles, Lock, AlertTriangle, Hash, Flame, Star, TrendingUp, Crown, MessageSquare, ChevronRight, Plus, Heart, Smile, Image as ImageIcon, X, UserPlus, Volume2, VolumeX, Menu, Trash2, Sofa } from 'lucide-react'
+import { ArrowLeft, Send, Users, MessageCircle, Clock, Sparkles, Lock, AlertTriangle, Hash, Flame, Star, TrendingUp, Crown, MessageSquare, ChevronRight, Plus, Heart, Smile, Image as ImageIcon, X, UserPlus, Volume2, VolumeX, Menu, Trash2, Sofa, Search } from 'lucide-react'
 
 export const dynamic = 'force-dynamic'
 
@@ -20,6 +20,7 @@ export default function LoungePage() {
   const [onlineCount, setOnlineCount] = useState(0)
   const [lounges, setLounges] = useState([])
   const [showLoungeList, setShowLoungeList] = useState(!searchParams?.get('id'))
+  const [searchQuery, setSearchQuery] = useState('')
   const messagesEndRef = useRef(null)
   const chatContainerRef = useRef(null)
   
@@ -145,72 +146,140 @@ export default function LoungePage() {
   const getLoungeAccent = (idx) => loungeAccents[idx % loungeAccents.length]
   const getLoungeAccentName = (idx) => loungeAccentNames[idx % loungeAccentNames.length]
 
+  // Lounge tag map
+  const loungeTags = {
+    'night-owls': ['late night', 'vibes'],
+    'chill-vibes': ['chill', 'relaxed'],
+    'music-lovers': ['music', 'tracks'],
+    'late-night-talks': ['deep', 'late night'],
+  }
+  const getLoungeTags = (id) => loungeTags[id] || ['social']
+
+  const filteredLounges = lounges.filter(l => 
+    !searchQuery || l.name?.toLowerCase().includes(searchQuery.toLowerCase())
+  )
+  const activeLoungeCount = lounges.filter(l => (l.memberCount || l.members?.length || 0) > 0).length
+  const totalOnline = lounges.reduce((sum, l) => sum + (l.memberCount || l.members?.length || 0), 0)
+
   // Lounge Selection View
   if (showLoungeList) {
     return (
       <div className="min-h-screen bg-[#08080D] page-enter" data-testid="lounge-list">
-        <div className="absolute top-0 right-0 w-[350px] h-[350px] rounded-full bg-[#3B82F6]/[0.04] blur-[130px] pointer-events-none z-0" />
-        <div className="absolute bottom-40 left-0 w-[250px] h-[250px] rounded-full bg-[#D4A54A]/[0.03] blur-[100px] pointer-events-none z-0" />
+        <div className="absolute top-0 right-0 w-[350px] h-[350px] rounded-full bg-[#9333EA]/[0.04] blur-[130px] pointer-events-none z-0" />
+        <div className="absolute bottom-40 left-0 w-[250px] h-[250px] rounded-full bg-[#3B82F6]/[0.03] blur-[100px] pointer-events-none z-0" />
         
         <header className="lk-page-header flex items-center gap-3" data-testid="lounge-header">
           <button onClick={() => router.push('/')} className="p-2 rounded-full hover:bg-white/5 transition-colors" data-testid="lounge-back-btn">
             <ArrowLeft className="w-5 h-5 text-white/40" strokeWidth={1.5} />
           </button>
-          <div>
-            <h1 className="text-xl font-heading font-bold text-white">Lounges</h1>
-            <p className="text-white/25 text-xs">Private rooms. Real conversations.</p>
+          <div className="flex-1">
+            <h1 className="text-2xl font-heading font-bold text-white">Lounges</h1>
+            <p className="text-white/30 text-sm">Find your vibe</p>
           </div>
         </header>
 
-        <div className="p-5 space-y-3">
-          {lounges.length === 0 ? (
+        {/* Search + Stats */}
+        <div className="px-5 pt-4 pb-2 relative z-10">
+          <div className="relative mb-3">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20" strokeWidth={1.5} />
+            <input
+              type="text"
+              placeholder="Search lounges..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="lk-input w-full pl-11 py-3"
+              data-testid="lounge-search-input"
+            />
+          </div>
+          <div className="flex items-center gap-3 text-xs text-white/30">
+            <span className="flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#10B981]" />
+              <span className="text-white/50 font-medium">{activeLoungeCount} active</span>
+            </span>
+            <span className="flex items-center gap-1.5">
+              <Users className="w-3 h-3" strokeWidth={1.5} />
+              <span className="text-white/50 font-medium">{totalOnline} people online</span>
+            </span>
+          </div>
+        </div>
+
+        {/* Lounge Cards */}
+        <div className="p-5 pt-3 space-y-4 pb-24 relative z-10">
+          {filteredLounges.length === 0 ? (
             <div className="lk-card-elevated rounded-2xl p-10 text-center">
               <Sofa className="w-14 h-14 text-[#3B82F6]/15 mx-auto mb-4" strokeWidth={1.5} />
-              <p className="text-white/30 text-sm font-heading">No lounges available yet</p>
-              <p className="text-white/15 text-xs mt-1">Be the first to start a conversation</p>
+              <p className="text-white/30 text-sm font-heading">No lounges found</p>
+              <p className="text-white/15 text-xs mt-1">Try a different search</p>
             </div>
           ) : (
-            lounges.map((lounge, idx) => {
+            filteredLounges.map((lounge, idx) => {
               const accent = getLoungeAccent(idx)
               const accentName = getLoungeAccentName(idx)
               const memberCount = lounge.memberCount || lounge.members?.length || 0
+              const tags = getLoungeTags(lounge.id)
               return (
-                <button
+                <div
                   key={lounge.id}
-                  onClick={() => enterLounge(lounge.id)}
-                  className="lounge-card w-full text-left p-5 group"
+                  className="lounge-card w-full text-left p-6"
                   data-accent={accentName}
                   data-testid={`lounge-item-${lounge.id}`}
                 >
-                  <div className="flex items-center gap-4">
-                    <div 
-                      className="w-12 h-12 rounded-xl flex items-center justify-center border flex-shrink-0 transition-colors"
-                      style={{ backgroundColor: `${accent}10`, borderColor: `${accent}18` }}
-                    >
-                      <Hash className="w-5 h-5" style={{ color: accent }} strokeWidth={1.5} />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-0.5">
-                        <h3 className="text-white font-heading font-semibold truncate">{lounge.name}</h3>
-                        {memberCount > 0 && (
-                          <span className="flex items-center gap-1 text-[10px] font-medium" style={{ color: `${accent}99` }}>
-                            <span className="live-dot" style={{ background: accent }} />
-                            Live
-                          </span>
-                        )}
-                      </div>
-                      <p className="text-white/25 text-sm truncate">{lounge.description || 'Open conversation space'}</p>
-                    </div>
-                    <div className="flex items-center gap-1.5 text-white/15 text-xs shrink-0">
+                  {/* Title row */}
+                  <div className="flex items-start justify-between mb-2">
+                    <h3 className="text-white font-heading font-bold text-xl leading-tight">{lounge.name}</h3>
+                    <div className="flex items-center gap-1.5 text-white/30 text-xs shrink-0 mt-1">
                       <Users className="w-3.5 h-3.5" strokeWidth={1.5} />
                       <span>{memberCount}</span>
                     </div>
                   </div>
-                </button>
+
+                  {/* Live indicator */}
+                  {memberCount > 0 && (
+                    <div className="flex items-center gap-1.5 mb-2">
+                      <span className="live-dot" style={{ background: accent }} />
+                      <span className="text-xs font-semibold" style={{ color: accent }}>Live</span>
+                      <span className="text-sm">&#128293;</span>
+                    </div>
+                  )}
+
+                  {/* Description */}
+                  <p className="text-white/35 text-sm mb-4">{lounge.description || 'Open conversation space'}</p>
+
+                  {/* Tags */}
+                  <div className="flex items-center gap-2 mb-4">
+                    {tags.map((tag) => (
+                      <span key={tag} className="px-3 py-1 rounded-full text-[11px] font-medium bg-white/[0.05] text-white/40 border border-white/[0.06]">
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+
+                  {/* Join Button */}
+                  <button
+                    onClick={() => enterLounge(lounge.id)}
+                    className="w-full py-3 rounded-xl font-heading font-semibold text-sm text-white transition-all duration-300 hover:brightness-110"
+                    style={{ 
+                      background: `linear-gradient(135deg, ${accent}, ${accent}CC)`,
+                      boxShadow: `0 4px 20px ${accent}30`
+                    }}
+                    data-testid={`join-lounge-${lounge.id}`}
+                  >
+                    Join Lounge
+                  </button>
+                </div>
               )
             })
           )}
         </div>
+
+        {/* Create Lounge FAB */}
+        <button
+          className="fixed bottom-6 right-6 z-30 w-14 h-14 rounded-2xl bg-[#9333EA] text-white flex items-center justify-center shadow-lg transition-transform hover:scale-105"
+          style={{ boxShadow: '0 6px 24px rgba(147,51,234,0.4)' }}
+          data-testid="create-lounge-btn"
+        >
+          <Plus className="w-6 h-6" strokeWidth={2} />
+        </button>
       </div>
     )
   }

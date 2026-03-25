@@ -418,7 +418,7 @@ h1, h2, h3, h4, h5, h6, .font-heading {
 .lounge-card {
   position: relative;
   background: linear-gradient(145deg, #141420 0%, #101018 100%);
-  border: 1px solid rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.05);
   border-radius: 1.25rem;
   overflow: hidden;
   transition: transform 0.35s ease, box-shadow 0.35s ease, border-color 0.35s ease;
@@ -429,12 +429,12 @@ h1, h2, h3, h4, h5, h6, .font-heading {
   top: 0; left: 0; right: 0;
   height: 3px;
   border-radius: 1.25rem 1.25rem 0 0;
-  opacity: 0;
+  opacity: 0.7;
   transition: opacity 0.35s ease;
 }
 .lounge-card:hover {
-  transform: translateY(-3px);
-  border-color: rgba(255, 255, 255, 0.08);
+  transform: translateY(-2px);
+  border-color: rgba(255, 255, 255, 0.10);
 }
 .lounge-card:hover::before {
   opacity: 1;

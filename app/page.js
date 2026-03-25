@@ -1590,21 +1590,19 @@ const HomePage = ({ user, onLogout, setUser }) => {
 
         {/* --- PEOPLE ONLINE --- */}
         <section className="px-5 pt-5" data-testid="people-online-section">
-          <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
-              <span className="lk-label text-[#D4A54A]/60">People Online</span>
-              <span className="flex items-center gap-1 text-[10px] text-[#10B981] font-medium">
-                <span className="live-dot" style={{ background: '#10B981' }} />
-                {members.length}
-              </span>
+              <span className="w-2 h-2 rounded-full bg-[#10B981]" />
+              <span className="text-white/70 text-sm font-heading font-semibold">People Online</span>
+              <span className="text-[#10B981] text-xs font-medium">{members.length}</span>
             </div>
-            <button onClick={() => router.push('/search')} className="text-[11px] text-white/25 hover:text-white/50 transition-colors" data-testid="see-all-members">
+            <button onClick={() => router.push('/search')} className="text-[11px] text-[#9333EA]/60 hover:text-[#9333EA] font-medium transition-colors" data-testid="see-all-members">
               See all
             </button>
           </div>
 
           <div 
-            className="flex gap-3 overflow-x-auto pb-2 -mx-5 px-5"
+            className="flex gap-4 overflow-x-auto pb-2 -mx-5 px-5"
             style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', WebkitOverflowScrolling: 'touch' }}
             data-testid="people-online-scroll"
           >
@@ -1616,18 +1614,18 @@ const HomePage = ({ user, onLogout, setUser }) => {
                 data-testid={`online-user-${m.id}`}
               >
                 <div className="relative">
-                  <div className="w-14 h-14 rounded-full bg-[#141420] overflow-hidden border border-white/[0.06] group-hover:border-[#D4A54A]/30 transition-colors">
+                  <div className="w-16 h-16 rounded-full bg-[#141420] overflow-hidden border-2 border-white/[0.06] group-hover:border-[#9333EA]/30 transition-colors">
                     {m.avatar || m.profilePicture ? (
                       <img src={m.avatar || m.profilePicture} alt="" className="w-full h-full object-cover" />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center text-white/20 text-sm font-medium">
+                      <div className="w-full h-full flex items-center justify-center text-white/25 text-base font-semibold">
                         {m.displayName?.charAt(0)?.toUpperCase() || '?'}
                       </div>
                     )}
                   </div>
-                  <div className="absolute bottom-0 right-0 w-3 h-3 rounded-full bg-[#10B981] border-2 border-[#08080D]" />
+                  <div className="absolute bottom-0.5 right-0.5 w-3.5 h-3.5 rounded-full bg-[#10B981] border-[2.5px] border-[#08080D]" />
                 </div>
-                <span className="text-white/40 text-[10px] font-medium truncate w-14 text-center group-hover:text-white/60 transition-colors">
+                <span className="text-white/45 text-[11px] font-medium truncate w-16 text-center group-hover:text-white/70 transition-colors">
                   {m.displayName?.split(' ')[0]?.slice(0, 8) || 'User'}
                 </span>
               </button>
@@ -1645,27 +1643,34 @@ const HomePage = ({ user, onLogout, setUser }) => {
         {/* --- NEW MATCHES / FRIEND REQUESTS --- */}
         {pendingFriendRequests.length > 0 && (
           <section className="px-5 mb-5" data-testid="new-matches-section">
-            <div className="flex items-center gap-2 mb-3">
-              <span className="lk-label text-[#E84393]/60">New Matches</span>
-              <span className="w-5 h-5 rounded-full bg-[#E84393] text-white text-[10px] font-bold flex items-center justify-center" style={{ boxShadow: '0 2px 8px rgba(232,67,147,0.4)' }}>
-                {pendingFriendRequests.length}
-              </span>
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <Sparkles className="w-4 h-4 text-[#F59E0B]" strokeWidth={1.5} />
+                <span className="text-white/70 text-sm font-heading font-semibold">New Matches</span>
+              </div>
+              <button onClick={() => router.push('/friends')} className="text-[11px] text-[#9333EA]/60 hover:text-[#9333EA] font-medium transition-colors" data-testid="see-all-matches">
+                See all
+              </button>
             </div>
 
-            <div className="space-y-2">
+            <div className="space-y-2.5">
               {pendingFriendRequests.map((req) => (
-                <div key={req.id || req.fromUserId} className="flex items-center gap-3 p-3.5 rounded-2xl bg-[#101018] border border-[#E84393]/10 hover:border-[#E84393]/20 transition-colors" data-testid={`match-${req.fromUserId}`}>
-                  <div className="w-11 h-11 rounded-full bg-[#141420] overflow-hidden border border-white/[0.06] flex-shrink-0">
+                <div key={req.id || req.fromUserId} className="relative flex items-center gap-3 p-4 rounded-2xl bg-[#101018] border border-[#E84393]/10 hover:border-[#E84393]/20 transition-colors" data-testid={`match-${req.fromUserId}`}>
+                  {/* NEW badge */}
+                  <div className="absolute -top-1.5 -left-1.5 px-2 py-0.5 rounded-full bg-[#9333EA] text-white text-[9px] font-bold tracking-wider" style={{ boxShadow: '0 2px 8px rgba(147,51,234,0.4)' }}>
+                    NEW
+                  </div>
+                  <div className="w-12 h-12 rounded-full bg-[#141420] overflow-hidden border-2 border-white/[0.06] flex-shrink-0">
                     {req.fromAvatar ? (
                       <img src={req.fromAvatar} alt="" className="w-full h-full object-cover" />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center text-[#E84393] text-sm font-medium">
+                      <div className="w-full h-full flex items-center justify-center text-[#E84393] text-base font-semibold">
                         {req.fromName?.charAt(0) || '?'}
                       </div>
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-white text-sm font-medium truncate">{req.fromName || 'Unknown'}</p>
+                    <p className="text-white text-sm font-semibold truncate">{req.fromName || 'Unknown'}</p>
                     <p className="text-white/25 text-xs">Wants to connect</p>
                   </div>
                   <div className="flex gap-1.5 flex-shrink-0">
@@ -1691,76 +1696,112 @@ const HomePage = ({ user, onLogout, setUser }) => {
 
         {/* --- ACTIVE LOUNGES --- */}
         <section className="px-5 pt-1" data-testid="active-lounges-section">
-          <div className="flex items-center justify-between mb-3">
-            <span className="lk-label text-[#3B82F6]/60">Active Lounges</span>
-            <button onClick={() => handleTileClick('lounge', '/lounge')} className="text-[11px] text-white/25 hover:text-white/50 transition-colors" data-testid="see-all-lounges">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <MessageSquare className="w-4 h-4 text-[#9333EA]/50" strokeWidth={1.5} />
+              <span className="lk-label text-[#9333EA]/60">Active Lounges</span>
+            </div>
+            <button onClick={() => handleTileClick('lounge', '/lounge')} className="text-[11px] text-[#9333EA]/60 hover:text-[#9333EA] font-medium transition-colors" data-testid="see-all-lounges">
               See all
             </button>
           </div>
 
-          <div className="space-y-2.5">
+          <div className="space-y-4">
             {loungesList.slice(0, 4).map((lounge, idx) => {
               const accentColors = ['#3B82F6', '#D4A54A', '#E8364E', '#9333EA', '#E84393', '#10B981']
               const accentNames = ['blue', 'gold', 'red', 'purple', 'pink', 'emerald']
               const accent = accentColors[idx % accentColors.length]
+              const accentName = accentNames[idx % accentNames.length]
+              const memberCount = lounge.memberCount || lounge.members?.length || 0
+              const tagMap = {
+                'night-owls': ['late night', 'vibes'],
+                'chill-vibes': ['chill', 'relaxed'],
+                'music-lovers': ['music', 'tracks'],
+                'late-night-talks': ['deep', 'late night'],
+              }
+              const tags = tagMap[lounge.id] || ['social']
               return (
-                <button
+                <div
                   key={lounge.id}
-                  onClick={() => router.push(`/lounge?id=${lounge.id}`)}
-                  className="lounge-card w-full text-left p-5 group"
-                  data-accent={accentNames[idx % accentNames.length]}
+                  className="lounge-card w-full text-left p-5"
+                  data-accent={accentName}
                   data-testid={`home-lounge-${lounge.id}`}
                 >
-                  <div className="flex items-center gap-4">
-                    <div 
-                      className="w-12 h-12 rounded-xl flex items-center justify-center border flex-shrink-0 transition-colors"
-                      style={{ backgroundColor: `${accent}10`, borderColor: `${accent}18` }}
-                    >
-                      <Sofa className="w-5 h-5" style={{ color: accent }} strokeWidth={1.5} />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-0.5">
-                        <h3 className="text-white font-heading font-semibold text-sm truncate">{lounge.name || 'Main Lounge'}</h3>
-                        {(lounge.members?.length || 0) > 0 && (
-                          <span className="flex items-center gap-1 text-[10px] font-medium" style={{ color: `${accent}99` }}>
-                            <span className="live-dot" style={{ background: accent }} />
-                            Live
-                          </span>
-                        )}
-                      </div>
-                      <p className="text-white/25 text-xs truncate">{lounge.description || 'Open conversation space'}</p>
-                    </div>
-                    <div className="flex items-center gap-1 text-white/15 text-xs flex-shrink-0">
-                      <Users className="w-3 h-3" strokeWidth={1.5} />
-                      <span>{lounge.members?.length || 0}</span>
+                  {/* Title + member count */}
+                  <div className="flex items-start justify-between mb-1.5">
+                    <h3 className="text-white font-heading font-bold text-lg leading-tight">{lounge.name || 'Main Lounge'}</h3>
+                    <div className="flex items-center gap-1 text-white/20 text-xs shrink-0 mt-0.5">
+                      <Users className="w-3.5 h-3.5" strokeWidth={1.5} />
+                      <span>{memberCount}</span>
                     </div>
                   </div>
-                </button>
+
+                  {/* Live badge */}
+                  {memberCount > 0 && (
+                    <div className="flex items-center gap-1.5 mb-2">
+                      <span className="live-dot" style={{ background: accent }} />
+                      <span className="text-[11px] font-semibold" style={{ color: accent }}>Live</span>
+                      <span className="text-xs">&#128293;</span>
+                    </div>
+                  )}
+
+                  {/* Description */}
+                  <p className="text-white/30 text-sm mb-3">{lounge.description || 'Open conversation space'}</p>
+
+                  {/* Tags */}
+                  <div className="flex items-center gap-2 mb-4">
+                    {tags.map((tag) => (
+                      <span key={tag} className="px-2.5 py-0.5 rounded-full text-[10px] font-medium bg-white/[0.04] text-white/35 border border-white/[0.05]">
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+
+                  {/* Join button */}
+                  <button
+                    onClick={() => router.push(`/lounge?id=${lounge.id}`)}
+                    className="w-full py-2.5 rounded-xl font-heading font-semibold text-sm text-white transition-all duration-300 hover:brightness-110"
+                    style={{ 
+                      background: `linear-gradient(135deg, ${accent}, ${accent}BB)`,
+                      boxShadow: `0 4px 16px ${accent}25`
+                    }}
+                    data-testid={`join-home-lounge-${lounge.id}`}
+                  >
+                    Join Lounge
+                  </button>
+                </div>
               )
             })}
             {loungesList.length === 0 && (
-              <button
-                onClick={() => handleTileClick('lounge', '/lounge')}
-                className="lounge-card w-full text-left p-5 group"
+              <div
+                className="lounge-card w-full text-left p-5"
                 data-accent="blue"
                 data-testid="home-lounge-main"
               >
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-[#3B82F6]/10 border border-[#3B82F6]/18 flex-shrink-0">
-                    <Sofa className="w-5 h-5 text-[#3B82F6]" strokeWidth={1.5} />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-0.5">
-                      <h3 className="text-white font-heading font-semibold text-sm">Main Lounge</h3>
-                      <span className="flex items-center gap-1 text-[10px] text-[#3B82F6]/60 font-medium">
-                        <span className="live-dot" style={{ background: '#3B82F6' }} />
-                        Live
-                      </span>
-                    </div>
-                    <p className="text-white/25 text-xs">The heart of LowKey — conversation, culture, music</p>
-                  </div>
+                <div className="flex items-start justify-between mb-1.5">
+                  <h3 className="text-white font-heading font-bold text-lg">Main Lounge</h3>
                 </div>
-              </button>
+                <div className="flex items-center gap-1.5 mb-2">
+                  <span className="live-dot" style={{ background: '#3B82F6' }} />
+                  <span className="text-[11px] font-semibold text-[#3B82F6]">Live</span>
+                </div>
+                <p className="text-white/30 text-sm mb-3">The heart of LowKey — conversation, culture, music</p>
+                <div className="flex items-center gap-2 mb-4">
+                  <span className="px-2.5 py-0.5 rounded-full text-[10px] font-medium bg-white/[0.04] text-white/35 border border-white/[0.05]">social</span>
+                  <span className="px-2.5 py-0.5 rounded-full text-[10px] font-medium bg-white/[0.04] text-white/35 border border-white/[0.05]">community</span>
+                </div>
+                <button
+                  onClick={() => handleTileClick('lounge', '/lounge')}
+                  className="w-full py-2.5 rounded-xl font-heading font-semibold text-sm text-white transition-all duration-300 hover:brightness-110"
+                  style={{ 
+                    background: 'linear-gradient(135deg, #3B82F6, #3B82F6BB)',
+                    boxShadow: '0 4px 16px rgba(59,130,246,0.25)'
+                  }}
+                  data-testid="join-home-lounge-main"
+                >
+                  Join Lounge
+                </button>
+              </div>
             )}
           </div>
         </section>
