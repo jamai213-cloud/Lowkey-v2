@@ -162,9 +162,9 @@ function LoungePageContent() {
   // Lounge Selection View
   if (showLoungeList) {
     return (
-      <div className="min-h-screen bg-[#08080D] page-enter" data-testid="lounge-list">
-        <div className="absolute top-0 right-0 w-[350px] h-[350px] rounded-full bg-[#3B82F6]/[0.03] blur-[130px] pointer-events-none z-0" />
-        <div className="absolute bottom-40 left-0 w-[250px] h-[250px] rounded-full bg-[#22D3EE]/[0.02] blur-[100px] pointer-events-none z-0" />
+      <div className="min-h-screen bg-[#0B0D14] page-enter" data-testid="lounge-list">
+        <div className="absolute top-0 right-0 w-[350px] h-[350px] rounded-full bg-[#3B82F6]/[0.04] blur-[130px] pointer-events-none z-0" />
+        <div className="absolute bottom-40 left-0 w-[250px] h-[250px] rounded-full bg-[#22D3EE]/[0.03] blur-[100px] pointer-events-none z-0" />
         
         <header className="lk-page-header flex items-center gap-3" data-testid="lounge-header">
           <button onClick={() => router.push('/')} className="p-2 rounded-full hover:bg-white/5 transition-colors" data-testid="lounge-back-btn">
@@ -211,8 +211,8 @@ function LoungePageContent() {
             </div>
           ) : (
             filteredLounges.map((lounge, idx) => {
-              const accents = ['#3B82F6', '#22D3EE', '#9333EA', '#D4A54A', '#E84393', '#10B981']
-              const accentNames = ['blue', 'cyan', 'purple', 'gold', 'pink', 'emerald']
+              const accents = ['#3B82F6', '#D4A54A', '#E8364E', '#22D3EE', '#9333EA', '#10B981']
+              const accentNames = ['blue', 'gold', 'red', 'cyan', 'purple', 'emerald']
               const accent = accents[idx % accents.length]
               const accentName = accentNames[idx % accentNames.length]
               const memberCount = lounge.memberCount || lounge.members?.length || 0

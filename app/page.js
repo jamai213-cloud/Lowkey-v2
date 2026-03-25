@@ -1082,10 +1082,11 @@ const HomePage = ({ user, onLogout, setUser }) => {
   const getLoungeAccent = (idx) => loungeAccents[idx % loungeAccents.length]
 
   return (
-    <div className="min-h-screen bg-[#08080D] relative page-enter" data-testid="home-page">
-      {/* Ambient background — very subtle neon blurs */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[400px] rounded-full bg-[#9333EA]/[0.03] blur-[150px] pointer-events-none z-0" />
-      <div className="absolute bottom-40 right-0 w-[350px] h-[350px] rounded-full bg-[#3B82F6]/[0.02] blur-[130px] pointer-events-none z-0" />
+    <div className="min-h-screen bg-[#0B0D14] relative page-enter" data-testid="home-page">
+      {/* Ambient background — warm, alive, not flat */}
+      <div className="absolute top-0 left-0 w-[500px] h-[400px] rounded-full bg-[#9333EA]/[0.04] blur-[150px] pointer-events-none z-0" />
+      <div className="absolute top-[30%] right-0 w-[400px] h-[350px] rounded-full bg-[#D4A54A]/[0.03] blur-[130px] pointer-events-none z-0" />
+      <div className="absolute bottom-[20%] left-[20%] w-[300px] h-[300px] rounded-full bg-[#3B82F6]/[0.03] blur-[120px] pointer-events-none z-0" />
       
       {/* Header */}
       <header className="lk-page-header relative z-10 flex items-center justify-between" data-testid="home-header">
@@ -1607,11 +1608,62 @@ const HomePage = ({ user, onLogout, setUser }) => {
       {/* ===== SCROLL-BASED HOME EXPERIENCE ===== */}
       <main className="relative z-[5] pb-28">
 
+        {/* --- FEATURED LOUNGE — warm hero, guides users where to go --- */}
+        {(() => {
+          const featured = loungesList[0]
+          const featuredName = featured?.name || 'Main Lounge'
+          const featuredDesc = featured?.description || 'The heart of LowKey — conversation, culture, music'
+          const featuredCount = featured?.memberCount || featured?.members?.length || 0
+          const featuredId = featured?.id || 'main'
+          return (
+            <section className="px-5 pt-4 pb-3" data-testid="featured-lounge-section">
+              <button
+                onClick={() => router.push(`/lounge?id=${featuredId}`)}
+                className="featured-card w-full text-left p-6"
+                data-testid="featured-lounge"
+              >
+                <div className="relative z-[2]">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-[10px] text-[#D4A54A]/70 font-bold uppercase tracking-widest">Featured</span>
+                    {featuredCount > 0 && (
+                      <span className="flex items-center gap-1">
+                        <span className="live-dot" style={{ background: '#D4A54A' }} />
+                        <span className="text-[10px] text-[#D4A54A]/60 font-semibold">{featuredCount} in room</span>
+                      </span>
+                    )}
+                  </div>
+                  <h2 className="text-white font-heading font-bold text-[22px] tracking-tight mb-1.5">{featuredName}</h2>
+                  <p className="text-white/30 text-[14px] leading-relaxed mb-5">{featuredDesc}</p>
+                  <div
+                    className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-bold"
+                    style={{
+                      background: 'linear-gradient(135deg, rgba(212,165,74,0.20), rgba(232,54,78,0.12))',
+                      border: '1px solid rgba(212,165,74,0.25)',
+                      color: '#D4A54A',
+                    }}
+                  >
+                    Enter
+                    <ChevronRight className="w-4 h-4" strokeWidth={2} />
+                  </div>
+                </div>
+              </button>
+            </section>
+          )
+        })()}
+
+        <div className="section-divider my-1" />
+
         {/* --- PEOPLE ONLINE --- */}
-        <section className="pt-6 pb-1" data-testid="people-online-section">
+        <section className="pt-4 pb-1" data-testid="people-online-section">
           <div className="px-5 flex items-baseline justify-between mb-4">
-            <h2 className="text-white text-[17px] font-heading font-bold tracking-tight">People Online</h2>
-            <button onClick={() => router.push('/search')} className="text-[11px] text-[#9333EA]/60 hover:text-[#9333EA] font-semibold transition-colors" data-testid="see-all-members">
+            <div className="flex items-center gap-2.5">
+              <h2 className="text-white text-[17px] font-heading font-bold tracking-tight">People Online</h2>
+              <span className="flex items-center gap-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#10B981] animate-pulse" />
+                <span className="text-[#10B981] text-[11px] font-semibold">{members.length}</span>
+              </span>
+            </div>
+            <button onClick={() => router.push('/search')} className="text-[11px] text-white/30 hover:text-white/60 font-semibold transition-colors" data-testid="see-all-members">
               See all
             </button>
           </div>
@@ -1648,7 +1700,7 @@ const HomePage = ({ user, onLogout, setUser }) => {
                         )}
                       </div>
                     </div>
-                    <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-[#10B981] ring-[2px] ring-[#08080D]" />
+                    <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-[#10B981] ring-[2px] ring-[#0B0D14]" />
                   </div>
                   <span className="text-white/40 text-[10px] font-medium truncate w-[58px] text-center group-hover:text-white/65 transition-colors">
                     {m.displayName?.split(' ')[0]?.slice(0, 8) || 'User'}
@@ -1726,15 +1778,15 @@ const HomePage = ({ user, onLogout, setUser }) => {
         <section className="px-5 pt-4 pb-2" data-testid="active-lounges-section">
           <div className="flex items-baseline justify-between mb-4">
             <h2 className="text-white text-[17px] font-heading font-bold tracking-tight">Active Lounges</h2>
-            <button onClick={() => handleTileClick('lounge', '/lounge')} className="text-[11px] text-[#9333EA]/60 hover:text-[#9333EA] font-semibold transition-colors" data-testid="see-all-lounges">
+            <button onClick={() => handleTileClick('lounge', '/lounge')} className="text-[11px] text-white/30 hover:text-white/60 font-semibold transition-colors" data-testid="see-all-lounges">
               See all
             </button>
           </div>
 
           <div className="space-y-3">
-            {loungesList.slice(0, 3).map((lounge, idx) => {
-              const accents = ['#9333EA', '#3B82F6', '#22D3EE', '#D4A54A', '#E84393', '#10B981']
-              const accentNames = ['purple', 'blue', 'cyan', 'gold', 'pink', 'emerald']
+            {loungesList.slice(1, 4).map((lounge, idx) => {
+              const accents = ['#3B82F6', '#E8364E', '#22D3EE', '#9333EA', '#D4A54A', '#10B981']
+              const accentNames = ['blue', 'red', 'cyan', 'purple', 'gold', 'emerald']
               const accent = accents[idx % accents.length]
               const accentName = accentNames[idx % accentNames.length]
               const memberCount = lounge.memberCount || lounge.members?.length || 0
@@ -1750,7 +1802,7 @@ const HomePage = ({ user, onLogout, setUser }) => {
                   <div className="flex items-start justify-between relative z-[2]">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2.5 mb-1.5">
-                        <h3 className="text-white font-heading font-bold text-[15px] truncate">{lounge.name || 'Main Lounge'}</h3>
+                        <h3 className="text-white font-heading font-bold text-[15px] truncate">{lounge.name || 'Lounge'}</h3>
                         {memberCount > 0 && (
                           <span className="flex items-center gap-1 shrink-0">
                             <span className="live-dot" style={{ background: accent }} />
@@ -1768,21 +1820,19 @@ const HomePage = ({ user, onLogout, setUser }) => {
                 </button>
               )
             })}
-            {loungesList.length === 0 && (
+            {loungesList.length <= 1 && (
               <button
                 onClick={() => handleTileClick('lounge', '/lounge')}
                 className="lounge-card w-full text-left px-5 py-[18px]"
-                data-accent="purple"
+                data-accent="blue"
                 data-testid="home-lounge-main"
               >
                 <div className="flex items-start justify-between relative z-[2]">
                   <div>
                     <div className="flex items-center gap-2.5 mb-1.5">
-                      <h3 className="text-white font-heading font-bold text-[15px]">Main Lounge</h3>
-                      <span className="live-dot" style={{ background: '#9333EA' }} />
-                      <span className="text-[10px] font-semibold text-[#9333EA]/60">Live</span>
+                      <h3 className="text-white font-heading font-bold text-[15px]">Explore Lounges</h3>
                     </div>
-                    <p className="text-white/25 text-[13px]">Conversation, culture, music</p>
+                    <p className="text-white/25 text-[13px]">See all rooms and conversations</p>
                   </div>
                 </div>
               </button>
@@ -1826,7 +1876,7 @@ const HomePage = ({ user, onLogout, setUser }) => {
       </main>
 
       {/* Bottom Navigation */}
-      <nav className="fixed bottom-0 left-0 right-0 z-20 backdrop-blur-2xl border-t border-white/[0.04]" style={{ background: 'rgba(8,8,13,0.88)' }} data-testid="bottom-nav">
+      <nav className="fixed bottom-0 left-0 right-0 z-20 backdrop-blur-2xl border-t border-white/[0.04]" style={{ background: 'rgba(11,13,20,0.90)' }} data-testid="bottom-nav">
         <div className="flex items-center justify-around py-2.5 max-w-lg mx-auto">
           <button className="flex flex-col items-center gap-0.5 px-4 py-1.5" data-testid="nav-home">
             <Home className="w-5 h-5 text-[#9333EA]" strokeWidth={1.5} />
