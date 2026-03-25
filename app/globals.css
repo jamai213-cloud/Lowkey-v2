@@ -414,82 +414,94 @@ h1, h2, h3, h4, h5, h6, .font-heading {
   }
 }
 
-/* ===== LOUNGE CARD SYSTEM — premium glass ===== */
+/* ===== LOUNGE CARD SYSTEM — premium depth ===== */
 .lounge-card {
   position: relative;
-  background: rgba(14, 14, 24, 0.75);
-  backdrop-filter: blur(20px);
-  border-radius: 1rem;
+  background: #111119;
+  border-radius: 14px;
   overflow: hidden;
-  transition: transform 0.3s cubic-bezier(0.4,0,0.2,1), box-shadow 0.3s ease, border-color 0.3s ease;
+  transition: transform 0.25s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.35), 0 0 0 1px rgba(255,255,255,0.03) inset;
 }
 .lounge-card::after {
   content: '';
   position: absolute;
   inset: 0;
   border-radius: inherit;
-  background: linear-gradient(160deg, rgba(255,255,255,0.03) 0%, transparent 40%);
+  background: linear-gradient(165deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.01) 25%, transparent 50%);
   pointer-events: none;
 }
-.lounge-card:hover {
-  transform: translateY(-1px);
+.lounge-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  z-index: 1;
+  opacity: 0.6;
+  transition: opacity 0.3s ease;
+}
+.lounge-card:hover { transform: translateY(-2px); }
+.lounge-card:hover::before { opacity: 1; }
+
+.lounge-card[data-accent="blue"] { border: 1px solid rgba(59,130,246,0.10); }
+.lounge-card[data-accent="blue"]::before { background: linear-gradient(90deg, rgba(59,130,246,0.7), rgba(99,102,241,0.2)); }
+.lounge-card[data-accent="blue"]:hover { border-color: rgba(59,130,246,0.28); box-shadow: 0 4px 20px rgba(59,130,246,0.08), 0 2px 8px rgba(0,0,0,0.3); }
+
+.lounge-card[data-accent="cyan"] { border: 1px solid rgba(34,211,238,0.10); }
+.lounge-card[data-accent="cyan"]::before { background: linear-gradient(90deg, rgba(34,211,238,0.7), rgba(59,130,246,0.2)); }
+.lounge-card[data-accent="cyan"]:hover { border-color: rgba(34,211,238,0.28); box-shadow: 0 4px 20px rgba(34,211,238,0.08), 0 2px 8px rgba(0,0,0,0.3); }
+
+.lounge-card[data-accent="gold"] { border: 1px solid rgba(212,165,74,0.10); }
+.lounge-card[data-accent="gold"]::before { background: linear-gradient(90deg, rgba(212,165,74,0.7), rgba(245,158,11,0.2)); }
+.lounge-card[data-accent="gold"]:hover { border-color: rgba(212,165,74,0.28); box-shadow: 0 4px 20px rgba(212,165,74,0.08), 0 2px 8px rgba(0,0,0,0.3); }
+
+.lounge-card[data-accent="red"] { border: 1px solid rgba(232,54,78,0.10); }
+.lounge-card[data-accent="red"]::before { background: linear-gradient(90deg, rgba(232,54,78,0.7), rgba(232,67,147,0.2)); }
+.lounge-card[data-accent="red"]:hover { border-color: rgba(232,54,78,0.28); box-shadow: 0 4px 20px rgba(232,54,78,0.08), 0 2px 8px rgba(0,0,0,0.3); }
+
+.lounge-card[data-accent="purple"] { border: 1px solid rgba(147,51,234,0.10); }
+.lounge-card[data-accent="purple"]::before { background: linear-gradient(90deg, rgba(147,51,234,0.7), rgba(168,85,247,0.2)); }
+.lounge-card[data-accent="purple"]:hover { border-color: rgba(147,51,234,0.28); box-shadow: 0 4px 20px rgba(147,51,234,0.08), 0 2px 8px rgba(0,0,0,0.3); }
+
+.lounge-card[data-accent="pink"] { border: 1px solid rgba(232,67,147,0.10); }
+.lounge-card[data-accent="pink"]::before { background: linear-gradient(90deg, rgba(232,67,147,0.7), rgba(236,72,153,0.2)); }
+.lounge-card[data-accent="pink"]:hover { border-color: rgba(232,67,147,0.28); box-shadow: 0 4px 20px rgba(232,67,147,0.08), 0 2px 8px rgba(0,0,0,0.3); }
+
+.lounge-card[data-accent="emerald"] { border: 1px solid rgba(16,185,129,0.10); }
+.lounge-card[data-accent="emerald"]::before { background: linear-gradient(90deg, rgba(16,185,129,0.7), rgba(52,211,153,0.2)); }
+.lounge-card[data-accent="emerald"]:hover { border-color: rgba(16,185,129,0.28); box-shadow: 0 4px 20px rgba(16,185,129,0.08), 0 2px 8px rgba(0,0,0,0.3); }
+
+/* Avatar ring */
+.avatar-ring {
+  position: relative;
+  border-radius: 50%;
+  padding: 2px;
+  background: linear-gradient(135deg, rgba(147,51,234,0.45), rgba(59,130,246,0.25));
+}
+.avatar-ring .avatar-inner {
+  width: 100%; height: 100%;
+  border-radius: 50%;
+  background: #0e0e18;
+  overflow: hidden;
+  display: flex; align-items: center; justify-content: center;
 }
 
-/* Neon border accents — thin glowing edges */
-.lounge-card[data-accent="blue"] {
-  border: 1px solid rgba(59, 130, 246, 0.18);
-}
-.lounge-card[data-accent="blue"]:hover {
-  border-color: rgba(59, 130, 246, 0.40);
-  box-shadow: 0 0 24px rgba(59, 130, 246, 0.08);
+/* Section divider */
+.section-divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.05) 50%, transparent 100%);
+  margin: 0 20px;
 }
 
-.lounge-card[data-accent="cyan"] {
-  border: 1px solid rgba(34, 211, 238, 0.18);
-}
-.lounge-card[data-accent="cyan"]:hover {
-  border-color: rgba(34, 211, 238, 0.40);
-  box-shadow: 0 0 24px rgba(34, 211, 238, 0.08);
-}
-
-.lounge-card[data-accent="gold"] {
-  border: 1px solid rgba(212, 165, 74, 0.18);
-}
-.lounge-card[data-accent="gold"]:hover {
-  border-color: rgba(212, 165, 74, 0.40);
-  box-shadow: 0 0 24px rgba(212, 165, 74, 0.08);
-}
-
-.lounge-card[data-accent="red"] {
-  border: 1px solid rgba(232, 54, 78, 0.18);
-}
-.lounge-card[data-accent="red"]:hover {
-  border-color: rgba(232, 54, 78, 0.40);
-  box-shadow: 0 0 24px rgba(232, 54, 78, 0.08);
-}
-
-.lounge-card[data-accent="purple"] {
-  border: 1px solid rgba(147, 51, 234, 0.18);
-}
-.lounge-card[data-accent="purple"]:hover {
-  border-color: rgba(147, 51, 234, 0.40);
-  box-shadow: 0 0 24px rgba(147, 51, 234, 0.08);
-}
-
-.lounge-card[data-accent="pink"] {
-  border: 1px solid rgba(232, 67, 147, 0.18);
-}
-.lounge-card[data-accent="pink"]:hover {
-  border-color: rgba(232, 67, 147, 0.40);
-  box-shadow: 0 0 24px rgba(232, 67, 147, 0.08);
-}
-
-.lounge-card[data-accent="emerald"] {
-  border: 1px solid rgba(16, 185, 129, 0.18);
-}
-.lounge-card[data-accent="emerald"]:hover {
-  border-color: rgba(16, 185, 129, 0.40);
-  box-shadow: 0 0 24px rgba(16, 185, 129, 0.08);
+/* Lounge tag pill */
+.tag-pill {
+  padding: 3px 10px;
+  border-radius: 100px;
+  font-size: 11px;
+  font-weight: 500;
+  background: rgba(255,255,255,0.04);
+  color: rgba(255,255,255,0.35);
+  border: 1px solid rgba(255,255,255,0.05);
 }
 
 /* Neon outline button — electric border, transparent fill */
