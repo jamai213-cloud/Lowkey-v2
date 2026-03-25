@@ -8,7 +8,7 @@ app = FastAPI()
 NEXTJS_URL = "http://localhost:3000"
 
 @app.api_route("/api/{path:path}", methods=["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"])
-async def proxy_to_nextjs(request: Request, path: str):
+async def proxy_api(request: Request, path: str):
     """Proxy all /api/* requests to the Next.js server on port 3000."""
     target_url = f"{NEXTJS_URL}/api/{path}"
     
@@ -30,6 +30,36 @@ async def proxy_to_nextjs(request: Request, path: str):
         iter([response.content]),
         status_code=response.status_code,
         headers=dict(response.headers),
+        media_type=response.headers.get("content-type"),
+    )
+
+@app.api_route("/{path:path}", methods=["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"])
+@app.api_route("/", methods=["GET"])
+async def proxy_frontend(request: Request, path: str = ""):
+    """Proxy all non-API requests to the Next.js frontend."""
+    target_url = f"{NEXTJS_URL}/{path}"
+    
+    headers = dict(request.headers)
+    headers.pop("host", None)
+    
+    body = await request.body()
+    
+    async with httpx.AsyncClient(timeout=30.0, follow_redirects=True) as client:
+        response = await client.request(
+            method=request.method,
+            url=target_url,
+            headers=headers,
+            content=body,
+            params=dict(request.query_params),
+        )
+    
+    excluded_headers = {"content-encoding", "transfer-encoding", "content-length"}
+    resp_headers = {k: v for k, v in response.headers.items() if k.lower() not in excluded_headers}
+    
+    return StreamingResponse(
+        iter([response.content]),
+        status_code=response.status_code,
+        headers=resp_headers,
         media_type=response.headers.get("content-type"),
     )
 
