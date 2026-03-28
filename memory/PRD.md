@@ -1,84 +1,62 @@
 # Lowkey App - Product Requirements Document
 
 ## Overview
-A premium adult social club / dating platform built with Next.js 14 (App Router) + MongoDB. The UI prioritizes people/connections first, with lounges as supporting interaction spaces and monetization visible but not intrusive.
+A premium adult social club / dating platform built with Next.js 14 (App Router) + MongoDB. Connections are the primary focus, with lounges as supporting interaction spaces.
 
 ## Core Tech Stack
 - **Frontend**: Next.js 14 (App Router), React, Tailwind CSS
 - **Backend**: Next.js API Routes (monolithic `app/api/[[...path]]/route.js`)
-- **Database**: MongoDB (local instance, `lowkey` DB)
-- **Auth**: Custom email/password auth with JWT tokens
-- **Deployment**: Vercel (user's production), Emergent preview (dev)
-
-## Architecture
-```
-/app
-├── app/                  # Next.js App Router
-│   ├── api/              # API routes (monolithic route.js)
-│   ├── components/       # RadioMiniPlayer, etc.
-│   ├── contexts/         # RadioContext, NotificationContext
-│   ├── globals.css       # Global styles - premium dark theme
-│   ├── page.js           # Home page (7-section layout, connections-first)
-│   ├── afterdark/        # After Dark feature page
-│   ├── lounge/page.js    # Lounge pages
-│   ├── search/page.js    # Member search + profiles
-│   ├── inbox/page.js     # Messages
-│   ├── radio/            # Radio feature page
-│   └── [other routes]    # Games, events, friends, profile, etc.
-├── backend/              # FastAPI reverse proxy (port 8001 -> 3000)
-└── package.json
-```
+- **Database**: MongoDB (local, `lowkey` DB)
+- **Auth**: Custom email/password with JWT
+- **Deployment**: Vercel (production), Emergent (dev)
 
 ## Home Page Structure (7 Sections — Connections First)
-1. **Discover / Connections** (TOP) — 2-column profile card grid, "See all" to /search, connection requests
-2. **Active Now** — Stories + online member avatars horizontal strip
-3. **Recent Activity** — Lightweight activity signals (MOCKED: viewed profile, liked, online)
-4. **Featured Lounge** — After Dark hero card with Live indicator and Enter CTA
-5. **Lounges** — Real existing lounges in simple flat list (Night Owls, Chill Vibes, Music Lovers, etc.)
-6. **Content / Monetisation** — Credits balance + Exclusive/Unlock buttons (subtle)
+1. **Discover / Connections** (DOMINANT) — Hero card (first user, full-width) + 2-column profile grid with unique gradient backgrounds, verification badges, online dots. Clicking any user opens **profile modal** (not /search)
+2. **Active Now** — Stories + online member avatars horizontal strip with green online dots
+3. **Recent Activity** — Real notifications when available, falls back to online member status signals
+4. **Featured Lounge** — After Dark hero card with LIVE indicator and Enter CTA
+5. **Lounges** — Real existing lounges (Night Owls, Chill Vibes, etc.) in simple list with lounge icons
+6. **Content / Monetisation** — Credits + Exclusive/Unlock buttons (subtle, not intrusive)
 7. **Radio** — Existing radio feature, clean link to /radio (NOT renamed or rebuilt)
 
-## Visual Design System
-- Background: Deep navy `#0B0D14`
-- Cards: `#111318` with `rgba(255,255,255,0.03-0.04)` borders
-- Accents: Gold `#D4A54A` (premium), Red `#E8364E` (intensity), Blue `#3B82F6` (calm), Pink `#E84393`, Purple `#9333EA`, Green `#10B981`
-- Style: Clean, structured, minimal. NO heavy gradient cards, no tile dashboards
-- Typography: Strong hierarchy, font-heading for section labels
+## Profile Modal
+- Opens from any user click (Discover, Active Now, Recent Activity)
+- Shows: avatar/initial hero, name, verification badge, bio
+- Actions: Connect (for non-friends), Message (for friends), Full Profile (goes to /search?view=)
+- Slides up from bottom with backdrop blur
+- Does NOT navigate away from home page
 
-## Existing Features (UNCHANGED)
-- Auth (login, signup, forgot password)
-- Stories (create photo/video/text, view, expiry)
-- Radio player (RadioMiniPlayer.js - fixed bottom bar)
-- Notifications (polling + sound)
-- Friend requests (accept/decline)
-- Lounges (7 real lounges)
-- After Dark (separate premium feature)
-- Messaging (inbox, DMs)
-- Events, Games, Profile
+## Visual Design
+- Background: Deep navy `#0C0F18`
+- Cards: `#131720` with subtle borders
+- Gradients: Rich, varied per profile card (gold→red, blue→purple, green→teal, etc.)
+- Typography: Bold headings, clear hierarchy
+- Accents: Gold `#D4A54A` (premium), Red `#E8364E`, Blue `#3B82F6`, Green `#10B981`
+- Profile cards: Edge-to-edge gradients, not boxed
+
+## Key Routing
+- User cards → `viewProfile(userId)` → profile modal (NO /search navigation)
+- "See all" → `/search` (intentional)
+- "Full Profile" in modal → `/search?view=` (intentional)
+- Lounges → `/lounge?id=`
+- After Dark → `/afterdark`
+- Radio → `/radio`
 
 ## Test Credentials
-- Email: `kinglowkey@hotmail.com`
-- Password: `password123`
-- Role: Founder (admin privileges)
+- Email: `kinglowkey@hotmail.com` / Password: `password123` / Role: founder
 
 ## What's Implemented
-- [x] Home page (7-section connections-first layout)
-- [x] Deep navy premium theme
-- [x] Monetization UI stubs (wallet, tips, locked content, credits)
+- [x] Home page (7-section connections-first layout with profile modal)
+- [x] Profile modal with Connect/Message/Full Profile actions
+- [x] Verification badges (Crown for founders, Check for verified)
 - [x] All existing features preserved (radio, stories, lounges, auth, etc.)
-- [x] Vercel build compatibility (Suspense boundaries)
-- [x] 100% test pass rate (backend + frontend)
+- [x] 100% test pass rate (iteration_6.json)
 
-## Upcoming Tasks (Pending User Approval)
-- [ ] **P0**: User confirms Home page design
-- [ ] **P1**: Lounge page visual upgrade (same premium style)
-- [ ] **P1**: Profile page visual upgrade
-- [ ] **P1**: Inbox/Messages visual upgrade
-- [ ] **P1**: Search page visual upgrade
-- [ ] **P2**: Real multiplayer games
-- [ ] **P2**: Push notifications
+## Upcoming (Pending User Approval on Home)
+- [ ] Visual upgrade for Lounge, Profile, Inbox, Search pages
+- [ ] Real activity tracking backend for Recent Activity
 
 ## Known Limitations
-- Recent Activity feed uses simulated signals (not real activity tracking)
-- Preview URL unavailable (platform routing issue with forked environment)
-- Games are client-side only (no real-time multiplayer)
+- Recent Activity falls back to simulated online statuses when no notifications exist
+- Users have no avatars in test data (initials with gradient backgrounds used)
+- Preview URL unavailable (platform issue)
