@@ -366,6 +366,7 @@ const HomePage = ({ user, onLogout, setUser }) => {
   const [showOnboarding, setShowOnboarding] = useState(false)
   const [showAfterDarkDisclaimer, setShowAfterDarkDisclaimer] = useState(false)
   const [showLoungeInfo, setShowLoungeInfo] = useState(false)
+  const [events, setEvents] = useState([])
 
   const lockedFeatures = ['radio', 'music', 'afterdark']
 
@@ -374,6 +375,7 @@ const HomePage = ({ user, onLogout, setUser }) => {
     fetchMembers()
     fetchLounges()
     fetchNotifications()
+    fetchEvents()
     const t1 = setTimeout(() => fetchNoticeUnreadCount(), 500)
     const t2 = setTimeout(() => fetchPendingFriendRequests(), 1000)
     const t3 = setTimeout(() => fetchStories(), 1500)
@@ -390,8 +392,19 @@ const HomePage = ({ user, onLogout, setUser }) => {
   }
   const fetchLounges = async () => {
     try {
-      const res = await fetch('/api/lounges')
-      if (res.ok) { const data = await res.json(); setLoungesList(data) }
+      const [regRes, adRes] = await Promise.all([
+        fetch('/api/lounges'),
+        fetch('/api/lounges?afterDark=true')
+      ])
+      const regular = regRes.ok ? await regRes.json() : []
+      const afterDark = adRes.ok ? await adRes.json() : []
+      setLoungesList([...regular, ...afterDark])
+    } catch (err) {}
+  }
+  const fetchEvents = async () => {
+    try {
+      const res = await fetch('/api/events')
+      if (res.ok) { const data = await res.json(); setEvents(data) }
     } catch (err) {}
   }
   const fetchNotifications = async () => {
@@ -664,13 +677,8 @@ const HomePage = ({ user, onLogout, setUser }) => {
       {/* ═══════════ MAIN CONTENT ═══════════ */}
       <main className="relative z-[5] pb-24">
 
-        {/* ─── GREETING ─── */}
-        <div className="px-5 pt-4 pb-2">
-          <h1 className="text-white text-xl font-bold tracking-tight" data-testid="home-greeting">Who catches your eye tonight?</h1>
-        </div>
-
-        {/* ─── HERO: DISCOVER PROFILES (HORIZONTAL SCROLL) ─── */}
-        <section className="mb-4" data-testid="discover-section">
+        {/* ─── 1. DISCOVER (MAIN FOCUS) ─── */}
+        <section className="pt-4 pb-1" data-testid="discover-section">
           <div className="px-5 flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
               <Flame className="w-4 h-4 text-rose-400" />
@@ -680,30 +688,35 @@ const HomePage = ({ user, onLogout, setUser }) => {
               See all <ChevronRight className="w-3.5 h-3.5" />
             </button>
           </div>
-          <div className="flex gap-3 overflow-x-auto px-5 pb-2 scroll-horizontal" data-testid="discover-scroll">
-            {members.slice(0, 10).map((m, idx) => {
+          <div className="flex gap-3 overflow-x-auto px-5 pb-3 scroll-horizontal" data-testid="discover-scroll">
+            {members.slice(0, 12).map((m, idx) => {
               const badge = getBadge(m)
               return (
                 <button key={m.id} onClick={() => router.push(`/profile/${m.id}`)} className="flex-none group" data-testid={`discover-card-${m.id}`}>
-                  <div className="relative w-[155px] h-[210px] rounded-2xl overflow-hidden" style={{ boxShadow: '0 4px 24px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.04)' }}>
+                  <div className="relative w-[170px] h-[240px] rounded-2xl overflow-hidden" style={{ boxShadow: '0 6px 28px rgba(0,0,0,0.55), inset 0 0 0 1px rgba(255,255,255,0.06)' }}>
                     <img src={getPhoto(m, idx)} alt={m.displayName} className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" loading="lazy" />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent" />
-                    {/* Online indicator */}
-                    <div className="absolute top-2.5 right-2.5">
-                      <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 block shadow-lg shadow-emerald-400/50" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/15 to-transparent" />
+                    {/* Online dot */}
+                    <div className="absolute top-3 right-3">
+                      <span className="w-3 h-3 rounded-full bg-emerald-400 block shadow-lg shadow-emerald-400/60 ring-2 ring-black/30" />
                     </div>
                     {/* Badge */}
                     {badge && (
-                      <div className="absolute top-2.5 left-2.5">
-                        <span className={`flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[9px] font-bold ${badge.bg} ${badge.color} backdrop-blur-sm`}>
+                      <div className="absolute top-3 left-3">
+                        <span className={`flex items-center gap-1 px-2 py-0.5 rounded-md text-[9px] font-bold ${badge.bg} ${badge.color} backdrop-blur-md`}>
                           <badge.icon className="w-2.5 h-2.5" /> {badge.label}
                         </span>
                       </div>
                     )}
                     {/* Info */}
-                    <div className="absolute bottom-0 left-0 right-0 p-3">
-                      <p className="text-white text-sm font-bold truncate leading-tight">{m.displayName}</p>
-                      {m.age && <p className="text-white/50 text-[11px]">{m.age}</p>}
+                    <div className="absolute bottom-0 left-0 right-0 p-3.5">
+                      <p className="text-white text-[15px] font-bold truncate leading-tight">{m.displayName}</p>
+                      <div className="flex items-center gap-1.5 mt-1">
+                        {m.age && <span className="text-white/60 text-[11px]">{m.age}</span>}
+                        <span className="text-emerald-400 text-[10px] font-medium flex items-center gap-1">
+                          <span className="w-1 h-1 rounded-full bg-emerald-400" /> Online
+                        </span>
+                      </div>
                     </div>
                   </div>
                 </button>
@@ -715,70 +728,125 @@ const HomePage = ({ user, onLogout, setUser }) => {
           </div>
         </section>
 
-        {/* ─── STORIES ROW ─── */}
-        <section className="mb-4 px-5" data-testid="stories-section">
-          <div className="flex gap-3 overflow-x-auto pb-1 scroll-horizontal">
-            {/* Add Story */}
+        {/* ─── 2. ACTIVE NOW (Stories + Online Strip) ─── */}
+        <section className="px-5 mb-3" data-testid="active-now-section">
+          <div className="flex items-center justify-between mb-2.5">
+            <p className="text-white/40 text-xs font-bold uppercase tracking-wider flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" /> Active Now
+            </p>
+            <span className="text-white/20 text-[10px]">{members.length} online</span>
+          </div>
+          <div className="flex gap-3 overflow-x-auto pb-1 scroll-horizontal" data-testid="stories-section">
             <button onClick={() => setShowAddStory(true)} className="flex-none flex flex-col items-center gap-1.5" data-testid="add-story-btn">
-              <div className="w-16 h-16 rounded-full bg-gradient-to-br from-rose-500/20 to-amber-500/20 border-2 border-dashed border-rose-400/30 flex items-center justify-center hover:border-rose-400/60 transition-colors">
-                <Plus className="w-5 h-5 text-rose-400" />
+              <div className="w-[52px] h-[52px] rounded-full bg-gradient-to-br from-rose-500/15 to-amber-500/15 border-2 border-dashed border-rose-400/25 flex items-center justify-center hover:border-rose-400/50 transition-colors">
+                <Plus className="w-4 h-4 text-rose-400" />
               </div>
-              <span className="text-white/30 text-[10px] font-medium">Add</span>
+              <span className="text-white/25 text-[9px] font-medium">Add</span>
             </button>
             {stories.map((sg) => {
               const hasNew = sg.stories?.some(s => !s.viewedBy?.includes(user.id))
               const storyIdx = members.findIndex(mm => mm.id === sg.userId)
               return (
                 <button key={`st-${sg.userId}`} onClick={() => viewStory(sg)} className="flex-none flex flex-col items-center gap-1.5" data-testid={`story-${sg.userId}`}>
-                  <div className={`w-16 h-16 rounded-full p-[2.5px] ${hasNew ? 'bg-gradient-to-br from-rose-500 via-amber-400 to-rose-500' : 'bg-white/10'}`}>
+                  <div className={`w-[52px] h-[52px] rounded-full p-[2px] ${hasNew ? 'bg-gradient-to-br from-rose-500 via-amber-400 to-rose-500' : 'bg-white/10'}`}>
                     <div className="w-full h-full rounded-full bg-[#0C0E15] p-[1.5px]">
                       <div className="w-full h-full rounded-full overflow-hidden">
                         <img src={getPhoto(sg, storyIdx >= 0 ? storyIdx : 0)} alt="" className="w-full h-full object-cover" />
                       </div>
                     </div>
                   </div>
-                  <span className="text-white/30 text-[10px] font-medium">{sg.userId === user.id ? 'You' : sg.displayName?.split(' ')[0]?.slice(0, 7)}</span>
+                  <span className="text-white/25 text-[9px] font-medium">{sg.userId === user.id ? 'You' : sg.displayName?.split(' ')[0]?.slice(0, 6)}</span>
                 </button>
               )
             })}
+            {/* Show active members as avatar strip if no stories */}
+            {stories.length === 0 && members.slice(0, 8).map((m, mi) => (
+              <button key={`active-${m.id}`} onClick={() => router.push(`/profile/${m.id}`)} className="flex-none flex flex-col items-center gap-1.5">
+                <div className="w-[52px] h-[52px] rounded-full p-[2px] bg-white/8">
+                  <div className="w-full h-full rounded-full overflow-hidden">
+                    <img src={getPhoto(m, mi)} alt="" className="w-full h-full object-cover" />
+                  </div>
+                </div>
+                <span className="text-white/25 text-[9px] font-medium">{m.displayName?.split(' ')[0]?.slice(0, 6)}</span>
+              </button>
+            ))}
           </div>
         </section>
 
-        {/* ─── CONNECTION REQUESTS ─── */}
+        {/* ─── CONNECTION REQUESTS (if any) ─── */}
         {pendingFriendRequests.length > 0 && (
-          <section className="px-5 mb-4" data-testid="connection-requests">
-            <p className="text-white/40 text-xs font-bold uppercase tracking-wider mb-2 flex items-center gap-2"><Heart className="w-3 h-3 text-rose-400" /> Connection Requests</p>
+          <section className="px-5 mb-3" data-testid="connection-requests">
+            <p className="text-white/40 text-xs font-bold uppercase tracking-wider mb-2 flex items-center gap-2"><Heart className="w-3 h-3 text-rose-400" /> Requests</p>
             {pendingFriendRequests.slice(0, 2).map((req, ri) => (
               <div key={req.id || req.fromUserId} className="flex items-center gap-3 p-3 mb-2 rounded-xl" style={{ background: 'linear-gradient(135deg, rgba(244,63,94,0.06), rgba(245,158,11,0.03))', border: '1px solid rgba(244,63,94,0.08)' }} data-testid={`match-${req.fromUserId}`}>
-                <div className="w-12 h-12 rounded-xl overflow-hidden flex-shrink-0">
+                <div className="w-11 h-11 rounded-xl overflow-hidden flex-shrink-0">
                   <img src={req.fromAvatar || STOCK_PHOTOS[(ri + 5) % STOCK_PHOTOS.length]} alt="" className="w-full h-full object-cover" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-white text-sm font-bold truncate">{req.fromName || 'Someone'}</p>
-                  <p className="text-white/30 text-xs">Wants to connect with you</p>
+                  <p className="text-white/30 text-xs">Wants to connect</p>
                 </div>
-                <button onClick={(e) => { e.stopPropagation(); acceptFriendRequest(req.fromUserId); }} className="px-4 py-2 rounded-lg text-xs font-bold bg-rose-500 text-white hover:bg-rose-600 transition-colors shadow-lg shadow-rose-500/20">Accept</button>
+                <button onClick={(e) => { e.stopPropagation(); acceptFriendRequest(req.fromUserId); }} className="px-3.5 py-2 rounded-lg text-xs font-bold bg-rose-500 text-white hover:bg-rose-600 transition-colors shadow-lg shadow-rose-500/20">Accept</button>
               </div>
             ))}
           </section>
         )}
 
-        {/* ─── 2-UP FEATURED PROFILES ─── */}
-        {members.length > 2 && (
-          <section className="px-4 mb-4" data-testid="featured-profiles">
-            <div className="grid grid-cols-2 gap-2.5">
-              {members.slice(0, 2).map((m, i) => {
-                const badge = getBadge(m)
+        {/* ─── 3. RECENT ACTIVITY ─── */}
+        <section className="px-5 mb-3" data-testid="live-feed-section">
+          <p className="text-white/40 text-xs font-bold uppercase tracking-wider mb-2.5 flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-rose-500 animate-pulse" /> Recent Activity
+          </p>
+          <div className="space-y-1.5">
+            {liveFeedItems.map((item, i) => (
+              <button key={item.id} onClick={() => item.userId ? router.push(`/profile/${item.userId}`) : null} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/[0.04] transition-colors group" style={{ background: 'rgba(255,255,255,0.018)', border: '1px solid rgba(255,255,255,0.025)' }} data-testid={`feed-item-${i}`}>
+                <div className="w-9 h-9 rounded-lg overflow-hidden flex-shrink-0 ring-1 ring-white/5">
+                  <img src={item.member ? getPhoto(item.member, item.photoIdx) : STOCK_PHOTOS[item.photoIdx % STOCK_PHOTOS.length]} alt="" className="w-full h-full object-cover" />
+                </div>
+                <div className="flex-1 min-w-0 text-left">
+                  <p className="text-white/60 text-[13px] group-hover:text-white/80 transition-colors truncate">{item.text}</p>
+                  <p className="text-white/15 text-[10px] mt-0.5">{timeAgo(item.time)}</p>
+                </div>
+                <ChevronRight className="w-3.5 h-3.5 text-white/10 flex-shrink-0 group-hover:text-white/20 transition-colors" />
+              </button>
+            ))}
+          </div>
+        </section>
+
+        {/* ─── 4. EVENTS / PROMOTIONS ─── */}
+        {events.length > 0 && (
+          <section className="px-5 mb-3" data-testid="events-section">
+            <div className="flex items-center justify-between mb-2.5">
+              <p className="text-white/40 text-xs font-bold uppercase tracking-wider flex items-center gap-2">
+                <Calendar className="w-3.5 h-3.5 text-amber-400" /> Upcoming
+              </p>
+              <button onClick={() => router.push('/events')} className="flex items-center gap-1 text-amber-400/60 text-xs font-semibold hover:text-amber-400 transition-colors" data-testid="see-all-events">
+                View all <ChevronRight className="w-3.5 h-3.5" />
+              </button>
+            </div>
+            <div className="flex gap-2.5 overflow-x-auto scroll-horizontal pb-1">
+              {events.slice(0, 3).map((evt) => {
+                const evtDate = new Date(evt.date)
+                const dayName = evtDate.toLocaleDateString('en', { weekday: 'short' })
+                const dayNum = evtDate.getDate()
+                const month = evtDate.toLocaleDateString('en', { month: 'short' })
                 return (
-                  <button key={`feat-${m.id}`} onClick={() => router.push(`/profile/${m.id}`)} className="relative rounded-2xl overflow-hidden group" style={{ aspectRatio: '3/4', boxShadow: '0 4px 20px rgba(0,0,0,0.4)' }} data-testid={`featured-card-${m.id}`}>
-                    <img src={getPhoto(m, i)} alt={m.displayName} className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" loading="lazy" />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/5 to-transparent" />
-                    <div className="absolute top-2.5 right-2.5"><span className="w-2.5 h-2.5 rounded-full bg-emerald-400 block shadow-lg shadow-emerald-400/50" /></div>
-                    {badge && <div className="absolute top-2.5 left-2.5"><span className={`flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[9px] font-bold ${badge.bg} ${badge.color} backdrop-blur-sm`}><badge.icon className="w-2.5 h-2.5" /> {badge.label}</span></div>}
-                    <div className="absolute bottom-0 left-0 right-0 p-3">
-                      <p className="text-white text-base font-bold truncate">{m.displayName}</p>
-                      <div className="flex items-center gap-1.5 mt-0.5">
-                        <span className="text-white/50 text-[11px]">Online</span>
+                  <button key={evt.id} onClick={() => router.push('/events')} className="flex-none w-[220px] rounded-2xl overflow-hidden text-left group hover:translate-y-[-1px] transition-all duration-200 relative" style={{ background: 'linear-gradient(145deg, #16141E, #11101A)', border: '1px solid rgba(245,158,11,0.08)', boxShadow: '0 4px 16px rgba(245,158,11,0.04)' }} data-testid={`event-card-${evt.id}`}>
+                    <div className="absolute top-0 left-0 right-0 h-[2px]" style={{ background: 'linear-gradient(90deg, rgba(245,158,11,0.5), transparent 60%)' }} />
+                    <div className="p-3.5 relative z-10">
+                      <div className="flex items-start gap-3 mb-2">
+                        <div className="w-11 h-11 rounded-xl flex flex-col items-center justify-center flex-shrink-0" style={{ background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.12)' }}>
+                          <span className="text-amber-400 text-[10px] font-bold leading-none">{dayName}</span>
+                          <span className="text-white text-sm font-bold leading-tight">{dayNum}</span>
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <h4 className="text-white text-[13px] font-bold truncate">{evt.title}</h4>
+                          <p className="text-white/25 text-[11px] mt-0.5 truncate">{evt.description}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-white/15 text-[10px]">{month} {dayNum}</span>
+                        <span className="px-2.5 py-1 rounded-md text-[9px] font-bold bg-amber-400/10 text-amber-400 border border-amber-400/15 group-hover:bg-amber-400/15 transition-colors">View</span>
                       </div>
                     </div>
                   </button>
@@ -788,81 +856,9 @@ const HomePage = ({ user, onLogout, setUser }) => {
           </section>
         )}
 
-        {/* ─── LIVE FEED ─── */}
-        <section className="px-5 mb-4" data-testid="live-feed-section">
-          <p className="text-white/40 text-xs font-bold uppercase tracking-wider mb-3 flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-rose-500 animate-pulse" /> Happening Now
-          </p>
-          <div className="space-y-2">
-            {liveFeedItems.map((item, i) => (
-              <button key={item.id} onClick={() => item.userId ? router.push(`/profile/${item.userId}`) : null} className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-white/[0.03] transition-colors group" style={{ background: 'rgba(255,255,255,0.015)', border: '1px solid rgba(255,255,255,0.03)' }} data-testid={`feed-item-${i}`}>
-                <div className="w-10 h-10 rounded-xl overflow-hidden flex-shrink-0 ring-1 ring-white/5">
-                  <img src={item.member ? getPhoto(item.member, item.photoIdx) : STOCK_PHOTOS[item.photoIdx % STOCK_PHOTOS.length]} alt="" className="w-full h-full object-cover" />
-                </div>
-                <div className="flex-1 min-w-0 text-left">
-                  <p className="text-white/70 text-sm group-hover:text-white/90 transition-colors truncate">{item.text}</p>
-                  <p className="text-white/20 text-[10px] mt-0.5">{timeAgo(item.time)}</p>
-                </div>
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400/60 flex-shrink-0" />
-              </button>
-            ))}
-          </div>
-        </section>
-
-        {/* ─── AFTER DARK (Unified Lounge Card) ─── */}
-        <section className="px-4 mb-4">
-          <button onClick={() => handleTileClick('afterdark', '/afterdark')} className="relative w-full rounded-2xl overflow-hidden group" data-testid="featured-lounge">
-            <div className="absolute inset-0" style={{ background: 'linear-gradient(145deg, #18140D, #110F0B)' }} />
-            <div className="absolute top-0 left-0 right-0 h-[2px]" style={{ background: 'linear-gradient(90deg, rgba(212,165,74,0.6), transparent 60%)' }} />
-            <div className="absolute top-0 right-0 w-36 h-28 rounded-full blur-[60px]" style={{ background: 'rgba(212,165,74,0.06)' }} />
-            <div className="relative p-4 z-10">
-              <div className="flex items-center justify-between mb-2">
-                <h3 className="text-white font-bold text-[15px] flex items-center gap-2">
-                  <Sparkles className="w-3.5 h-3.5 text-amber-400" /> After Dark
-                </h3>
-                <span className="flex items-center gap-1.5">
-                  <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse shadow-lg shadow-amber-400/40" />
-                  <span className="text-amber-400 text-[10px] font-bold tracking-wider">LIVE</span>
-                </span>
-              </div>
-              <p className="text-white/35 text-xs leading-relaxed mb-3">Anonymous and unfiltered. Step in if you're ready</p>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-1.5">
-                  <Users className="w-3.5 h-3.5 text-white/15" strokeWidth={1.5} />
-                  <span className="text-white/30 text-xs font-medium">{loungesList.reduce((s, l) => s + (l.memberCount || 0), 0)} people inside</span>
-                </div>
-                <span className="px-3 py-1.5 rounded-lg text-[11px] font-bold bg-amber-400/10 text-amber-400 border border-amber-400/20 group-hover:bg-amber-400/15 transition-colors">Enter</span>
-              </div>
-            </div>
-          </button>
-        </section>
-
-        {/* ─── MORE PROFILES (2-UP GRID) ─── */}
-        {members.length > 4 && (
-          <section className="px-4 mb-4" data-testid="more-profiles">
-            <div className="grid grid-cols-2 gap-2.5">
-              {members.slice(2, 4).map((m, i) => {
-                const badge = getBadge(m)
-                return (
-                  <button key={`more-${m.id}`} onClick={() => router.push(`/profile/${m.id}`)} className="relative rounded-2xl overflow-hidden group" style={{ aspectRatio: '3/4', boxShadow: '0 4px 20px rgba(0,0,0,0.4)' }} data-testid={`discover-card-${m.id}`}>
-                    <img src={getPhoto(m, i + 2)} alt={m.displayName} className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" loading="lazy" />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/5 to-transparent" />
-                    <div className="absolute top-2.5 right-2.5"><span className="w-2.5 h-2.5 rounded-full bg-emerald-400 block shadow-lg shadow-emerald-400/50" /></div>
-                    {badge && <div className="absolute top-2.5 left-2.5"><span className={`flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[9px] font-bold ${badge.bg} ${badge.color} backdrop-blur-sm`}><badge.icon className="w-2.5 h-2.5" /> {badge.label}</span></div>}
-                    <div className="absolute bottom-0 left-0 right-0 p-3">
-                      <p className="text-white text-base font-bold truncate">{m.displayName}</p>
-                      <div className="flex items-center gap-1.5 mt-0.5"><span className="text-white/50 text-[11px]">Online</span></div>
-                    </div>
-                  </button>
-                )
-              })}
-            </div>
-          </section>
-        )}
-
-        {/* ─── ACTIVE LOUNGES (Unified Cards) ─── */}
-        <section className="mb-4" data-testid="active-lounges-section">
-          <div className="px-5 flex items-center justify-between mb-3">
+        {/* ─── 5. LOUNGES (Unified Cards) ─── */}
+        <section className="mb-3" data-testid="active-lounges-section">
+          <div className="px-5 flex items-center justify-between mb-2.5">
             <div className="flex items-center gap-2">
               <Sofa className="w-4 h-4 text-indigo-400" />
               <h2 className="text-white/90 text-sm font-bold uppercase tracking-wider">Lounges</h2>
@@ -871,86 +867,79 @@ const HomePage = ({ user, onLogout, setUser }) => {
               See all <ChevronRight className="w-3.5 h-3.5" />
             </button>
           </div>
-          <div className="flex gap-3 overflow-x-auto px-5 pb-2 scroll-horizontal">
-            {loungesList.slice(0, 6).map((l) => {
-              const theme = getLoungeTheme(l)
-              const count = l.memberCount || l.members?.length || 0
-              return (
-                <button key={l.id} onClick={() => router.push(`/lounge?id=${l.id}`)} className="flex-none w-[200px] rounded-2xl overflow-hidden text-left group hover:translate-y-[-2px] transition-all duration-200 relative" style={{ background: `linear-gradient(145deg, ${theme.bgFrom}, ${theme.bgTo})`, border: `1px solid ${theme.accent}12`, boxShadow: `0 4px 20px ${theme.glow}` }} data-testid={`home-lounge-${l.id}`}>
-                  <div className="absolute top-0 left-0 right-0 h-[2px]" style={{ background: `linear-gradient(90deg, ${theme.accent}80, transparent 60%)` }} />
-                  <div className="absolute top-0 right-0 w-24 h-20 rounded-full blur-[40px]" style={{ background: theme.glow }} />
-                  <div className="relative p-3.5 z-10">
-                    <div className="flex items-center justify-between mb-1.5">
-                      <h3 className="text-white font-bold text-[13px] truncate flex-1 mr-2">{l.name}</h3>
-                      {count > 0 && (
-                        <span className="flex items-center gap-1 shrink-0">
-                          <span className="w-1.5 h-1.5 rounded-full animate-pulse shadow-lg" style={{ background: theme.accent, boxShadow: `0 0 6px ${theme.accent}60` }} />
-                          <span className="text-[9px] font-bold tracking-wider" style={{ color: theme.accent }}>LIVE</span>
-                        </span>
-                      )}
-                    </div>
-                    <p className="text-white/25 text-[11px] leading-relaxed mb-2.5 line-clamp-1">{theme.label}</p>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-1">
-                        <Users className="w-3 h-3 text-white/15" strokeWidth={1.5} />
-                        <span className="text-white/25 text-[10px]">{count} inside</span>
-                      </div>
-                      <span className="px-2 py-1 rounded-md text-[9px] font-bold transition-colors" style={{ background: `${theme.accent}10`, color: theme.accent, border: `1px solid ${theme.accent}18` }}>Enter</span>
-                    </div>
-                  </div>
-                </button>
-              )
-            })}
-          </div>
-        </section>
+          <div className="space-y-2 px-4">
+            {/* Featured 4 lounges: Main/LowKey, After Dark, Kink, VIP */}
+            {(() => {
+              const featured = ['main', 'after-dark', 'kink', 'vip']
+              const featuredLounges = featured.map(key => {
+                if (key === 'after-dark') {
+                  const dbLounge = loungesList.find(l => l.name?.toLowerCase().includes('after dark'))
+                  return dbLounge || { id: 'after-dark', name: 'After Dark', memberCount: 31, description: 'Anonymous and unfiltered. Step in if you\'re ready', _isAfterDark: true }
+                }
+                return loungesList.find(l => {
+                  const n = l.name?.toLowerCase() || ''
+                  if (key === 'main') return n.includes('main') || n.includes('lowkey')
+                  if (key === 'kink') return n.includes('kink')
+                  if (key === 'vip') return n.includes('vip')
+                  return false
+                })
+              }).filter(Boolean)
 
-        {/* ─── EVEN MORE PROFILES ─── */}
-        {members.length > 6 && (
-          <section className="px-4 mb-4" data-testid="discover-grid-extra">
-            <div className="grid grid-cols-2 gap-2.5">
-              {members.slice(4, 6).map((m, i) => {
-                const badge = getBadge(m)
+              return featuredLounges.map((l) => {
+                const theme = getLoungeTheme(l)
+                const count = l.memberCount || l.members?.length || 0
+                const isAfterDark = l._isAfterDark || l.name?.toLowerCase().includes('after dark')
+                const handleClick = () => {
+                  if (isAfterDark) { handleTileClick('afterdark', '/afterdark') }
+                  else { router.push(`/lounge?id=${l.id}`) }
+                }
                 return (
-                  <button key={`extra-${m.id}`} onClick={() => router.push(`/profile/${m.id}`)} className="relative rounded-2xl overflow-hidden group" style={{ aspectRatio: '3/4', boxShadow: '0 4px 20px rgba(0,0,0,0.4)' }} data-testid={`discover-card-${m.id}`}>
-                    <img src={getPhoto(m, i + 4)} alt={m.displayName} className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" loading="lazy" />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/5 to-transparent" />
-                    <div className="absolute top-2.5 right-2.5"><span className="w-2.5 h-2.5 rounded-full bg-emerald-400 block shadow-lg shadow-emerald-400/50" /></div>
-                    {badge && <div className="absolute top-2.5 left-2.5"><span className={`flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[9px] font-bold ${badge.bg} ${badge.color} backdrop-blur-sm`}><badge.icon className="w-2.5 h-2.5" /> {badge.label}</span></div>}
-                    <div className="absolute bottom-0 left-0 right-0 p-3">
-                      <p className="text-white text-base font-bold truncate">{m.displayName}</p>
-                      <div className="flex items-center gap-1.5 mt-0.5"><span className="text-white/50 text-[11px]">Online</span></div>
+                  <button key={l.id} onClick={handleClick} className="w-full rounded-2xl overflow-hidden text-left group hover:translate-y-[-1px] transition-all duration-200 relative" style={{ background: `linear-gradient(145deg, ${theme.bgFrom}, ${theme.bgTo})`, border: `1px solid ${theme.accent}12`, boxShadow: `0 4px 20px ${theme.glow}` }} data-testid={`home-lounge-${l.id}`}>
+                    <div className="absolute top-0 left-0 right-0 h-[2px]" style={{ background: `linear-gradient(90deg, ${theme.accent}80, transparent 60%)` }} />
+                    <div className="absolute top-0 right-0 w-28 h-20 rounded-full blur-[40px]" style={{ background: theme.glow }} />
+                    <div className="relative p-3.5 z-10">
+                      <div className="flex items-center justify-between mb-1.5">
+                        <h3 className="text-white font-bold text-[14px] truncate flex-1 mr-3">{l.name}</h3>
+                        {count > 0 && (
+                          <span className="flex items-center gap-1.5 shrink-0">
+                            <span className="w-2 h-2 rounded-full animate-pulse shadow-lg" style={{ background: theme.accent, boxShadow: `0 0 8px ${theme.accent}60` }} />
+                            <span className="text-[10px] font-bold tracking-wider" style={{ color: theme.accent }}>LIVE</span>
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-white/30 text-[12px] leading-relaxed mb-2.5">{l.description || theme.label}</p>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-1.5">
+                          <Users className="w-3.5 h-3.5 text-white/15" strokeWidth={1.5} />
+                          <span className="text-white/25 text-[11px] font-medium">{count} {count === 1 ? 'person' : 'people'} inside</span>
+                        </div>
+                        <span className="px-3 py-1.5 rounded-lg text-[10px] font-bold group-hover:brightness-125 transition-all" style={{ background: `${theme.accent}12`, color: theme.accent, border: `1px solid ${theme.accent}20` }}>Enter</span>
+                      </div>
                     </div>
                   </button>
                 )
-              })}
-            </div>
-          </section>
-        )}
-
-        {/* ─── QUICK ACCESS ROW ─── */}
-        <section className="px-4 mb-4 flex gap-2" data-testid="quick-access">
-          <button onClick={() => handleTileClick('radio', '/radio')} className="flex-1 flex items-center gap-2.5 py-3 px-4 rounded-xl hover:bg-white/5 transition-colors" style={{ background: 'rgba(244,63,94,0.05)', border: '1px solid rgba(244,63,94,0.08)' }} data-testid="home-radio-btn">
-            <Radio className="w-4 h-4 text-rose-400/60" />
-            <span className="text-white/60 text-sm font-medium">Radio</span>
-          </button>
-          <button onClick={() => handleTileClick('games', '/games')} className="flex-1 flex items-center gap-2.5 py-3 px-4 rounded-xl hover:bg-white/5 transition-colors" style={{ background: 'rgba(34,197,94,0.05)', border: '1px solid rgba(34,197,94,0.08)' }} data-testid="quick-games">
-            <Gamepad2 className="w-4 h-4 text-emerald-400/60" />
-            <span className="text-white/60 text-sm font-medium">Games</span>
-          </button>
-          <button onClick={() => router.push('/inbox')} className="flex-1 flex items-center gap-2.5 py-3 px-4 rounded-xl hover:bg-white/5 transition-colors" style={{ background: 'rgba(99,102,241,0.05)', border: '1px solid rgba(99,102,241,0.08)' }} data-testid="quick-inbox">
-            <MessageSquare className="w-4 h-4 text-indigo-400/60" />
-            <span className="text-white/60 text-sm font-medium">Inbox</span>
-          </button>
+              })
+            })()}
+          </div>
         </section>
 
-        {/* ─── WALLET CTA ─── */}
-        <div className="px-5 pb-2" data-testid="monetisation-section">
-          <button onClick={() => router.push('/wallet')} className="flex items-center gap-2 text-sm" data-testid="home-wallet-btn">
-            <Wallet className="w-3.5 h-3.5 text-amber-400/50" />
-            <span className="text-white/25">{user.credits || 0} credits</span>
-            <span className="text-amber-400/40 text-xs font-medium">Top up</span>
-          </button>
-        </div>
+        {/* ─── QUICK ACTIONS ─── */}
+        <section className="px-4 mb-3" data-testid="quick-access">
+          <div className="grid grid-cols-3 gap-2">
+            <button onClick={() => handleTileClick('radio', '/radio')} className="flex flex-col items-center gap-1.5 py-3 rounded-xl hover:bg-white/[0.04] transition-colors" style={{ background: 'rgba(244,63,94,0.04)', border: '1px solid rgba(244,63,94,0.06)' }} data-testid="home-radio-btn">
+              <Radio className="w-4 h-4 text-rose-400/50" />
+              <span className="text-white/40 text-[11px] font-medium">Radio</span>
+            </button>
+            <button onClick={() => handleTileClick('games', '/games')} className="flex flex-col items-center gap-1.5 py-3 rounded-xl hover:bg-white/[0.04] transition-colors" style={{ background: 'rgba(34,197,94,0.04)', border: '1px solid rgba(34,197,94,0.06)' }} data-testid="quick-games">
+              <Gamepad2 className="w-4 h-4 text-emerald-400/50" />
+              <span className="text-white/40 text-[11px] font-medium">Games</span>
+            </button>
+            <button onClick={() => router.push('/inbox')} className="flex flex-col items-center gap-1.5 py-3 rounded-xl hover:bg-white/[0.04] transition-colors" style={{ background: 'rgba(99,102,241,0.04)', border: '1px solid rgba(99,102,241,0.06)' }} data-testid="quick-inbox">
+              <MessageSquare className="w-4 h-4 text-indigo-400/50" />
+              <span className="text-white/40 text-[11px] font-medium">Inbox</span>
+            </button>
+          </div>
+        </section>
 
       </main>
 
