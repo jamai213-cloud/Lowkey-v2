@@ -2,19 +2,19 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter, useParams } from 'next/navigation'
-import { ArrowLeft, Crown, Check, Heart, MessageSquare, UserPlus, Users, Lock, Image as ImageIcon, Sparkles } from 'lucide-react'
+import { ArrowLeft, Crown, CheckCircle, Heart, MessageSquare, UserPlus, Users, Lock, Image as ImageIcon, Sparkles, MapPin, Share2 } from 'lucide-react'
 
 const STOCK_PHOTOS = [
-  'https://images.unsplash.com/photo-1758598497192-15ffa411c3de?w=600&h=800&fit=crop&crop=face',
-  'https://images.unsplash.com/photo-1576099374988-92c106eab519?w=600&h=800&fit=crop&crop=face',
-  'https://images.unsplash.com/photo-1758598302784-42d00ce2ba8f?w=600&h=800&fit=crop&crop=face',
-  'https://images.unsplash.com/photo-1548544507-7de0e7a931d6?w=600&h=800&fit=crop&crop=face',
-  'https://images.pexels.com/photos/3474629/pexels-photo-3474629.jpeg?auto=compress&w=600&h=800&fit=crop',
+  'https://images.unsplash.com/photo-1636406269177-4827c00bb263?w=600&h=800&fit=crop&crop=face',
+  'https://images.pexels.com/photos/18838688/pexels-photo-18838688.jpeg?auto=compress&w=600&h=800&fit=crop',
+  'https://images.unsplash.com/photo-1512503868941-bd9fa9c6b569?w=600&h=800&fit=crop&crop=face',
+  'https://images.pexels.com/photos/16495772/pexels-photo-16495772.jpeg?auto=compress&w=600&h=800&fit=crop',
+  'https://images.unsplash.com/photo-1737091956854-d39f0655389b?w=600&h=800&fit=crop&crop=face',
+  'https://images.unsplash.com/photo-1534664393936-5220914620f0?w=600&h=800&fit=crop&crop=face',
   'https://images.unsplash.com/photo-1572852781348-4634bb3225bd?w=600&h=800&fit=crop&crop=face',
-  'https://images.pexels.com/photos/29690107/pexels-photo-29690107.jpeg?auto=compress&w=600&h=800&fit=crop',
   'https://images.unsplash.com/photo-1589723710704-3d64c57ae972?w=600&h=800&fit=crop&crop=face',
-  'https://images.unsplash.com/photo-1758598497190-f609ecba227b?w=600&h=800&fit=crop&crop=face',
-  'https://images.unsplash.com/photo-1658909835269-e76abd3ffb5d?w=600&h=800&fit=crop&crop=face',
+  'https://images.unsplash.com/photo-1585807145425-793be610875c?w=600&h=800&fit=crop&crop=face',
+  'https://images.unsplash.com/photo-1672794444732-e007954a177c?w=600&h=800&fit=crop&crop=face',
 ]
 
 export default function UserProfilePage() {
@@ -25,6 +25,7 @@ export default function UserProfilePage() {
   const [loading, setLoading] = useState(true)
   const [currentUser, setCurrentUser] = useState(null)
   const [photoIndex, setPhotoIndex] = useState(0)
+  const [requestSent, setRequestSent] = useState(false)
 
   useEffect(() => {
     const stored = localStorage.getItem('lowkey_user')
@@ -71,12 +72,13 @@ export default function UserProfilePage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId: currentUser.id, friendId: userId })
       })
+      setRequestSent(true)
     } catch (err) {}
   }
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ background: '#0E1117' }}>
+      <div className="min-h-screen flex items-center justify-center" style={{ background: '#0C0E15' }}>
         <div className="w-8 h-8 border-2 border-rose-500/30 border-t-rose-500 rounded-full animate-spin" />
       </div>
     )
@@ -84,9 +86,9 @@ export default function UserProfilePage() {
 
   if (!profile) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center gap-4" style={{ background: '#0E1117' }}>
+      <div className="min-h-screen flex flex-col items-center justify-center gap-4" style={{ background: '#0C0E15' }}>
         <p className="text-white/50">Profile not found</p>
-        <button onClick={() => router.back()} className="text-rose-400 text-sm font-semibold">Go back</button>
+        <button onClick={() => router.back()} className="text-rose-400 text-sm font-bold hover:text-rose-300 transition-colors" data-testid="profile-go-back">Go back</button>
       </div>
     )
   }
@@ -94,34 +96,41 @@ export default function UserProfilePage() {
   const isFounder = profile.isFounder || profile.role === 'founder'
 
   return (
-    <div className="min-h-screen" style={{ background: '#0E1117' }} data-testid="user-profile-page">
+    <div className="min-h-screen" style={{ background: '#0C0E15' }} data-testid="user-profile-page">
       {/* Hero Photo */}
       <div className="relative" style={{ height: '55vh' }}>
         <img src={getPhoto()} alt={profile.displayName} className="absolute inset-0 w-full h-full object-cover" />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#0E1117] via-transparent to-black/20" />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#0C0E15] via-transparent to-black/20" />
 
-        <button onClick={() => router.back()} className="absolute top-12 left-4 w-10 h-10 rounded-xl bg-black/30 backdrop-blur-md flex items-center justify-center" data-testid="profile-back-btn">
+        {/* Back button */}
+        <button onClick={() => router.back()} className="absolute top-12 left-4 w-10 h-10 rounded-xl bg-black/30 backdrop-blur-md flex items-center justify-center hover:bg-black/50 transition-colors" data-testid="profile-back-btn">
           <ArrowLeft className="w-5 h-5 text-white" />
         </button>
 
+        {/* Share button */}
+        <button className="absolute top-12 right-4 w-10 h-10 rounded-xl bg-black/30 backdrop-blur-md flex items-center justify-center hover:bg-black/50 transition-colors" data-testid="profile-share-btn">
+          <Share2 className="w-4 h-4 text-white" />
+        </button>
+
+        {/* Profile info overlay */}
         <div className="absolute bottom-6 left-5 right-5">
           <div className="flex items-center gap-2.5 mb-1">
             <h1 className="text-white text-3xl font-bold">{profile.displayName}</h1>
             {profile.age && <span className="text-white/60 text-2xl font-light">{profile.age}</span>}
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 flex-wrap">
             {isFounder && (
-              <span className="flex items-center gap-1 px-2 py-0.5 rounded-md bg-amber-500/15 text-amber-400 text-xs font-bold">
+              <span className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-amber-500/15 text-amber-400 text-xs font-bold border border-amber-500/20">
                 <Crown className="w-3 h-3" /> Founder
               </span>
             )}
             {profile.verified && !isFounder && (
-              <span className="flex items-center gap-1 px-2 py-0.5 rounded-md bg-emerald-500/15 text-emerald-400 text-xs font-bold">
-                <Check className="w-3 h-3" /> Verified
+              <span className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-500/15 text-emerald-400 text-xs font-bold border border-emerald-500/20">
+                <CheckCircle className="w-3 h-3" /> Verified
               </span>
             )}
-            <span className="flex items-center gap-1.5 text-emerald-400 text-xs">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" /> Online
+            <span className="flex items-center gap-1.5 text-emerald-400 text-xs font-medium">
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shadow-lg shadow-emerald-400/50" /> Online
             </span>
           </div>
         </div>
@@ -132,16 +141,21 @@ export default function UserProfilePage() {
         {/* Actions */}
         <div className="flex gap-3 mb-6">
           {currentUser && userId !== currentUser.id && !isFriend && (
-            <button onClick={sendFriendRequest} className="flex-1 flex items-center justify-center gap-2 py-3.5 rounded-xl font-bold text-sm bg-rose-500 text-white hover:bg-rose-500/80 transition-colors" data-testid="connect-btn">
-              <UserPlus className="w-4 h-4" /> Connect
+            <button
+              onClick={sendFriendRequest}
+              disabled={requestSent}
+              className={`flex-1 flex items-center justify-center gap-2 py-3.5 rounded-xl font-bold text-sm transition-all ${requestSent ? 'bg-white/5 text-white/30' : 'bg-rose-500 text-white hover:bg-rose-600 shadow-lg shadow-rose-500/25'}`}
+              data-testid="connect-btn"
+            >
+              <UserPlus className="w-4 h-4" /> {requestSent ? 'Request Sent' : 'Connect'}
             </button>
           )}
           {isFriend && (
-            <button onClick={() => router.push(`/inbox?dm=${userId}`)} className="flex-1 flex items-center justify-center gap-2 py-3.5 rounded-xl font-bold text-sm bg-indigo-500 text-white hover:bg-indigo-500/80 transition-colors" data-testid="message-btn">
+            <button onClick={() => router.push(`/inbox?dm=${userId}`)} className="flex-1 flex items-center justify-center gap-2 py-3.5 rounded-xl font-bold text-sm bg-indigo-500 text-white hover:bg-indigo-600 transition-colors shadow-lg shadow-indigo-500/25" data-testid="message-btn">
               <MessageSquare className="w-4 h-4" /> Message
             </button>
           )}
-          <button className="flex items-center justify-center gap-2 py-3.5 px-5 rounded-xl font-medium text-sm bg-white/5 text-white/50 hover:bg-white/10 transition-colors">
+          <button className="flex items-center justify-center gap-2 py-3.5 px-5 rounded-xl font-medium text-sm bg-white/5 text-white/50 hover:bg-white/10 transition-colors border border-white/5">
             <Heart className="w-4 h-4" /> Like
           </button>
         </div>
@@ -156,12 +170,12 @@ export default function UserProfilePage() {
 
         {/* Stats */}
         <div className="flex gap-3 mb-6">
-          <div className="flex-1 py-4 rounded-xl text-center" style={{ background: '#161B24' }}>
+          <div className="flex-1 py-4 rounded-xl text-center" style={{ background: '#14171F', border: '1px solid rgba(255,255,255,0.04)' }}>
             <p className="text-white text-lg font-bold">{profile.friends?.length || 0}</p>
             <p className="text-white/30 text-xs mt-0.5">Connections</p>
           </div>
-          <div className="flex-1 py-4 rounded-xl text-center" style={{ background: '#161B24' }}>
-            <p className="text-white text-lg font-bold">{profile.gallery?.length || 0}</p>
+          <div className="flex-1 py-4 rounded-xl text-center" style={{ background: '#14171F', border: '1px solid rgba(255,255,255,0.04)' }}>
+            <p className="text-white text-lg font-bold">{profile.galleryCount || profile.gallery?.length || 0}</p>
             <p className="text-white/30 text-xs mt-0.5">Photos</p>
           </div>
         </div>
