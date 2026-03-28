@@ -1563,14 +1563,14 @@ async function handleRoute(request, { params }) {
       }
       
       // Create friend request
-      const request = {
+      const friendReq = {
         id: uuidv4(),
         fromUserId: userId,
         toUserId: friendId,
         status: 'pending',
         createdAt: new Date()
       }
-      await db.collection('friend_requests').insertOne(request)
+      await db.collection('friend_requests').insertOne(friendReq)
       
       // Create notification for the recipient
       await db.collection('notifications').insertOne({
@@ -1617,18 +1617,18 @@ async function handleRoute(request, { params }) {
       const { userId, friendId } = body
       
       // Find and update the request
-      const request = await db.collection('friend_requests').findOne({
+      const friendReq = await db.collection('friend_requests').findOne({
         fromUserId: friendId,
         toUserId: userId,
         status: 'pending'
       })
       
-      if (!request) {
+      if (!friendReq) {
         return handleCORS(NextResponse.json({ error: 'Request not found' }, { status: 404 }))
       }
       
       // Update request status
-      await db.collection('friend_requests').updateOne({ id: request.id }, { $set: { status: 'accepted' } })
+      await db.collection('friend_requests').updateOne({ id: friendReq.id }, { $set: { status: 'accepted' } })
       
       // Add each other as friends
       await db.collection('users').updateOne({ id: userId }, { $addToSet: { friends: friendId } })
@@ -1691,6 +1691,54 @@ async function handleRoute(request, { params }) {
     }
 
     // ==================== CONVERSATIONS & MESSAGES ====================
+    
+    // === INBOX ROUTES (used by /inbox page) ===
+    if (route === '/inbox' && method === 'GET') {
+      const url = new URL(request.url)
+      const userId = url.searchParams.get('userId')
+      if (!userId) return handleCORS(NextResponse.json({ error: 'userId required' }, { status: 400 }))
+      const convos = await db.collection('conversations').find({ participants: userId }).sort({ updatedAt: -1 }).toArray()
+      const enriched = await Promise.all(convos.map(async (c) => {
+        const otherId = c.participants.find(p => p !== userId)
+        const other = await db.collection('users').findOne({ id: otherId })
+        const unread = await db.collection('messages').countDocuments({ conversationId: c.id, senderId: { $ne: userId }, read: false })
+        return {
+          id: c.id,
+          displayName: other?.displayName || 'Unknown',
+          avatar: other?.avatar || other?.profilePicture || null,
+          lastMessage: c.lastMessage?.content || null,
+          lastMessageAt: c.lastMessage?.createdAt || c.updatedAt,
+          unreadCount: unread,
+          otherUserId: otherId
+        }
+      }))
+      return handleCORS(NextResponse.json(enriched))
+    }
+
+    if (route.match(/^\/inbox\/[^/]+\/messages$/) && method === 'GET') {
+      const convoId = path[1]
+      const msgs = await db.collection('messages').find({ conversationId: convoId }).sort({ createdAt: 1 }).toArray()
+      return handleCORS(NextResponse.json(msgs.map(m => ({
+        id: m.id,
+        userId: m.senderId,
+        content: m.content,
+        createdAt: m.createdAt,
+        read: m.read
+      }))))
+    }
+
+    if (route.match(/^\/inbox\/[^/]+\/messages$/) && method === 'POST') {
+      const convoId = path[1]
+      const body = await safeParseJson(request)
+      const { userId: senderId, content } = body
+      if (!senderId || !content) return handleCORS(NextResponse.json({ error: 'userId and content required' }, { status: 400 }))
+      const msg = { id: uuidv4(), conversationId: convoId, senderId, content, createdAt: new Date(), read: false }
+      await db.collection('messages').insertOne(msg)
+      await db.collection('conversations').updateOne({ id: convoId }, { $set: { lastMessage: { content, senderId, createdAt: msg.createdAt }, updatedAt: new Date() } })
+      return handleCORS(NextResponse.json({ id: msg.id, userId: senderId, content, createdAt: msg.createdAt }))
+    }
+
+    // === CONVERSATIONS ROUTES (legacy) ===
     if (route.match(/^\/conversations\/[^/]+$/) && method === 'GET') {
       const userId = path[1]
       const convos = await db.collection('conversations').find({ participants: userId }).sort({ updatedAt: -1 }).toArray()
@@ -1983,6 +2031,21 @@ async function handleRoute(request, { params }) {
     if (route === '/lounges' && method === 'GET') {
       const url = new URL(request.url)
       const afterDark = url.searchParams.get('afterDark') === 'true'
+
+      // Auto-seed required lounges if missing
+      const requiredLounges = [
+        { id: 'lowkey-lounge', name: 'LowKey Lounge', description: 'Where everyone starts. Real people, real energy.', isAfterDark: false, memberCount: 42 },
+        { id: 'after-dark', name: 'After Dark', description: 'No names. No limits. Just energy.', isAfterDark: true, memberCount: 31 },
+        { id: 'kink-lounge', name: 'Kink Lounge', description: 'Push boundaries. Find your people.', isAfterDark: false, memberCount: 18 },
+        { id: 'vip-lounge', name: 'VIP Lounge', description: 'Private access. Elevated connections.', isAfterDark: false, memberCount: 7 },
+      ]
+      for (const rl of requiredLounges) {
+        const exists = await db.collection('lounges').findOne({ $or: [{ id: rl.id }, { name: rl.name }] })
+        if (!exists) {
+          await db.collection('lounges').insertOne({ ...rl, theme: rl.id, members: [], createdAt: new Date() })
+        }
+      }
+
       const query = afterDark ? { isAfterDark: true } : { isAfterDark: { $ne: true } }
       const lounges = await db.collection('lounges').find(query).sort({ createdAt: -1 }).toArray()
       return handleCORS(NextResponse.json(lounges.map(cleanMongoDoc)))

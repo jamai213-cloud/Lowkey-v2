@@ -24,8 +24,39 @@ function InboxContent() {
     }
     const userData = JSON.parse(storedUser)
     setUser(userData)
-    fetchConversations(userData.id)
+    fetchConversations(userData.id).then(() => {
+      // Auto-open DM if ?dm=userId is present
+      const dmUserId = searchParams.get('dm')
+      if (dmUserId && userData) {
+        openOrCreateDm(userData.id, dmUserId)
+      }
+    })
   }, [])
+
+  const openOrCreateDm = async (myId, otherId) => {
+    try {
+      // Try to find existing conversation or create new one
+      const res = await fetch('/api/conversations', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ participants: [myId, otherId] })
+      })
+      if (res.ok) {
+        const convo = await res.json()
+        // Get the other user info
+        const userRes = await fetch(`/api/profile/${otherId}`)
+        const otherUser = userRes.ok ? await userRes.json() : {}
+        setSelectedConvo({
+          id: convo.id,
+          displayName: otherUser.displayName || 'User',
+          avatar: otherUser.avatar || otherUser.profilePicture || null,
+          otherUserId: otherId
+        })
+      }
+    } catch (err) {
+      console.error('Failed to open DM')
+    }
+  }
 
   useEffect(() => {
     if (selectedConvo && user) {
