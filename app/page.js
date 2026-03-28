@@ -1517,67 +1517,120 @@ const HomePage = ({ user, onLogout, setUser }) => {
       {/* ===== HOME EXPERIENCE ===== */}
       <main className="relative z-[5] pb-28">
 
-        {/* --- 1. FEATURED LOUNGE — After Dark --- */}
-        <section className="px-5 pt-5 pb-4" data-testid="featured-lounge-section">
-          <button
-            onClick={() => handleTileClick('afterdark', '/afterdark')}
-            className="w-full text-left group"
-            data-testid="featured-lounge"
-          >
-            <div className="relative rounded-2xl overflow-hidden" style={{ background: 'linear-gradient(135deg, #12101C 0%, #0F0D17 100%)', border: '1px solid rgba(212,165,74,0.10)' }}>
-              <div className="absolute top-0 left-0 w-48 h-32 bg-[#D4A54A]/[0.04] blur-[60px] pointer-events-none" />
-              <div className="absolute bottom-0 right-0 w-32 h-24 bg-[#E8364E]/[0.03] blur-[50px] pointer-events-none" />
-              
-              <div className="relative z-[2] p-7">
-                <div className="flex items-center gap-2 mb-3">
-                  <span className="text-[10px] text-[#D4A54A]/60 font-bold uppercase tracking-[0.2em]">Featured</span>
-                  <span className="w-1 h-1 rounded-full bg-white/10" />
-                  <span className="flex items-center gap-1.5">
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#D4A54A]/60 animate-pulse" />
-                    <span className="text-[10px] text-white/25 font-medium">Live</span>
-                  </span>
-                </div>
-                
-                <h2 className="text-white font-heading font-bold text-2xl tracking-tight mb-1">After Dark</h2>
-                <p className="text-white/25 text-sm leading-relaxed mb-6">Private. Discreet. For those who want more.</p>
-                
-                <div className="inline-flex items-center gap-2 px-5 py-2 rounded-full text-sm font-semibold text-[#D4A54A]/90 group-hover:text-[#D4A54A] transition-colors" style={{ background: 'rgba(212,165,74,0.08)', border: '1px solid rgba(212,165,74,0.15)' }}>
-                  Enter
-                  <ChevronRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" strokeWidth={2} />
-                </div>
+        {/* --- 1. DISCOVER / CONNECTIONS — Top Priority --- */}
+        <section className="px-5 pt-5 pb-2" data-testid="discover-section">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h2 className="text-white/90 text-lg font-heading font-bold tracking-tight">Discover</h2>
+              <p className="text-white/25 text-[11px] mt-0.5">People you might connect with</p>
+            </div>
+            <button onClick={() => router.push('/search')} className="text-[11px] text-[#D4A54A]/60 hover:text-[#D4A54A] font-medium transition-colors" data-testid="discover-see-all">See all</button>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3" data-testid="discover-grid">
+            {members.slice(0, 6).map((m, i) => {
+              const gradients = [
+                'from-[#D4A54A]/20 to-[#E8364E]/10',
+                'from-[#3B82F6]/20 to-[#9333EA]/10',
+                'from-[#E84393]/20 to-[#D4A54A]/10',
+                'from-[#10B981]/20 to-[#3B82F6]/10',
+                'from-[#9333EA]/20 to-[#E84393]/10',
+                'from-[#E8364E]/20 to-[#D4A54A]/10',
+              ]
+              const accentColors = ['#D4A54A', '#3B82F6', '#E84393', '#10B981', '#9333EA', '#E8364E']
+              const accent = accentColors[i % accentColors.length]
+              return (
+                <button
+                  key={m.id}
+                  onClick={() => router.push(`/search?view=${m.id}`)}
+                  className="group text-left rounded-2xl overflow-hidden transition-all duration-200 hover:scale-[1.02]"
+                  style={{ background: '#111318', border: '1px solid rgba(255,255,255,0.04)' }}
+                  data-testid={`discover-card-${m.id}`}
+                >
+                  <div className={`relative w-full aspect-[4/3] bg-gradient-to-br ${gradients[i % gradients.length]} flex items-center justify-center`}>
+                    {m.avatar || m.profilePicture ? (
+                      <img src={m.avatar || m.profilePicture} alt="" className="w-full h-full object-cover" />
+                    ) : (
+                      <span className="text-3xl font-bold" style={{ color: `${accent}90` }}>
+                        {m.displayName?.charAt(0)?.toUpperCase() || '?'}
+                      </span>
+                    )}
+                    <div className="absolute top-2 right-2 w-2.5 h-2.5 rounded-full bg-[#10B981] ring-2 ring-[#111318]" />
+                  </div>
+                  <div className="px-3 py-2.5">
+                    <p className="text-white/80 text-sm font-medium truncate group-hover:text-white transition-colors">{m.displayName || 'Member'}</p>
+                    <p className="text-white/20 text-[10px] mt-0.5">Online now</p>
+                  </div>
+                </button>
+              )
+            })}
+          </div>
+
+          {pendingFriendRequests.length > 0 && (
+            <div className="mt-4" data-testid="connection-requests">
+              <p className="text-white/40 text-[11px] font-medium mb-2">Connection Requests</p>
+              <div className="space-y-2">
+                {pendingFriendRequests.slice(0, 3).map((req) => (
+                  <div key={req.id || req.fromUserId} className="flex items-center gap-3 py-2.5 px-3 rounded-xl bg-white/[0.02] border border-white/[0.04]" data-testid={`match-${req.fromUserId}`}>
+                    <div className="w-10 h-10 rounded-full bg-[#141420] overflow-hidden flex-shrink-0 border border-white/[0.06]">
+                      {req.fromAvatar ? (
+                        <img src={req.fromAvatar} alt="" className="w-full h-full object-cover" />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-[#E84393]/60 text-sm font-semibold">
+                          {req.fromName?.charAt(0) || '?'}
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-white/80 text-sm font-medium truncate">{req.fromName || 'Unknown'}</p>
+                      <p className="text-white/20 text-[10px]">Wants to connect</p>
+                    </div>
+                    <div className="flex gap-1.5 flex-shrink-0">
+                      <button 
+                        onClick={(e) => { e.stopPropagation(); acceptFriendRequest(req.fromUserId); }}
+                        className="px-3 py-1.5 rounded-full text-[10px] font-semibold text-[#10B981] bg-[#10B981]/10 border border-[#10B981]/15 hover:bg-[#10B981]/20 transition-colors"
+                      >Accept</button>
+                      <button 
+                        onClick={(e) => { e.stopPropagation(); declineFriendRequest(req.fromUserId); }}
+                        className="px-2.5 py-1.5 rounded-full text-[10px] font-medium text-white/25 bg-white/[0.04] hover:bg-white/[0.08] transition-colors"
+                      >Pass</button>
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
-          </button>
+          )}
         </section>
 
-        {/* --- 2. MEMBERS ONLINE + STORIES --- */}
-        <section className="pt-3 pb-2" data-testid="members-stories-section">
-          <div className="px-5 flex items-center justify-between mb-3">
+        <div className="mx-5 my-1 h-px bg-white/[0.04]" />
+
+        {/* --- 2. ACTIVE NOW — Stories + Online strip --- */}
+        <section className="py-3" data-testid="active-now-section">
+          <div className="px-5 flex items-center justify-between mb-2.5">
             <div className="flex items-center gap-2">
-              <h2 className="text-white/70 text-[13px] font-heading font-semibold tracking-tight">Online Now</h2>
+              <h2 className="text-white/50 text-[12px] font-heading font-semibold tracking-tight uppercase">Active Now</h2>
               <span className="flex items-center gap-1">
-                <span className="w-1.5 h-1.5 rounded-full bg-[#10B981]" />
-                <span className="text-[#10B981]/70 text-[10px] font-medium">{members.length}</span>
+                <span className="w-1.5 h-1.5 rounded-full bg-[#10B981] animate-pulse" />
+                <span className="text-[#10B981]/60 text-[10px] font-medium">{members.length}</span>
               </span>
             </div>
-            <button onClick={() => router.push('/search')} className="text-[10px] text-white/20 hover:text-white/40 font-medium transition-colors" data-testid="see-all-members">All</button>
           </div>
 
           <div 
-            className="flex gap-3 overflow-x-auto pb-3 px-5"
+            className="flex gap-3 overflow-x-auto pb-2 px-5"
             style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', WebkitOverflowScrolling: 'touch' }}
-            data-testid="members-stories-scroll"
+            data-testid="active-now-scroll"
           >
             {/* Add Story */}
             <button
               onClick={() => setShowAddStory(true)}
-              className="flex-none flex flex-col items-center gap-1.5"
+              className="flex-none flex flex-col items-center gap-1"
               data-testid="add-story-btn"
             >
-              <div className="relative w-14 h-14 rounded-full border border-dashed border-white/10 flex items-center justify-center hover:border-white/20 transition-colors">
-                <Plus className="w-4 h-4 text-white/30" strokeWidth={1.5} />
+              <div className="relative w-12 h-12 rounded-full border border-dashed border-white/10 flex items-center justify-center hover:border-white/20 transition-colors">
+                <Plus className="w-3.5 h-3.5 text-white/25" strokeWidth={1.5} />
               </div>
-              <span className="text-white/20 text-[9px] font-medium">Story</span>
+              <span className="text-white/15 text-[8px] font-medium">Story</span>
             </button>
 
             {/* Stories */}
@@ -1588,51 +1641,51 @@ const HomePage = ({ user, onLogout, setUser }) => {
                 <button
                   key={`story-${storyGroup.userId}`}
                   onClick={() => viewStory(storyGroup)}
-                  className="flex-none flex flex-col items-center gap-1.5"
+                  className="flex-none flex flex-col items-center gap-1"
                   data-testid={`story-${storyGroup.userId}`}
                 >
-                  <div className={`relative w-14 h-14 rounded-full p-[2px] ${hasUnviewed ? 'bg-gradient-to-br from-[#D4A54A] to-[#E8364E]' : 'bg-white/8'}`}>
-                    <div className="w-full h-full rounded-full bg-[#0B0D14] p-[1.5px]">
+                  <div className={`relative w-12 h-12 rounded-full p-[2px] ${hasUnviewed ? 'bg-gradient-to-br from-[#D4A54A] to-[#E8364E]' : 'bg-white/8'}`}>
+                    <div className="w-full h-full rounded-full bg-[#0B0D14] p-[1px]">
                       <div className="w-full h-full rounded-full overflow-hidden bg-[#141420] flex items-center justify-center">
                         {storyGroup.avatar ? (
                           <img src={storyGroup.avatar} alt="" className="w-full h-full object-cover" />
                         ) : (
-                          <span className="text-white/40 text-xs font-semibold">{storyGroup.displayName?.charAt(0)?.toUpperCase() || '?'}</span>
+                          <span className="text-white/35 text-[10px] font-semibold">{storyGroup.displayName?.charAt(0)?.toUpperCase() || '?'}</span>
                         )}
                       </div>
                     </div>
                   </div>
-                  <span className="text-white/30 text-[9px] font-medium truncate w-14 text-center">
-                    {isOwn ? 'You' : storyGroup.displayName?.split(' ')[0]?.slice(0, 7) || 'User'}
+                  <span className="text-white/20 text-[8px] font-medium truncate w-12 text-center">
+                    {isOwn ? 'You' : storyGroup.displayName?.split(' ')[0]?.slice(0, 6) || 'User'}
                   </span>
                 </button>
               )
             })}
 
-            {/* Online Members */}
-            {members.slice(0, 15).map((m, i) => {
-              const colors = ['#9333EA', '#3B82F6', '#E84393', '#10B981', '#D4A54A', '#E8364E']
+            {/* Online members */}
+            {members.slice(0, 12).map((m, i) => {
+              const colors = ['#D4A54A', '#3B82F6', '#E84393', '#10B981', '#9333EA', '#E8364E']
               return (
                 <button
-                  key={m.id}
+                  key={`active-${m.id}`}
                   onClick={() => router.push(`/search?view=${m.id}`)}
-                  className="flex-none flex flex-col items-center gap-1.5 group"
-                  data-testid={`online-user-${m.id}`}
+                  className="flex-none flex flex-col items-center gap-1 group"
+                  data-testid={`active-user-${m.id}`}
                 >
-                  <div className="relative w-14 h-14">
-                    <div className="w-full h-full rounded-full overflow-hidden bg-[#141420] flex items-center justify-center border border-white/[0.06]">
+                  <div className="relative w-12 h-12">
+                    <div className="w-full h-full rounded-full overflow-hidden bg-[#141420] flex items-center justify-center border border-white/[0.05]">
                       {m.avatar || m.profilePicture ? (
                         <img src={m.avatar || m.profilePicture} alt="" className="w-full h-full object-cover" />
                       ) : (
-                        <span className="text-sm font-semibold" style={{ color: colors[i % colors.length] }}>
+                        <span className="text-xs font-semibold" style={{ color: `${colors[i % colors.length]}80` }}>
                           {m.displayName?.charAt(0)?.toUpperCase() || '?'}
                         </span>
                       )}
                     </div>
-                    <div className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-[#10B981] ring-2 ring-[#0B0D14]" />
+                    <div className="absolute -bottom-0.5 -right-0.5 w-2 h-2 rounded-full bg-[#10B981] ring-[1.5px] ring-[#0B0D14]" />
                   </div>
-                  <span className="text-white/25 text-[9px] font-medium truncate w-14 text-center group-hover:text-white/40 transition-colors">
-                    {m.displayName?.split(' ')[0]?.slice(0, 7) || 'User'}
+                  <span className="text-white/15 text-[8px] font-medium truncate w-12 text-center group-hover:text-white/30 transition-colors">
+                    {m.displayName?.split(' ')[0]?.slice(0, 6) || 'User'}
                   </span>
                 </button>
               )
@@ -1642,158 +1695,176 @@ const HomePage = ({ user, onLogout, setUser }) => {
 
         <div className="mx-5 h-px bg-white/[0.04]" />
 
-        {/* --- 3. NEW MATCHES --- */}
-        {pendingFriendRequests.length > 0 && (
-          <section className="px-5 py-4" data-testid="new-matches-section">
-            <div className="flex items-center justify-between mb-3">
-              <h2 className="text-white/50 text-[13px] font-heading font-semibold">New Matches</h2>
-              <button onClick={() => router.push('/friends')} className="text-[10px] text-white/20 hover:text-white/40 font-medium transition-colors" data-testid="see-all-matches">View all</button>
-            </div>
-            <div className="space-y-2">
-              {pendingFriendRequests.slice(0, 3).map((req) => (
-                <div key={req.id || req.fromUserId} className="flex items-center gap-3 py-2.5 px-3 rounded-xl bg-white/[0.02] border border-white/[0.04] hover:bg-white/[0.04] transition-colors" data-testid={`match-${req.fromUserId}`}>
-                  <div className="w-10 h-10 rounded-full bg-[#141420] overflow-hidden flex-shrink-0 border border-white/[0.06]">
-                    {req.fromAvatar ? (
-                      <img src={req.fromAvatar} alt="" className="w-full h-full object-cover" />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center text-[#E84393]/60 text-sm font-semibold">
-                        {req.fromName?.charAt(0) || '?'}
-                      </div>
-                    )}
+        {/* --- 3. RECENT ACTIVITY — lightweight signals --- */}
+        <section className="px-5 py-3" data-testid="recent-activity-section">
+          <h2 className="text-white/50 text-[12px] font-heading font-semibold tracking-tight uppercase mb-2.5">Recent Activity</h2>
+          <div className="space-y-0">
+            {members.slice(0, 4).map((m, i) => {
+              const actions = [
+                { text: 'viewed your profile', icon: Eye, color: '#3B82F6' },
+                { text: 'is now online', icon: Users, color: '#10B981' },
+                { text: 'liked your profile', icon: Heart, color: '#E84393' },
+                { text: 'sent a connection request', icon: UserPlus, color: '#D4A54A' },
+              ]
+              const action = actions[i % actions.length]
+              const ActionIcon = action.icon
+              const times = ['3m ago', '12m ago', '1h ago', '2h ago']
+              return (
+                <button
+                  key={`activity-${m.id}`}
+                  onClick={() => router.push(`/search?view=${m.id}`)}
+                  className="w-full flex items-center gap-3 py-2.5 group"
+                  data-testid={`activity-${i}`}
+                >
+                  <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0" style={{ background: `${action.color}12` }}>
+                    <ActionIcon className="w-3.5 h-3.5" style={{ color: `${action.color}80` }} strokeWidth={1.5} />
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-white/80 text-sm font-medium truncate">{req.fromName || 'Unknown'}</p>
-                    <p className="text-white/20 text-[11px]">Wants to connect</p>
+                  <div className="flex-1 min-w-0 text-left">
+                    <p className="text-white/50 text-[12px] truncate group-hover:text-white/70 transition-colors">
+                      <span className="text-white/70 font-medium">{m.displayName?.split(' ')[0] || 'Someone'}</span>
+                      {' '}{action.text}
+                    </p>
                   </div>
-                  <div className="flex gap-1.5 flex-shrink-0">
-                    <button 
-                      onClick={(e) => { e.stopPropagation(); acceptFriendRequest(req.fromUserId); }}
-                      className="px-3 py-1.5 rounded-full text-[11px] font-medium text-[#10B981]/80 bg-[#10B981]/8 border border-[#10B981]/10 hover:bg-[#10B981]/15 transition-colors"
-                    >
-                      Accept
-                    </button>
-                    <button 
-                      onClick={(e) => { e.stopPropagation(); declineFriendRequest(req.fromUserId); }}
-                      className="px-2.5 py-1.5 rounded-full text-[11px] font-medium text-white/20 bg-white/[0.03] hover:bg-white/[0.06] transition-colors"
-                    >
-                      Pass
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </section>
-        )}
-
-        {pendingFriendRequests.length > 0 && <div className="mx-5 h-px bg-white/[0.04]" />}
-
-        {/* --- 4. LIVE MOMENTS — lightweight activity feed --- */}
-        <section className="px-5 py-4" data-testid="live-moments-section">
-          <div className="flex items-center gap-2 mb-3">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#E8364E] animate-pulse" />
-            <h2 className="text-white/50 text-[13px] font-heading font-semibold">Live Moments</h2>
-          </div>
-          <div className="space-y-1">
-            {[
-              { text: 'Someone just joined After Dark', time: '2m', color: '#D4A54A' },
-              { text: 'New conversation started in Main Lounge', time: '5m', color: '#3B82F6' },
-              { text: 'Exclusive content was just posted', time: '8m', color: '#E8364E' },
-              { text: 'A tip was sent anonymously', time: '12m', color: '#10B981' },
-              { text: '3 new members arrived', time: '18m', color: '#9333EA' },
-            ].map((moment, i) => (
-              <div key={i} className="flex items-center gap-3 py-2 group" data-testid={`live-moment-${i}`}>
-                <div className="w-1 h-1 rounded-full flex-shrink-0" style={{ background: moment.color }} />
-                <span className="text-white/30 text-[12px] flex-1 group-hover:text-white/45 transition-colors">{moment.text}</span>
-                <span className="text-white/15 text-[10px] flex-shrink-0">{moment.time}</span>
-              </div>
-            ))}
+                  <span className="text-white/15 text-[10px] flex-shrink-0">{times[i]}</span>
+                </button>
+              )
+            })}
           </div>
         </section>
 
         <div className="mx-5 h-px bg-white/[0.04]" />
 
-        {/* --- 5. ROOMS — simple list --- */}
-        <section className="px-5 py-4" data-testid="active-lounges-section">
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="text-white/50 text-[13px] font-heading font-semibold">Rooms</h2>
-            <button onClick={() => handleTileClick('lounge', '/lounge')} className="text-[10px] text-white/20 hover:text-white/40 font-medium transition-colors" data-testid="see-all-lounges">All rooms</button>
+        {/* --- 4. FEATURED LOUNGE — After Dark (existing, prominent) --- */}
+        <section className="px-5 py-4" data-testid="featured-lounge-section">
+          <p className="text-white/30 text-[10px] font-bold uppercase tracking-[0.15em] mb-3">Featured</p>
+          <button
+            onClick={() => handleTileClick('afterdark', '/afterdark')}
+            className="w-full text-left group"
+            data-testid="featured-lounge"
+          >
+            <div className="relative rounded-xl overflow-hidden" style={{ background: '#111318', border: '1px solid rgba(212,165,74,0.08)' }}>
+              <div className="absolute top-0 right-0 w-32 h-24 bg-[#D4A54A]/[0.03] blur-[50px] pointer-events-none" />
+              <div className="relative z-[2] p-5">
+                <div className="flex items-center justify-between mb-3">
+                  <div>
+                    <h3 className="text-white/90 font-heading font-bold text-lg tracking-tight">After Dark</h3>
+                    <p className="text-white/20 text-[11px] mt-0.5">Private. Discreet. For those who want more.</p>
+                  </div>
+                  <div className="flex items-center gap-1.5 px-2 py-1 rounded-full" style={{ background: 'rgba(212,165,74,0.06)', border: '1px solid rgba(212,165,74,0.10)' }}>
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#D4A54A]/50 animate-pulse" />
+                    <span className="text-[#D4A54A]/60 text-[9px] font-bold tracking-wider">LIVE</span>
+                  </div>
+                </div>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-1.5">
+                    <Users className="w-3 h-3 text-white/15" strokeWidth={1.5} />
+                    <span className="text-white/20 text-[10px]">{loungesList.reduce((sum, l) => sum + (l.memberCount || 0), 0)} online</span>
+                  </div>
+                  <div className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-[11px] font-semibold text-[#D4A54A]/80 group-hover:text-[#D4A54A] transition-colors" style={{ background: 'rgba(212,165,74,0.06)', border: '1px solid rgba(212,165,74,0.12)' }}>
+                    Enter
+                    <ChevronRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" strokeWidth={2} />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </button>
+        </section>
+
+        <div className="mx-5 h-px bg-white/[0.04]" />
+
+        {/* --- 5. LOUNGES — existing real lounges, clean list --- */}
+        <section className="px-5 py-3" data-testid="active-lounges-section">
+          <div className="flex items-center justify-between mb-2.5">
+            <h2 className="text-white/50 text-[12px] font-heading font-semibold tracking-tight uppercase">Lounges</h2>
+            <button onClick={() => handleTileClick('lounge', '/lounge')} className="text-[10px] text-white/20 hover:text-white/40 font-medium transition-colors" data-testid="see-all-lounges">All</button>
           </div>
           <div className="space-y-0.5">
             {loungesList.slice(0, 5).map((lounge, idx) => {
-              const accents = ['#3B82F6', '#D4A54A', '#E8364E', '#9333EA', '#10B981']
+              const accents = ['#3B82F6', '#10B981', '#D4A54A', '#9333EA', '#E84393']
               const accent = accents[idx % accents.length]
               const memberCount = lounge.memberCount || lounge.members?.length || 0
               return (
                 <button
                   key={lounge.id}
                   onClick={() => router.push(`/lounge?id=${lounge.id}`)}
-                  className="w-full flex items-center gap-3 py-3 px-3 rounded-lg hover:bg-white/[0.02] transition-colors group"
+                  className="w-full flex items-center gap-3 py-2.5 px-2 rounded-lg hover:bg-white/[0.02] transition-colors group"
                   data-testid={`home-lounge-${lounge.id}`}
                 >
-                  <div className="w-1 h-8 rounded-full flex-shrink-0" style={{ background: `${accent}40` }} />
+                  <div className="w-0.5 h-6 rounded-full flex-shrink-0" style={{ background: `${accent}50` }} />
                   <div className="flex-1 min-w-0 text-left">
-                    <h3 className="text-white/70 text-sm font-medium truncate group-hover:text-white/90 transition-colors">{lounge.name || 'Lounge'}</h3>
-                    <p className="text-white/15 text-[11px] truncate">{lounge.description || 'Open conversation'}</p>
+                    <h3 className="text-white/60 text-[13px] font-medium truncate group-hover:text-white/80 transition-colors">{lounge.name}</h3>
                   </div>
-                  <div className="flex items-center gap-1.5 flex-shrink-0">
+                  <div className="flex items-center gap-2 flex-shrink-0">
                     {memberCount > 0 && (
-                      <>
-                        <span className="w-1 h-1 rounded-full" style={{ background: accent }} />
-                        <span className="text-white/20 text-[10px]">{memberCount}</span>
-                      </>
+                      <span className="text-white/15 text-[10px]">{memberCount}</span>
                     )}
-                    <ChevronRight className="w-3 h-3 text-white/10 group-hover:text-white/25 transition-colors" strokeWidth={1.5} />
+                    <ChevronRight className="w-3 h-3 text-white/8 group-hover:text-white/20 transition-colors" strokeWidth={1.5} />
                   </div>
                 </button>
               )
             })}
-            {loungesList.length === 0 && (
-              <button
-                onClick={() => handleTileClick('lounge', '/lounge')}
-                className="w-full flex items-center gap-3 py-3 px-3 rounded-lg hover:bg-white/[0.02] transition-colors group"
-                data-testid="home-lounge-main"
-              >
-                <div className="w-1 h-8 rounded-full flex-shrink-0 bg-[#3B82F6]/25" />
-                <div className="flex-1 text-left">
-                  <h3 className="text-white/70 text-sm font-medium group-hover:text-white/90 transition-colors">Explore Rooms</h3>
-                  <p className="text-white/15 text-[11px]">See all conversations</p>
-                </div>
-                <ChevronRight className="w-3 h-3 text-white/10" strokeWidth={1.5} />
-              </button>
-            )}
           </div>
         </section>
 
         <div className="mx-5 h-px bg-white/[0.04]" />
 
-        {/* --- 6. QUICK ACCESS --- */}
-        <section className="px-5 py-4" data-testid="quick-access">
-          <div className="flex items-center justify-around">
-            {[
-              { icon: MessageSquare, label: 'Inbox', color: '#3B82F6', path: '/inbox', id: 'inbox' },
-              { icon: Gamepad2, label: 'Games', color: '#10B981', path: '/games', id: 'games' },
-              { icon: Radio, label: 'Radio', color: '#E8364E', path: '/radio', id: 'radio' },
-              { icon: Calendar, label: 'Events', color: '#F59E0B', path: '/events', id: 'events' },
-              { icon: Search, label: 'Search', color: '#9333EA', path: '/search', id: 'search' },
-            ].map((item) => {
-              const Icon = item.icon
-              return (
-                <button
-                  key={item.id}
-                  onClick={() => handleTileClick(item.id, item.path)}
-                  className="flex flex-col items-center gap-1.5 py-2 px-3 group"
-                  data-testid={`quick-${item.id}`}
-                >
-                  <Icon className="w-4 h-4 group-hover:opacity-60 transition-opacity" style={{ color: `${item.color}40` }} strokeWidth={1.5} />
-                  <span className="text-white/20 text-[9px] font-medium group-hover:text-white/35 transition-colors">{item.label}</span>
-                </button>
-              )
-            })}
+        {/* --- 6. CONTENT / MONETISATION — subtle exposure --- */}
+        <section className="px-5 py-3" data-testid="monetisation-section">
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => router.push('/wallet')}
+              className="flex-1 flex items-center gap-2.5 py-3 px-3.5 rounded-xl transition-colors hover:bg-white/[0.02]"
+              style={{ background: '#111318', border: '1px solid rgba(255,255,255,0.03)' }}
+              data-testid="home-wallet-btn"
+            >
+              <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ background: 'rgba(212,165,74,0.08)' }}>
+                <Wallet className="w-3.5 h-3.5 text-[#D4A54A]/60" strokeWidth={1.5} />
+              </div>
+              <div className="text-left">
+                <p className="text-white/50 text-[11px] font-medium">Credits</p>
+                <p className="text-[#D4A54A]/70 text-[13px] font-heading font-bold">{user.credits || 0}</p>
+              </div>
+            </button>
+            <button
+              onClick={() => router.push('/search')}
+              className="flex-1 flex items-center gap-2.5 py-3 px-3.5 rounded-xl transition-colors hover:bg-white/[0.02]"
+              style={{ background: '#111318', border: '1px solid rgba(255,255,255,0.03)' }}
+              data-testid="home-unlock-btn"
+            >
+              <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ background: 'rgba(232,54,78,0.06)' }}>
+                <Lock className="w-3.5 h-3.5 text-[#E8364E]/50" strokeWidth={1.5} />
+              </div>
+              <div className="text-left">
+                <p className="text-white/50 text-[11px] font-medium">Exclusive</p>
+                <p className="text-white/25 text-[10px]">Unlock content</p>
+              </div>
+            </button>
           </div>
         </section>
 
-        <div className="px-5 py-4">
-          <p className="text-white/8 text-[11px] text-center">A private space for adults. Connection at your own pace.</p>
+        <div className="mx-5 h-px bg-white/[0.04]" />
+
+        {/* --- 7. RADIO — existing feature, clean link --- */}
+        <section className="px-5 py-3" data-testid="radio-home-section">
+          <button
+            onClick={() => handleTileClick('radio', '/radio')}
+            className="w-full flex items-center gap-3 py-2.5 px-3 rounded-xl transition-colors hover:bg-white/[0.02] group"
+            style={{ background: '#111318', border: '1px solid rgba(255,255,255,0.03)' }}
+            data-testid="home-radio-btn"
+          >
+            <div className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0" style={{ background: 'rgba(232,54,78,0.06)' }}>
+              <Radio className="w-4 h-4 text-[#E8364E]/50" strokeWidth={1.5} />
+            </div>
+            <div className="flex-1 text-left">
+              <p className="text-white/60 text-[13px] font-medium group-hover:text-white/80 transition-colors">Radio</p>
+              <p className="text-white/15 text-[10px]">Listen while you browse</p>
+            </div>
+            <ChevronRight className="w-3.5 h-3.5 text-white/10 group-hover:text-white/25 transition-colors" strokeWidth={1.5} />
+          </button>
+        </section>
+
+        <div className="px-5 pt-2 pb-4">
+          <p className="text-white/6 text-[10px] text-center tracking-wide">A private space for adults. Connection at your own pace.</p>
         </div>
       </main>
 
