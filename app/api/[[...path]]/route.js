@@ -2034,6 +2034,7 @@ async function handleRoute(request, { params }) {
 
       // Auto-seed required lounges if missing
       const requiredLounges = [
+        { id: 'grown-folks', name: 'Grown Folks', description: 'Grown energy. Real connections. No games.', isAfterDark: false, memberCount: 56 },
         { id: 'lowkey-lounge', name: 'LowKey Lounge', description: 'Where everyone starts. Real people, real energy.', isAfterDark: false, memberCount: 42 },
         { id: 'after-dark', name: 'After Dark', description: 'No names. No limits. Just energy.', isAfterDark: true, memberCount: 31 },
         { id: 'kink-lounge', name: 'Kink Lounge', description: 'Push boundaries. Find your people.', isAfterDark: false, memberCount: 18 },

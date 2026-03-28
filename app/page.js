@@ -548,6 +548,8 @@ const HomePage = ({ user, onLogout, setUser }) => {
   // ─── Lounge Theme System ────────────────
   const getLoungeTheme = (lounge) => {
     const name = (lounge.name || '').toLowerCase()
+    if (name.includes('grown folk'))
+      return { accent: '#C9A84C', bgFrom: '#1A1608', bgTo: '#12100A', label: 'Grown energy. Real connections. No games.', glow: 'rgba(201,168,76,0.12)', featured: true }
     if (name.includes('lowkey') || name.includes('chill'))
       return { accent: '#8B5CF6', bgFrom: '#14101F', bgTo: '#0F0D18', label: 'Where everyone starts. Real people, real energy.', glow: 'rgba(139,92,246,0.08)' }
     if (name.includes('after dark'))
@@ -875,12 +877,13 @@ const HomePage = ({ user, onLogout, setUser }) => {
             </button>
           </div>
           <div className="space-y-2 px-4">
-            {/* Featured 4 lounges: LowKey, After Dark, Kink, VIP */}
+            {/* Featured lounges: Grown Folks, LowKey, After Dark, Kink, VIP */}
             {(() => {
-              const featured = ['lowkey', 'after-dark', 'kink', 'vip']
+              const featured = ['grown-folks', 'lowkey', 'after-dark', 'kink', 'vip']
               const featuredLounges = featured.map(key => {
                 return loungesList.find(l => {
                   const n = l.name?.toLowerCase() || ''
+                  if (key === 'grown-folks') return n.includes('grown folk')
                   if (key === 'lowkey') return n.includes('lowkey')
                   if (key === 'after-dark') return n.includes('after dark')
                   if (key === 'kink') return n.includes('kink')
@@ -893,23 +896,42 @@ const HomePage = ({ user, onLogout, setUser }) => {
                 const theme = getLoungeTheme(l)
                 const count = l.memberCount || l.members?.length || 0
                 const isAfterDark = l.isAfterDark || l.name?.toLowerCase().includes('after dark')
+                const isGrownFolks = l.name?.toLowerCase().includes('grown folk')
                 const handleClick = () => {
                   if (isAfterDark) { handleTileClick('afterdark', '/afterdark') }
                   else { router.push(`/lounge?id=${l.id}`) }
                 }
                 return (
-                  <button key={l.id} onClick={handleClick} className="w-full rounded-2xl overflow-hidden text-left group hover:translate-y-[-1px] transition-all duration-200 relative" style={{ background: `linear-gradient(145deg, ${theme.bgFrom}, ${theme.bgTo})`, border: `1px solid ${theme.accent}12`, boxShadow: `0 4px 20px ${theme.glow}` }} data-testid={`home-lounge-${l.id}`}>
+                  <button key={l.id} onClick={handleClick} className="w-full rounded-2xl overflow-hidden text-left group hover:translate-y-[-1px] transition-all duration-200 relative" style={{ background: `linear-gradient(145deg, ${theme.bgFrom}, ${theme.bgTo})`, border: `1px solid ${theme.accent}${theme.featured ? '25' : '12'}`, boxShadow: `0 4px 20px ${theme.glow}${theme.featured ? ', inset 0 0 30px rgba(201,168,76,0.03)' : ''}` }} data-testid={`home-lounge-${l.id}`}>
+                    {/* Top accent line */}
                     <div className="absolute top-0 left-0 right-0 h-[2px]" style={{ background: `linear-gradient(90deg, ${theme.accent}80, transparent 60%)` }} />
+                    {/* Corner glow */}
                     <div className="absolute top-0 right-0 w-28 h-20 rounded-full blur-[40px]" style={{ background: theme.glow }} />
+                    {/* Featured badge (Grown Folks only) */}
+                    {theme.featured && (
+                      <div className="absolute top-2.5 right-3 z-20">
+                        <span className="flex items-center gap-1 px-2 py-0.5 rounded-md text-[8px] font-bold tracking-wider uppercase" style={{ background: 'rgba(201,168,76,0.12)', color: '#C9A84C', border: '1px solid rgba(201,168,76,0.20)' }}>
+                          <Sparkles className="w-2.5 h-2.5" /> Featured Community
+                        </span>
+                      </div>
+                    )}
                     <div className="relative p-3.5 z-10">
-                      <div className="flex items-center justify-between mb-1.5">
-                        <h3 className="text-white font-bold text-[14px] truncate flex-1 mr-3">{l.name}</h3>
-                        {count > 0 && (
-                          <span className="flex items-center gap-1.5 shrink-0">
-                            <span className="w-2 h-2 rounded-full animate-pulse shadow-lg" style={{ background: theme.accent, boxShadow: `0 0 8px ${theme.accent}60` }} />
-                            <span className="text-[10px] font-bold tracking-wider" style={{ color: theme.accent }}>LIVE</span>
-                          </span>
+                      <div className="flex items-center gap-3 mb-1.5">
+                        {/* Logo for Grown Folks */}
+                        {isGrownFolks && (
+                          <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: 'rgba(201,168,76,0.10)', border: '1px solid rgba(201,168,76,0.18)' }}>
+                            <span className="text-[10px] font-black leading-none" style={{ color: '#C9A84C' }}>GFB</span>
+                          </div>
                         )}
+                        <div className="flex items-center justify-between flex-1 min-w-0">
+                          <h3 className="text-white font-bold text-[14px] truncate flex-1 mr-3">{l.name}</h3>
+                          {count > 0 && (
+                            <span className="flex items-center gap-1.5 shrink-0">
+                              <span className="w-2 h-2 rounded-full animate-pulse shadow-lg" style={{ background: theme.accent, boxShadow: `0 0 8px ${theme.accent}60` }} />
+                              <span className="text-[10px] font-bold tracking-wider" style={{ color: theme.accent }}>LIVE</span>
+                            </span>
+                          )}
+                        </div>
                       </div>
                       <p className="text-white/30 text-[12px] leading-relaxed mb-2.5">{l.description || theme.label}</p>
                       <div className="flex items-center justify-between">

@@ -143,6 +143,8 @@ function LoungePageContent() {
   // Lounge Theme System (unified with Home page)
   const getLoungeTheme = (lounge) => {
     const name = (lounge.name || '').toLowerCase()
+    if (name.includes('grown folk'))
+      return { accent: '#C9A84C', bgFrom: '#1A1608', bgTo: '#12100A', label: 'Grown energy. Real connections. No games.', glow: 'rgba(201,168,76,0.12)', featured: true }
     if (name.includes('lowkey') || name.includes('chill'))
       return { accent: '#8B5CF6', bgFrom: '#14101F', bgTo: '#0F0D18', label: 'Where everyone starts. Real people, real energy.', glow: 'rgba(139,92,246,0.08)' }
     if (name.includes('after dark'))
