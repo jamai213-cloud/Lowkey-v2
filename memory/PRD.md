@@ -1,62 +1,68 @@
 # Lowkey App - Product Requirements Document
 
 ## Overview
-A premium adult social club / dating platform built with Next.js 14 (App Router) + MongoDB. Connections are the primary focus, with lounges as supporting interaction spaces.
+Premium adult social club / dating platform. Connections are the primary focus. Feed-style UI like modern dating apps (Hinge/Bumble aesthetic).
 
-## Core Tech Stack
-- **Frontend**: Next.js 14 (App Router), React, Tailwind CSS
-- **Backend**: Next.js API Routes (monolithic `app/api/[[...path]]/route.js`)
-- **Database**: MongoDB (local, `lowkey` DB)
-- **Auth**: Custom email/password with JWT
-- **Deployment**: Vercel (production), Emergent (dev)
+## Tech Stack
+- Next.js 14 (App Router) + MongoDB + Vercel
+- No separate backend — API routes in Next.js
 
-## Home Page Structure (7 Sections — Connections First)
-1. **Discover / Connections** (DOMINANT) — Hero card (first user, full-width) + 2-column profile grid with unique gradient backgrounds, verification badges, online dots. Clicking any user opens **profile modal** (not /search)
-2. **Active Now** — Stories + online member avatars horizontal strip with green online dots
-3. **Recent Activity** — Real notifications when available, falls back to online member status signals
-4. **Featured Lounge** — After Dark hero card with LIVE indicator and Enter CTA
-5. **Lounges** — Real existing lounges (Night Owls, Chill Vibes, etc.) in simple list with lounge icons
-6. **Content / Monetisation** — Credits + Exclusive/Unlock buttons (subtle, not intrusive)
-7. **Radio** — Existing radio feature, clean link to /radio (NOT renamed or rebuilt)
+## Home Page Layout (Completely New — Feed Style)
+The home page flows like a social feed, NOT stacked dashboard sections:
 
-## Profile Modal
-- Opens from any user click (Discover, Active Now, Recent Activity)
-- Shows: avatar/initial hero, name, verification badge, bio
-- Actions: Connect (for non-friends), Message (for friends), Full Profile (goes to /search?view=)
-- Slides up from bottom with backdrop blur
-- Does NOT navigate away from home page
+1. **Greeting** — "Hey, {name}" + "Who catches your eye tonight?"
+2. **Hero Profile Card** — Full-width, 3:4 aspect ratio, stock photo (or real avatar), name + online dot + badge overlay. Taps to profile modal.
+3. **Active Now** — Overlapping avatar row + "X online" count
+4. **Stories** — Horizontal scroll (or "Share a story" when empty)
+5. **2-Up Profile Grid** — Two profile cards side by side, photos, names, badges
+6. **Connection Requests** — If pending, shown inline with Accept button
+7. **Happening Now** — Real member activity (names + verbs like "is browsing", "just came online")
+8. **After Dark Banner** — Vibrant gradient, Sparkles icon, LIVE indicator, Enter CTA
+9. **2-Up More Profiles** — Additional profile cards
+10. **Lounges** — Horizontal pill chips with names + member counts
+11. **Even More Profiles** — Third grid of profile cards
+12. **Quick Access** — Radio / Games / Inbox as inline row
+13. **Credits** — Subtle wallet/credits link
+
+## Profile Modal (Opens on User Click)
+- Slides up from bottom (animate-slide-up)
+- Shows: full-bleed photo hero, name, verification badges
+- Actions: Connect (non-friends), Message (friends), Full Profile
+- Stats: Friends count, Photos count
+- Gallery preview if available
+- Close button (X)
 
 ## Visual Design
-- Background: Deep navy `#0C0F18`
-- Cards: `#131720` with subtle borders
-- Gradients: Rich, varied per profile card (gold→red, blue→purple, green→teal, etc.)
-- Typography: Bold headings, clear hierarchy
-- Accents: Gold `#D4A54A` (premium), Red `#E8364E`, Blue `#3B82F6`, Green `#10B981`
-- Profile cards: Edge-to-edge gradients, not boxed
+- Background: `#0F1219` (warm dark navy, not flat black)
+- Photos: Stock photos from unsplash/pexels as fallback avatars
+- Accents: Coral `#F43F5E`, Gold `#F59E0B`, Indigo `#6366F1`, Green `#22C55E`
+- Cards: Full-bleed photos with gradient overlays, rounded-3xl/2xl
+- No boxed sections, no heavy containers, no dashboard tiles
+- Feed flows naturally with profiles interleaved with content
 
-## Key Routing
-- User cards → `viewProfile(userId)` → profile modal (NO /search navigation)
-- "See all" → `/search` (intentional)
-- "Full Profile" in modal → `/search?view=` (intentional)
-- Lounges → `/lounge?id=`
-- After Dark → `/afterdark`
-- Radio → `/radio`
+## Routing
+- All user clicks → viewProfile() → profile modal (stays on home)
+- "See all" → /search (intentional)
+- "Full Profile" in modal → /search?view= (intentional)
+- After Dark → /afterdark
+- Lounges → /lounge?id=
+- Radio → /radio
+- Games → /games
+- Inbox → /inbox
 
 ## Test Credentials
-- Email: `kinglowkey@hotmail.com` / Password: `password123` / Role: founder
+- Email: `kinglowkey@hotmail.com` / Password: `password123`
 
-## What's Implemented
-- [x] Home page (7-section connections-first layout with profile modal)
-- [x] Profile modal with Connect/Message/Full Profile actions
-- [x] Verification badges (Crown for founders, Check for verified)
-- [x] All existing features preserved (radio, stories, lounges, auth, etc.)
-- [x] 100% test pass rate (iteration_6.json)
+## Test Status
+- iteration_7.json: 100% pass (13/13 backend + all frontend features)
 
-## Upcoming (Pending User Approval on Home)
-- [ ] Visual upgrade for Lounge, Profile, Inbox, Search pages
-- [ ] Real activity tracking backend for Recent Activity
+## Upcoming (After User Approval)
+- [ ] Lounge page visual upgrade
+- [ ] Profile page visual upgrade
+- [ ] Inbox/Messages visual upgrade
+- [ ] Search page visual upgrade
 
 ## Known Limitations
-- Recent Activity falls back to simulated online statuses when no notifications exist
-- Users have no avatars in test data (initials with gradient backgrounds used)
-- Preview URL unavailable (platform issue)
+- Stock photos used as fallback avatars (users have no real photos in test data)
+- Recent Activity simulated from online member data (no real activity tracking)
+- Preview URL unavailable (platform issue with forked environment)
