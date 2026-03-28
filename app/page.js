@@ -532,7 +532,22 @@ const HomePage = ({ user, onLogout, setUser }) => {
     return items.slice(0, 5)
   })()
 
-  const loungeAccents = ['#6366F1', '#F43F5E', '#F59E0B', '#8B5CF6', '#06B6D4', '#10B981']
+  // ─── Lounge Theme System ────────────────
+  const getLoungeTheme = (lounge) => {
+    const id = (lounge.id || '').toLowerCase()
+    const name = (lounge.name || '').toLowerCase()
+    if (name.includes('main') || name.includes('lowkey') || name.includes('chill'))
+      return { accent: '#8B5CF6', bgFrom: '#14101F', bgTo: '#0F0D18', label: 'People are already inside', glow: 'rgba(139,92,246,0.08)' }
+    if (name.includes('vip') || name.includes('exclusive') || name.includes('premium'))
+      return { accent: '#D4A54A', bgFrom: '#18150E', bgTo: '#12100C', label: 'Premium conversations only', glow: 'rgba(212,165,74,0.08)' }
+    if (name.includes('dark') || name.includes('night') || name.includes('owl'))
+      return { accent: '#F59E0B', bgFrom: '#17130D', bgTo: '#110F0B', label: 'Live right now. The night is young', glow: 'rgba(245,158,11,0.08)' }
+    if (name.includes('kink') || name.includes('late') || name.includes('bold') || name.includes('talk'))
+      return { accent: '#EF4444', bgFrom: '#1A0F0F', bgTo: '#140C0C', label: 'Bold conversations. Step in if you\'re ready', glow: 'rgba(239,68,68,0.08)' }
+    if (name.includes('music'))
+      return { accent: '#06B6D4', bgFrom: '#0E1518', bgTo: '#0B1114', label: 'Share your favourite tracks live', glow: 'rgba(6,182,212,0.08)' }
+    return { accent: '#6366F1', bgFrom: '#111118', bgTo: '#0D0D14', label: 'Step in and vibe', glow: 'rgba(99,102,241,0.08)' }
+  }
 
   // ═══════════════════════════════════════════
   //  RENDER
@@ -794,26 +809,29 @@ const HomePage = ({ user, onLogout, setUser }) => {
           </div>
         </section>
 
-        {/* ─── AFTER DARK BANNER ─── */}
+        {/* ─── AFTER DARK (Unified Lounge Card) ─── */}
         <section className="px-4 mb-4">
           <button onClick={() => handleTileClick('afterdark', '/afterdark')} className="relative w-full rounded-2xl overflow-hidden group" data-testid="featured-lounge">
-            <div className="absolute inset-0" style={{ background: 'linear-gradient(135deg, #1E1028 0%, #2D1535 50%, #1A0F1D 100%)' }} />
-            <div className="absolute top-0 right-0 w-40 h-32 bg-rose-500/10 blur-[60px]" />
-            <div className="absolute bottom-0 left-0 w-32 h-24 bg-amber-500/8 blur-[50px]" />
-            <div className="relative px-5 py-5 flex items-center justify-between">
-              <div>
-                <div className="flex items-center gap-2 mb-1">
-                  <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-                  <span className="text-amber-400 text-xs font-bold tracking-wider uppercase">After Dark</span>
-                </div>
-                <p className="text-white/80 text-base font-bold">The private room</p>
-                <div className="flex items-center gap-1.5 mt-1">
-                  <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse" />
-                  <span className="text-white/35 text-xs">{loungesList.reduce((s, l) => s + (l.memberCount || 0), 0)} inside</span>
-                </div>
+            <div className="absolute inset-0" style={{ background: 'linear-gradient(145deg, #18140D, #110F0B)' }} />
+            <div className="absolute top-0 left-0 right-0 h-[2px]" style={{ background: 'linear-gradient(90deg, rgba(212,165,74,0.6), transparent 60%)' }} />
+            <div className="absolute top-0 right-0 w-36 h-28 rounded-full blur-[60px]" style={{ background: 'rgba(212,165,74,0.06)' }} />
+            <div className="relative p-4 z-10">
+              <div className="flex items-center justify-between mb-2">
+                <h3 className="text-white font-bold text-[15px] flex items-center gap-2">
+                  <Sparkles className="w-3.5 h-3.5 text-amber-400" /> After Dark
+                </h3>
+                <span className="flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse shadow-lg shadow-amber-400/40" />
+                  <span className="text-amber-400 text-[10px] font-bold tracking-wider">LIVE</span>
+                </span>
               </div>
-              <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-rose-500/10 group-hover:bg-rose-500/20 transition-colors">
-                <ChevronRight className="w-5 h-5 text-rose-400" />
+              <p className="text-white/35 text-xs leading-relaxed mb-3">Anonymous and unfiltered. Step in if you're ready</p>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-1.5">
+                  <Users className="w-3.5 h-3.5 text-white/15" strokeWidth={1.5} />
+                  <span className="text-white/30 text-xs font-medium">{loungesList.reduce((s, l) => s + (l.memberCount || 0), 0)} people inside</span>
+                </div>
+                <span className="px-3 py-1.5 rounded-lg text-[11px] font-bold bg-amber-400/10 text-amber-400 border border-amber-400/20 group-hover:bg-amber-400/15 transition-colors">Enter</span>
               </div>
             </div>
           </button>
@@ -842,7 +860,7 @@ const HomePage = ({ user, onLogout, setUser }) => {
           </section>
         )}
 
-        {/* ─── ACTIVE LOUNGES ─── */}
+        {/* ─── ACTIVE LOUNGES (Unified Cards) ─── */}
         <section className="mb-4" data-testid="active-lounges-section">
           <div className="px-5 flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
@@ -853,15 +871,32 @@ const HomePage = ({ user, onLogout, setUser }) => {
               See all <ChevronRight className="w-3.5 h-3.5" />
             </button>
           </div>
-          <div className="flex gap-2.5 overflow-x-auto px-5 pb-1 scroll-horizontal">
-            {loungesList.slice(0, 6).map((l, li) => {
-              const accent = loungeAccents[li % loungeAccents.length]
+          <div className="flex gap-3 overflow-x-auto px-5 pb-2 scroll-horizontal">
+            {loungesList.slice(0, 6).map((l) => {
+              const theme = getLoungeTheme(l)
+              const count = l.memberCount || l.members?.length || 0
               return (
-                <button key={l.id} onClick={() => router.push(`/lounge?id=${l.id}`)} className="flex-none min-w-[150px] p-3.5 rounded-xl hover:translate-y-[-2px] transition-all duration-200" style={{ background: `linear-gradient(145deg, ${accent}08, ${accent}03)`, border: `1px solid ${accent}15`, boxShadow: `0 2px 12px ${accent}08` }} data-testid={`home-lounge-${l.id}`}>
-                  <p className="text-white/90 text-sm font-semibold truncate mb-1.5">{l.name}</p>
-                  <div className="flex items-center gap-1.5">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                    <span className="text-white/35 text-[11px]">{l.memberCount || 0} active</span>
+                <button key={l.id} onClick={() => router.push(`/lounge?id=${l.id}`)} className="flex-none w-[200px] rounded-2xl overflow-hidden text-left group hover:translate-y-[-2px] transition-all duration-200 relative" style={{ background: `linear-gradient(145deg, ${theme.bgFrom}, ${theme.bgTo})`, border: `1px solid ${theme.accent}12`, boxShadow: `0 4px 20px ${theme.glow}` }} data-testid={`home-lounge-${l.id}`}>
+                  <div className="absolute top-0 left-0 right-0 h-[2px]" style={{ background: `linear-gradient(90deg, ${theme.accent}80, transparent 60%)` }} />
+                  <div className="absolute top-0 right-0 w-24 h-20 rounded-full blur-[40px]" style={{ background: theme.glow }} />
+                  <div className="relative p-3.5 z-10">
+                    <div className="flex items-center justify-between mb-1.5">
+                      <h3 className="text-white font-bold text-[13px] truncate flex-1 mr-2">{l.name}</h3>
+                      {count > 0 && (
+                        <span className="flex items-center gap-1 shrink-0">
+                          <span className="w-1.5 h-1.5 rounded-full animate-pulse shadow-lg" style={{ background: theme.accent, boxShadow: `0 0 6px ${theme.accent}60` }} />
+                          <span className="text-[9px] font-bold tracking-wider" style={{ color: theme.accent }}>LIVE</span>
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-white/25 text-[11px] leading-relaxed mb-2.5 line-clamp-1">{theme.label}</p>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-1">
+                        <Users className="w-3 h-3 text-white/15" strokeWidth={1.5} />
+                        <span className="text-white/25 text-[10px]">{count} inside</span>
+                      </div>
+                      <span className="px-2 py-1 rounded-md text-[9px] font-bold transition-colors" style={{ background: `${theme.accent}10`, color: theme.accent, border: `1px solid ${theme.accent}18` }}>Enter</span>
+                    </div>
                   </div>
                 </button>
               )
