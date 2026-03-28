@@ -6,7 +6,7 @@ import {
   Users, MessageSquare, Sofa, Search, Wallet, Moon, Gamepad2, Radio, Music, 
   Calendar, Bell, Lock, X, Eye, EyeOff, Volume2, VolumeX, UserPlus, CheckCircle, 
   LogOut, Settings, Sparkles, Home, User, ChevronRight, Send, Heart, Check, Trash2,
-  Play, Image as ImageIcon, Plus, Camera, Video, Type, Loader2
+  Play, Image as ImageIcon, Plus, Camera, Video, Type, Loader2, Crown
 } from 'lucide-react'
 import { useNotifications } from './contexts/NotificationContext'
 
@@ -685,6 +685,7 @@ const HomePage = ({ user, onLogout, setUser }) => {
   const prevNotificationCount = useRef(0)
   const { soundEnabled, toggleSound, playSound, requestPermission, notifyFriendRequest, notifyMessage } = useNotifications()
   
+  const [profileUser, setProfileUser] = useState(null)
   const lockedFeatures = ['radio', 'music', 'afterdark']
   
   useEffect(() => {
@@ -1030,6 +1031,39 @@ const HomePage = ({ user, onLogout, setUser }) => {
   }
 
   const unreadCount = notifications.filter(n => !n.read).length + pendingFriendRequests.length
+
+  // View a user's profile in modal
+  const viewProfile = async (userId) => {
+    try {
+      const res = await fetch(`/api/profile/${userId}?viewerId=${user.id}`)
+      if (res.ok) {
+        const data = await res.json()
+        setProfileUser(data)
+      }
+    } catch (err) {
+      console.error('Failed to load profile')
+    }
+  }
+  const isFriend = (userId) => user?.friends?.includes(userId)
+  const sendFriendRequest = async (friendId) => {
+    try {
+      const res = await fetch('/api/friends/request', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: user.id, friendId })
+      })
+      if (res.ok) {
+        fetchPendingFriendRequests()
+      }
+    } catch (err) {
+      console.error('Failed to send friend request')
+    }
+  }
+  const getVerificationBadge = (u) => {
+    if (u.isFounder || u.role === 'founder') return { icon: Crown, color: 'text-amber-400', bg: 'bg-amber-400/10', label: 'Founder' }
+    if (u.verified) return { icon: Check, color: 'text-emerald-400', bg: 'bg-emerald-400/10', label: 'Verified' }
+    return null
+  }
 
   // Fetch members for "People Online" section
   const [members, setMembers] = useState([])
@@ -1517,83 +1551,117 @@ const HomePage = ({ user, onLogout, setUser }) => {
       {/* ===== HOME EXPERIENCE ===== */}
       <main className="relative z-[5] pb-28">
 
-        {/* --- 1. DISCOVER / CONNECTIONS — Top Priority --- */}
-        <section className="px-5 pt-5 pb-2" data-testid="discover-section">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <h2 className="text-white/90 text-lg font-heading font-bold tracking-tight">Discover</h2>
-              <p className="text-white/25 text-[11px] mt-0.5">People you might connect with</p>
-            </div>
-            <button onClick={() => router.push('/search')} className="text-[11px] text-[#D4A54A]/60 hover:text-[#D4A54A] font-medium transition-colors" data-testid="discover-see-all">See all</button>
+        {/* --- 1. DISCOVER / CONNECTIONS — dominant, engaging --- */}
+        <section className="pt-4 pb-2" data-testid="discover-section">
+          <div className="px-5 flex items-center justify-between mb-4">
+            <h2 className="text-white text-xl font-heading font-bold tracking-tight">Discover</h2>
+            <button onClick={() => router.push('/search')} className="text-xs text-[#D4A54A] font-semibold hover:text-[#D4A54A]/80 transition-colors" data-testid="discover-see-all">See all</button>
           </div>
 
-          <div className="grid grid-cols-2 gap-3" data-testid="discover-grid">
-            {members.slice(0, 6).map((m, i) => {
-              const gradients = [
-                'from-[#D4A54A]/20 to-[#E8364E]/10',
-                'from-[#3B82F6]/20 to-[#9333EA]/10',
-                'from-[#E84393]/20 to-[#D4A54A]/10',
-                'from-[#10B981]/20 to-[#3B82F6]/10',
-                'from-[#9333EA]/20 to-[#E84393]/10',
-                'from-[#E8364E]/20 to-[#D4A54A]/10',
-              ]
-              const accentColors = ['#D4A54A', '#3B82F6', '#E84393', '#10B981', '#9333EA', '#E8364E']
-              const accent = accentColors[i % accentColors.length]
-              return (
-                <button
-                  key={m.id}
-                  onClick={() => router.push(`/search?view=${m.id}`)}
-                  className="group text-left rounded-2xl overflow-hidden transition-all duration-200 hover:scale-[1.02]"
-                  style={{ background: '#111318', border: '1px solid rgba(255,255,255,0.04)' }}
-                  data-testid={`discover-card-${m.id}`}
-                >
-                  <div className={`relative w-full aspect-[4/3] bg-gradient-to-br ${gradients[i % gradients.length]} flex items-center justify-center`}>
-                    {m.avatar || m.profilePicture ? (
-                      <img src={m.avatar || m.profilePicture} alt="" className="w-full h-full object-cover" />
-                    ) : (
-                      <span className="text-3xl font-bold" style={{ color: `${accent}90` }}>
-                        {m.displayName?.charAt(0)?.toUpperCase() || '?'}
-                      </span>
-                    )}
-                    <div className="absolute top-2 right-2 w-2.5 h-2.5 rounded-full bg-[#10B981] ring-2 ring-[#111318]" />
-                  </div>
-                  <div className="px-3 py-2.5">
-                    <p className="text-white/80 text-sm font-medium truncate group-hover:text-white transition-colors">{m.displayName || 'Member'}</p>
-                    <p className="text-white/20 text-[10px] mt-0.5">Online now</p>
-                  </div>
-                </button>
-              )
-            })}
-          </div>
+          {members.length > 0 && (
+            <>
+              {/* Hero profile card — first member, full width */}
+              {(() => {
+                const m = members[0]
+                const badge = getVerificationBadge(m)
+                return (
+                  <button
+                    key={`hero-${m.id}`}
+                    onClick={() => viewProfile(m.id)}
+                    className="w-full block mb-3 group"
+                    data-testid={`discover-hero-${m.id}`}
+                  >
+                    <div className="relative mx-5 rounded-2xl overflow-hidden" style={{ aspectRatio: '16/9' }}>
+                      <div className="absolute inset-0 bg-gradient-to-br from-[#D4A54A]/30 via-[#C7254E]/20 to-[#1a1020]" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
+                      {(m.avatar || m.profilePicture) ? (
+                        <img src={m.avatar || m.profilePicture} alt="" className="absolute inset-0 w-full h-full object-cover" />
+                      ) : (
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <span className="text-6xl font-bold text-white/20">{m.displayName?.charAt(0)?.toUpperCase() || '?'}</span>
+                        </div>
+                      )}
+                      <div className="absolute bottom-0 left-0 right-0 p-5">
+                        <div className="flex items-center gap-2">
+                          <h3 className="text-white text-lg font-bold">{m.displayName || 'Member'}</h3>
+                          {badge && <badge.icon className={`w-4 h-4 ${badge.color}`} />}
+                          <span className="w-2 h-2 rounded-full bg-[#10B981] ml-1" />
+                        </div>
+                        <p className="text-white/40 text-xs mt-1">{m.bio || 'Online now'}</p>
+                      </div>
+                    </div>
+                  </button>
+                )
+              })()}
 
+              {/* Profile grid — remaining members, 2 columns */}
+              <div className="px-5 grid grid-cols-2 gap-2.5" data-testid="discover-grid">
+                {members.slice(1, 7).map((m, i) => {
+                  const gradients = [
+                    'from-[#2563EB]/25 via-[#7C3AED]/15 to-[#0F172A]',
+                    'from-[#E84393]/25 via-[#D4A54A]/10 to-[#1a0f20]',
+                    'from-[#059669]/20 via-[#0EA5E9]/10 to-[#0a1a1a]',
+                    'from-[#9333EA]/25 via-[#EC4899]/10 to-[#1a0f24]',
+                    'from-[#F59E0B]/20 via-[#EF4444]/10 to-[#1a1410]',
+                    'from-[#06B6D4]/25 via-[#8B5CF6]/10 to-[#0f1a20]',
+                  ]
+                  const badge = getVerificationBadge(m)
+                  return (
+                    <button
+                      key={m.id}
+                      onClick={() => viewProfile(m.id)}
+                      className="text-left rounded-xl overflow-hidden group"
+                      data-testid={`discover-card-${m.id}`}
+                    >
+                      <div className="relative" style={{ aspectRatio: '3/4' }}>
+                        <div className={`absolute inset-0 bg-gradient-to-br ${gradients[i % gradients.length]}`} />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+                        {(m.avatar || m.profilePicture) ? (
+                          <img src={m.avatar || m.profilePicture} alt="" className="absolute inset-0 w-full h-full object-cover" />
+                        ) : (
+                          <div className="absolute inset-0 flex items-center justify-center">
+                            <span className="text-4xl font-bold text-white/15 group-hover:text-white/25 transition-colors">{m.displayName?.charAt(0)?.toUpperCase() || '?'}</span>
+                          </div>
+                        )}
+                        <div className="absolute bottom-0 left-0 right-0 p-3">
+                          <div className="flex items-center gap-1.5">
+                            <p className="text-white text-sm font-semibold truncate">{m.displayName || 'Member'}</p>
+                            {badge && <badge.icon className={`w-3 h-3 flex-shrink-0 ${badge.color}`} />}
+                          </div>
+                          <div className="flex items-center gap-1 mt-0.5">
+                            <span className="w-1.5 h-1.5 rounded-full bg-[#10B981]" />
+                            <span className="text-white/35 text-[10px]">Online</span>
+                          </div>
+                        </div>
+                      </div>
+                    </button>
+                  )
+                })}
+              </div>
+            </>
+          )}
+
+          {/* Connection Requests */}
           {pendingFriendRequests.length > 0 && (
-            <div className="mt-4" data-testid="connection-requests">
-              <p className="text-white/40 text-[11px] font-medium mb-2">Connection Requests</p>
+            <div className="px-5 mt-4" data-testid="connection-requests">
+              <p className="text-white/50 text-xs font-semibold uppercase tracking-wider mb-2">Requests</p>
               <div className="space-y-2">
                 {pendingFriendRequests.slice(0, 3).map((req) => (
-                  <div key={req.id || req.fromUserId} className="flex items-center gap-3 py-2.5 px-3 rounded-xl bg-white/[0.02] border border-white/[0.04]" data-testid={`match-${req.fromUserId}`}>
-                    <div className="w-10 h-10 rounded-full bg-[#141420] overflow-hidden flex-shrink-0 border border-white/[0.06]">
+                  <div key={req.id || req.fromUserId} className="flex items-center gap-3 py-3 px-4 rounded-xl" style={{ background: '#151A24', border: '1px solid rgba(255,255,255,0.05)' }} data-testid={`match-${req.fromUserId}`}>
+                    <div className="w-11 h-11 rounded-full overflow-hidden flex-shrink-0 bg-gradient-to-br from-[#D4A54A]/20 to-[#E84393]/10 flex items-center justify-center">
                       {req.fromAvatar ? (
                         <img src={req.fromAvatar} alt="" className="w-full h-full object-cover" />
                       ) : (
-                        <div className="w-full h-full flex items-center justify-center text-[#E84393]/60 text-sm font-semibold">
-                          {req.fromName?.charAt(0) || '?'}
-                        </div>
+                        <span className="text-white/40 text-sm font-bold">{req.fromName?.charAt(0) || '?'}</span>
                       )}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-white/80 text-sm font-medium truncate">{req.fromName || 'Unknown'}</p>
-                      <p className="text-white/20 text-[10px]">Wants to connect</p>
+                      <p className="text-white text-sm font-semibold truncate">{req.fromName || 'Unknown'}</p>
+                      <p className="text-white/30 text-[11px]">Wants to connect</p>
                     </div>
-                    <div className="flex gap-1.5 flex-shrink-0">
-                      <button 
-                        onClick={(e) => { e.stopPropagation(); acceptFriendRequest(req.fromUserId); }}
-                        className="px-3 py-1.5 rounded-full text-[10px] font-semibold text-[#10B981] bg-[#10B981]/10 border border-[#10B981]/15 hover:bg-[#10B981]/20 transition-colors"
-                      >Accept</button>
-                      <button 
-                        onClick={(e) => { e.stopPropagation(); declineFriendRequest(req.fromUserId); }}
-                        className="px-2.5 py-1.5 rounded-full text-[10px] font-medium text-white/25 bg-white/[0.04] hover:bg-white/[0.08] transition-colors"
-                      >Pass</button>
+                    <div className="flex gap-2 flex-shrink-0">
+                      <button onClick={(e) => { e.stopPropagation(); acceptFriendRequest(req.fromUserId); }} className="px-3.5 py-1.5 rounded-full text-[11px] font-bold bg-[#10B981] text-white hover:bg-[#10B981]/80 transition-colors">Accept</button>
+                      <button onClick={(e) => { e.stopPropagation(); declineFriendRequest(req.fromUserId); }} className="px-3 py-1.5 rounded-full text-[11px] font-medium text-white/30 bg-white/5 hover:bg-white/10 transition-colors">Pass</button>
                     </div>
                   </div>
                 ))}
@@ -1602,35 +1670,21 @@ const HomePage = ({ user, onLogout, setUser }) => {
           )}
         </section>
 
-        <div className="mx-5 my-1 h-px bg-white/[0.04]" />
-
-        {/* --- 2. ACTIVE NOW — Stories + Online strip --- */}
-        <section className="py-3" data-testid="active-now-section">
-          <div className="px-5 flex items-center justify-between mb-2.5">
-            <div className="flex items-center gap-2">
-              <h2 className="text-white/50 text-[12px] font-heading font-semibold tracking-tight uppercase">Active Now</h2>
-              <span className="flex items-center gap-1">
-                <span className="w-1.5 h-1.5 rounded-full bg-[#10B981] animate-pulse" />
-                <span className="text-[#10B981]/60 text-[10px] font-medium">{members.length}</span>
-              </span>
-            </div>
+        {/* --- 2. ACTIVE NOW — stories + online strip --- */}
+        <section className="py-4" data-testid="active-now-section">
+          <div className="px-5 flex items-center gap-2 mb-3">
+            <span className="w-2 h-2 rounded-full bg-[#10B981] animate-pulse" />
+            <h2 className="text-white/60 text-xs font-heading font-bold tracking-wider uppercase">Active Now</h2>
+            <span className="text-[#10B981]/50 text-[10px] font-semibold">{members.length}</span>
           </div>
 
-          <div 
-            className="flex gap-3 overflow-x-auto pb-2 px-5"
-            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', WebkitOverflowScrolling: 'touch' }}
-            data-testid="active-now-scroll"
-          >
+          <div className="flex gap-3 overflow-x-auto pb-2 px-5" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', WebkitOverflowScrolling: 'touch' }} data-testid="active-now-scroll">
             {/* Add Story */}
-            <button
-              onClick={() => setShowAddStory(true)}
-              className="flex-none flex flex-col items-center gap-1"
-              data-testid="add-story-btn"
-            >
-              <div className="relative w-12 h-12 rounded-full border border-dashed border-white/10 flex items-center justify-center hover:border-white/20 transition-colors">
-                <Plus className="w-3.5 h-3.5 text-white/25" strokeWidth={1.5} />
+            <button onClick={() => setShowAddStory(true)} className="flex-none flex flex-col items-center gap-1.5" data-testid="add-story-btn">
+              <div className="w-14 h-14 rounded-full border-2 border-dashed border-white/15 flex items-center justify-center hover:border-[#D4A54A]/40 transition-colors">
+                <Plus className="w-4 h-4 text-white/30" strokeWidth={2} />
               </div>
-              <span className="text-white/15 text-[8px] font-medium">Story</span>
+              <span className="text-white/25 text-[9px] font-medium">Story</span>
             </button>
 
             {/* Stories */}
@@ -1638,131 +1692,109 @@ const HomePage = ({ user, onLogout, setUser }) => {
               const hasUnviewed = storyGroup.stories?.some(s => !s.viewedBy?.includes(user.id))
               const isOwn = storyGroup.userId === user.id
               return (
-                <button
-                  key={`story-${storyGroup.userId}`}
-                  onClick={() => viewStory(storyGroup)}
-                  className="flex-none flex flex-col items-center gap-1"
-                  data-testid={`story-${storyGroup.userId}`}
-                >
-                  <div className={`relative w-12 h-12 rounded-full p-[2px] ${hasUnviewed ? 'bg-gradient-to-br from-[#D4A54A] to-[#E8364E]' : 'bg-white/8'}`}>
-                    <div className="w-full h-full rounded-full bg-[#0B0D14] p-[1px]">
-                      <div className="w-full h-full rounded-full overflow-hidden bg-[#141420] flex items-center justify-center">
+                <button key={`story-${storyGroup.userId}`} onClick={() => viewStory(storyGroup)} className="flex-none flex flex-col items-center gap-1.5" data-testid={`story-${storyGroup.userId}`}>
+                  <div className={`w-14 h-14 rounded-full p-[2px] ${hasUnviewed ? 'bg-gradient-to-br from-[#D4A54A] to-[#E8364E]' : 'bg-white/10'}`}>
+                    <div className="w-full h-full rounded-full bg-[#0C0F18] p-[1.5px]">
+                      <div className="w-full h-full rounded-full overflow-hidden bg-[#171C28] flex items-center justify-center">
                         {storyGroup.avatar ? (
                           <img src={storyGroup.avatar} alt="" className="w-full h-full object-cover" />
                         ) : (
-                          <span className="text-white/35 text-[10px] font-semibold">{storyGroup.displayName?.charAt(0)?.toUpperCase() || '?'}</span>
+                          <span className="text-white/40 text-xs font-bold">{storyGroup.displayName?.charAt(0)?.toUpperCase() || '?'}</span>
                         )}
                       </div>
                     </div>
                   </div>
-                  <span className="text-white/20 text-[8px] font-medium truncate w-12 text-center">
-                    {isOwn ? 'You' : storyGroup.displayName?.split(' ')[0]?.slice(0, 6) || 'User'}
-                  </span>
+                  <span className="text-white/30 text-[9px] font-medium truncate w-14 text-center">{isOwn ? 'You' : storyGroup.displayName?.split(' ')[0]?.slice(0, 7) || 'User'}</span>
                 </button>
               )
             })}
 
             {/* Online members */}
             {members.slice(0, 12).map((m, i) => {
-              const colors = ['#D4A54A', '#3B82F6', '#E84393', '#10B981', '#9333EA', '#E8364E']
+              const colors = ['#D4A54A', '#3B82F6', '#E84393', '#10B981', '#9333EA', '#E8364E', '#06B6D4', '#F59E0B']
               return (
-                <button
-                  key={`active-${m.id}`}
-                  onClick={() => router.push(`/search?view=${m.id}`)}
-                  className="flex-none flex flex-col items-center gap-1 group"
-                  data-testid={`active-user-${m.id}`}
-                >
-                  <div className="relative w-12 h-12">
-                    <div className="w-full h-full rounded-full overflow-hidden bg-[#141420] flex items-center justify-center border border-white/[0.05]">
+                <button key={`active-${m.id}`} onClick={() => viewProfile(m.id)} className="flex-none flex flex-col items-center gap-1.5 group" data-testid={`active-user-${m.id}`}>
+                  <div className="relative w-14 h-14">
+                    <div className="w-full h-full rounded-full overflow-hidden bg-[#171C28] flex items-center justify-center border border-white/[0.06]">
                       {m.avatar || m.profilePicture ? (
                         <img src={m.avatar || m.profilePicture} alt="" className="w-full h-full object-cover" />
                       ) : (
-                        <span className="text-xs font-semibold" style={{ color: `${colors[i % colors.length]}80` }}>
-                          {m.displayName?.charAt(0)?.toUpperCase() || '?'}
-                        </span>
+                        <span className="text-sm font-bold" style={{ color: `${colors[i % colors.length]}` }}>{m.displayName?.charAt(0)?.toUpperCase() || '?'}</span>
                       )}
                     </div>
-                    <div className="absolute -bottom-0.5 -right-0.5 w-2 h-2 rounded-full bg-[#10B981] ring-[1.5px] ring-[#0B0D14]" />
+                    <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-[#10B981] ring-2 ring-[#0C0F18]" />
                   </div>
-                  <span className="text-white/15 text-[8px] font-medium truncate w-12 text-center group-hover:text-white/30 transition-colors">
-                    {m.displayName?.split(' ')[0]?.slice(0, 6) || 'User'}
-                  </span>
+                  <span className="text-white/25 text-[9px] font-medium truncate w-14 text-center group-hover:text-white/50 transition-colors">{m.displayName?.split(' ')[0]?.slice(0, 7) || 'User'}</span>
                 </button>
               )
             })}
           </div>
         </section>
 
-        <div className="mx-5 h-px bg-white/[0.04]" />
-
-        {/* --- 3. RECENT ACTIVITY — lightweight signals --- */}
+        {/* --- 3. RECENT ACTIVITY — real data from notifications + online status --- */}
         <section className="px-5 py-3" data-testid="recent-activity-section">
-          <h2 className="text-white/50 text-[12px] font-heading font-semibold tracking-tight uppercase mb-2.5">Recent Activity</h2>
-          <div className="space-y-0">
-            {members.slice(0, 4).map((m, i) => {
-              const actions = [
-                { text: 'viewed your profile', icon: Eye, color: '#3B82F6' },
-                { text: 'is now online', icon: Users, color: '#10B981' },
-                { text: 'liked your profile', icon: Heart, color: '#E84393' },
-                { text: 'sent a connection request', icon: UserPlus, color: '#D4A54A' },
-              ]
-              const action = actions[i % actions.length]
-              const ActionIcon = action.icon
-              const times = ['3m ago', '12m ago', '1h ago', '2h ago']
-              return (
-                <button
-                  key={`activity-${m.id}`}
-                  onClick={() => router.push(`/search?view=${m.id}`)}
-                  className="w-full flex items-center gap-3 py-2.5 group"
-                  data-testid={`activity-${i}`}
-                >
-                  <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0" style={{ background: `${action.color}12` }}>
-                    <ActionIcon className="w-3.5 h-3.5" style={{ color: `${action.color}80` }} strokeWidth={1.5} />
+          <h2 className="text-white/60 text-xs font-heading font-bold tracking-wider uppercase mb-3">Recent Activity</h2>
+          <div className="space-y-0.5">
+            {notifications.length > 0 ? (
+              notifications.slice(0, 4).map((n, i) => (
+                <div key={n.id || i} className="flex items-center gap-3 py-2.5 rounded-lg" data-testid={`activity-${i}`}>
+                  <div className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 bg-[#D4A54A]/10">
+                    <Bell className="w-4 h-4 text-[#D4A54A]/60" strokeWidth={1.5} />
                   </div>
-                  <div className="flex-1 min-w-0 text-left">
-                    <p className="text-white/50 text-[12px] truncate group-hover:text-white/70 transition-colors">
-                      <span className="text-white/70 font-medium">{m.displayName?.split(' ')[0] || 'Someone'}</span>
-                      {' '}{action.text}
+                  <p className="text-white/60 text-[13px] flex-1 truncate">{n.message || 'New activity'}</p>
+                  <span className="text-white/20 text-[10px] flex-shrink-0">{n.time || ''}</span>
+                </div>
+              ))
+            ) : (
+              /* Use real online members as activity signals */
+              members.slice(0, 4).map((m, i) => {
+                const signals = [
+                  { icon: Eye, text: 'is browsing', color: '#3B82F6' },
+                  { icon: Users, text: 'just came online', color: '#10B981' },
+                  { icon: Heart, text: 'is active', color: '#E84393' },
+                  { icon: UserPlus, text: 'joined recently', color: '#D4A54A' },
+                ]
+                const sig = signals[i % signals.length]
+                const SigIcon = sig.icon
+                return (
+                  <button key={`act-${m.id}`} onClick={() => viewProfile(m.id)} className="w-full flex items-center gap-3 py-2.5 rounded-lg hover:bg-white/[0.02] transition-colors group" data-testid={`activity-${i}`}>
+                    <div className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0" style={{ background: `${sig.color}12` }}>
+                      <SigIcon className="w-4 h-4" style={{ color: `${sig.color}90` }} strokeWidth={1.5} />
+                    </div>
+                    <p className="text-white/50 text-[13px] flex-1 text-left truncate group-hover:text-white/70 transition-colors">
+                      <span className="text-white/80 font-medium">{m.displayName?.split(' ')[0] || 'Someone'}</span> {sig.text}
                     </p>
-                  </div>
-                  <span className="text-white/15 text-[10px] flex-shrink-0">{times[i]}</span>
-                </button>
-              )
-            })}
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#10B981]/40 flex-shrink-0" />
+                  </button>
+                )
+              })
+            )}
           </div>
         </section>
 
-        <div className="mx-5 h-px bg-white/[0.04]" />
-
-        {/* --- 4. FEATURED LOUNGE — After Dark (existing, prominent) --- */}
+        {/* --- 4. FEATURED LOUNGE — After Dark --- */}
         <section className="px-5 py-4" data-testid="featured-lounge-section">
-          <p className="text-white/30 text-[10px] font-bold uppercase tracking-[0.15em] mb-3">Featured</p>
-          <button
-            onClick={() => handleTileClick('afterdark', '/afterdark')}
-            className="w-full text-left group"
-            data-testid="featured-lounge"
-          >
-            <div className="relative rounded-xl overflow-hidden" style={{ background: '#111318', border: '1px solid rgba(212,165,74,0.08)' }}>
-              <div className="absolute top-0 right-0 w-32 h-24 bg-[#D4A54A]/[0.03] blur-[50px] pointer-events-none" />
-              <div className="relative z-[2] p-5">
-                <div className="flex items-center justify-between mb-3">
-                  <div>
-                    <h3 className="text-white/90 font-heading font-bold text-lg tracking-tight">After Dark</h3>
-                    <p className="text-white/20 text-[11px] mt-0.5">Private. Discreet. For those who want more.</p>
-                  </div>
-                  <div className="flex items-center gap-1.5 px-2 py-1 rounded-full" style={{ background: 'rgba(212,165,74,0.06)', border: '1px solid rgba(212,165,74,0.10)' }}>
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#D4A54A]/50 animate-pulse" />
-                    <span className="text-[#D4A54A]/60 text-[9px] font-bold tracking-wider">LIVE</span>
+          <p className="text-white/40 text-[10px] font-bold uppercase tracking-[0.2em] mb-3">Featured</p>
+          <button onClick={() => handleTileClick('afterdark', '/afterdark')} className="w-full text-left group" data-testid="featured-lounge">
+            <div className="relative rounded-2xl overflow-hidden" style={{ background: 'linear-gradient(135deg, #1a1424 0%, #14101E 50%, #0F0D17 100%)', border: '1px solid rgba(212,165,74,0.10)' }}>
+              <div className="absolute top-0 right-0 w-40 h-28 bg-[#D4A54A]/[0.05] blur-[60px] pointer-events-none" />
+              <div className="absolute bottom-0 left-0 w-32 h-20 bg-[#E8364E]/[0.04] blur-[40px] pointer-events-none" />
+              <div className="relative z-[2] px-6 py-5">
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="text-white font-heading font-bold text-xl tracking-tight">After Dark</h3>
+                  <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#D4A54A]/8 border border-[#D4A54A]/15">
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#D4A54A] animate-pulse" />
+                    <span className="text-[#D4A54A] text-[9px] font-bold tracking-wider">LIVE</span>
                   </div>
                 </div>
+                <p className="text-white/30 text-sm mb-5">Private. Discreet. For those who want more.</p>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-1.5">
-                    <Users className="w-3 h-3 text-white/15" strokeWidth={1.5} />
-                    <span className="text-white/20 text-[10px]">{loungesList.reduce((sum, l) => sum + (l.memberCount || 0), 0)} online</span>
+                    <Users className="w-3.5 h-3.5 text-white/20" strokeWidth={1.5} />
+                    <span className="text-white/25 text-[11px]">{loungesList.reduce((s, l) => s + (l.memberCount || 0), 0)} inside</span>
                   </div>
-                  <div className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-[11px] font-semibold text-[#D4A54A]/80 group-hover:text-[#D4A54A] transition-colors" style={{ background: 'rgba(212,165,74,0.06)', border: '1px solid rgba(212,165,74,0.12)' }}>
-                    Enter
-                    <ChevronRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" strokeWidth={2} />
+                  <div className="flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-bold text-[#D4A54A] group-hover:text-[#D4A54A]/80 transition-colors bg-[#D4A54A]/10 border border-[#D4A54A]/15 group-hover:bg-[#D4A54A]/15">
+                    Enter <ChevronRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" strokeWidth={2.5} />
                   </div>
                 </div>
               </div>
@@ -1770,35 +1802,34 @@ const HomePage = ({ user, onLogout, setUser }) => {
           </button>
         </section>
 
-        <div className="mx-5 h-px bg-white/[0.04]" />
-
-        {/* --- 5. LOUNGES — existing real lounges, clean list --- */}
+        {/* --- 5. LOUNGES — real existing lounges --- */}
         <section className="px-5 py-3" data-testid="active-lounges-section">
-          <div className="flex items-center justify-between mb-2.5">
-            <h2 className="text-white/50 text-[12px] font-heading font-semibold tracking-tight uppercase">Lounges</h2>
-            <button onClick={() => handleTileClick('lounge', '/lounge')} className="text-[10px] text-white/20 hover:text-white/40 font-medium transition-colors" data-testid="see-all-lounges">All</button>
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-white/60 text-xs font-heading font-bold tracking-wider uppercase">Lounges</h2>
+            <button onClick={() => handleTileClick('lounge', '/lounge')} className="text-[10px] text-white/30 hover:text-white/50 font-semibold transition-colors" data-testid="see-all-lounges">All</button>
           </div>
-          <div className="space-y-0.5">
+          <div className="space-y-1">
             {loungesList.slice(0, 5).map((lounge, idx) => {
-              const accents = ['#3B82F6', '#10B981', '#D4A54A', '#9333EA', '#E84393']
+              const accents = ['#3B82F6', '#10B981', '#D4A54A', '#E84393', '#9333EA']
               const accent = accents[idx % accents.length]
-              const memberCount = lounge.memberCount || lounge.members?.length || 0
+              const count = lounge.memberCount || lounge.members?.length || 0
               return (
-                <button
-                  key={lounge.id}
-                  onClick={() => router.push(`/lounge?id=${lounge.id}`)}
-                  className="w-full flex items-center gap-3 py-2.5 px-2 rounded-lg hover:bg-white/[0.02] transition-colors group"
-                  data-testid={`home-lounge-${lounge.id}`}
-                >
-                  <div className="w-0.5 h-6 rounded-full flex-shrink-0" style={{ background: `${accent}50` }} />
+                <button key={lounge.id} onClick={() => router.push(`/lounge?id=${lounge.id}`)} className="w-full flex items-center gap-3.5 py-3 px-3 rounded-xl hover:bg-white/[0.03] transition-colors group" data-testid={`home-lounge-${lounge.id}`}>
+                  <div className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: `${accent}12` }}>
+                    <Sofa className="w-4 h-4" style={{ color: `${accent}80` }} strokeWidth={1.5} />
+                  </div>
                   <div className="flex-1 min-w-0 text-left">
-                    <h3 className="text-white/60 text-[13px] font-medium truncate group-hover:text-white/80 transition-colors">{lounge.name}</h3>
+                    <h3 className="text-white/80 text-sm font-semibold truncate group-hover:text-white transition-colors">{lounge.name}</h3>
+                    {lounge.description && <p className="text-white/20 text-[11px] truncate">{lounge.description}</p>}
                   </div>
                   <div className="flex items-center gap-2 flex-shrink-0">
-                    {memberCount > 0 && (
-                      <span className="text-white/15 text-[10px]">{memberCount}</span>
+                    {count > 0 && (
+                      <div className="flex items-center gap-1">
+                        <span className="w-1.5 h-1.5 rounded-full" style={{ background: accent }} />
+                        <span className="text-white/30 text-[11px] font-medium">{count}</span>
+                      </div>
                     )}
-                    <ChevronRight className="w-3 h-3 text-white/8 group-hover:text-white/20 transition-colors" strokeWidth={1.5} />
+                    <ChevronRight className="w-3.5 h-3.5 text-white/10 group-hover:text-white/30 transition-colors" strokeWidth={1.5} />
                   </div>
                 </button>
               )
@@ -1806,67 +1837,140 @@ const HomePage = ({ user, onLogout, setUser }) => {
           </div>
         </section>
 
-        <div className="mx-5 h-px bg-white/[0.04]" />
-
-        {/* --- 6. CONTENT / MONETISATION — subtle exposure --- */}
+        {/* --- 6. CONTENT / MONETISATION --- */}
         <section className="px-5 py-3" data-testid="monetisation-section">
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => router.push('/wallet')}
-              className="flex-1 flex items-center gap-2.5 py-3 px-3.5 rounded-xl transition-colors hover:bg-white/[0.02]"
-              style={{ background: '#111318', border: '1px solid rgba(255,255,255,0.03)' }}
-              data-testid="home-wallet-btn"
-            >
-              <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ background: 'rgba(212,165,74,0.08)' }}>
-                <Wallet className="w-3.5 h-3.5 text-[#D4A54A]/60" strokeWidth={1.5} />
+          <div className="flex gap-2.5">
+            <button onClick={() => router.push('/wallet')} className="flex-1 flex items-center gap-3 py-3.5 px-4 rounded-xl transition-colors hover:bg-white/[0.03]" style={{ background: '#131720', border: '1px solid rgba(212,165,74,0.06)' }} data-testid="home-wallet-btn">
+              <div className="w-9 h-9 rounded-full flex items-center justify-center bg-[#D4A54A]/10">
+                <Wallet className="w-4 h-4 text-[#D4A54A]/70" strokeWidth={1.5} />
               </div>
               <div className="text-left">
-                <p className="text-white/50 text-[11px] font-medium">Credits</p>
-                <p className="text-[#D4A54A]/70 text-[13px] font-heading font-bold">{user.credits || 0}</p>
+                <p className="text-[#D4A54A] text-base font-heading font-bold">{user.credits || 0}</p>
+                <p className="text-white/30 text-[10px]">Credits</p>
               </div>
             </button>
-            <button
-              onClick={() => router.push('/search')}
-              className="flex-1 flex items-center gap-2.5 py-3 px-3.5 rounded-xl transition-colors hover:bg-white/[0.02]"
-              style={{ background: '#111318', border: '1px solid rgba(255,255,255,0.03)' }}
-              data-testid="home-unlock-btn"
-            >
-              <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ background: 'rgba(232,54,78,0.06)' }}>
-                <Lock className="w-3.5 h-3.5 text-[#E8364E]/50" strokeWidth={1.5} />
+            <button onClick={() => router.push('/search')} className="flex-1 flex items-center gap-3 py-3.5 px-4 rounded-xl transition-colors hover:bg-white/[0.03]" style={{ background: '#131720', border: '1px solid rgba(232,54,78,0.05)' }} data-testid="home-unlock-btn">
+              <div className="w-9 h-9 rounded-full flex items-center justify-center bg-[#E8364E]/8">
+                <Lock className="w-4 h-4 text-[#E8364E]/50" strokeWidth={1.5} />
               </div>
               <div className="text-left">
-                <p className="text-white/50 text-[11px] font-medium">Exclusive</p>
-                <p className="text-white/25 text-[10px]">Unlock content</p>
+                <p className="text-white/60 text-sm font-semibold">Exclusive</p>
+                <p className="text-white/20 text-[10px]">Unlock content</p>
               </div>
             </button>
           </div>
         </section>
 
-        <div className="mx-5 h-px bg-white/[0.04]" />
-
-        {/* --- 7. RADIO — existing feature, clean link --- */}
+        {/* --- 7. RADIO --- */}
         <section className="px-5 py-3" data-testid="radio-home-section">
-          <button
-            onClick={() => handleTileClick('radio', '/radio')}
-            className="w-full flex items-center gap-3 py-2.5 px-3 rounded-xl transition-colors hover:bg-white/[0.02] group"
-            style={{ background: '#111318', border: '1px solid rgba(255,255,255,0.03)' }}
-            data-testid="home-radio-btn"
-          >
-            <div className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0" style={{ background: 'rgba(232,54,78,0.06)' }}>
-              <Radio className="w-4 h-4 text-[#E8364E]/50" strokeWidth={1.5} />
+          <button onClick={() => handleTileClick('radio', '/radio')} className="w-full flex items-center gap-3.5 py-3 px-4 rounded-xl transition-colors hover:bg-white/[0.03] group" style={{ background: '#131720', border: '1px solid rgba(232,54,78,0.05)' }} data-testid="home-radio-btn">
+            <div className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 bg-[#E8364E]/10">
+              <Radio className="w-4 h-4 text-[#E8364E]/60" strokeWidth={1.5} />
             </div>
             <div className="flex-1 text-left">
-              <p className="text-white/60 text-[13px] font-medium group-hover:text-white/80 transition-colors">Radio</p>
-              <p className="text-white/15 text-[10px]">Listen while you browse</p>
+              <p className="text-white/70 text-sm font-semibold group-hover:text-white transition-colors">Radio</p>
+              <p className="text-white/20 text-[10px]">Listen while you browse</p>
             </div>
-            <ChevronRight className="w-3.5 h-3.5 text-white/10 group-hover:text-white/25 transition-colors" strokeWidth={1.5} />
+            <ChevronRight className="w-4 h-4 text-white/10 group-hover:text-white/30 transition-colors" strokeWidth={1.5} />
           </button>
         </section>
 
-        <div className="px-5 pt-2 pb-4">
-          <p className="text-white/6 text-[10px] text-center tracking-wide">A private space for adults. Connection at your own pace.</p>
-        </div>
+        <div className="h-4" />
       </main>
+
+      {/* Profile Modal */}
+      {profileUser && (
+        <div className="fixed inset-0 z-[60] flex items-end justify-center bg-black/60 backdrop-blur-sm animate-fade-in" onClick={() => setProfileUser(null)} data-testid="profile-modal-overlay">
+          <div className="w-full max-w-lg max-h-[85vh] overflow-y-auto rounded-t-3xl animate-slide-up" style={{ background: '#131720' }} onClick={e => e.stopPropagation()} data-testid="profile-modal">
+            {/* Hero */}
+            <div className="relative h-52 overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-br from-[#D4A54A]/20 via-[#E84393]/10 to-[#131720]" />
+              {(profileUser.avatar || profileUser.profilePicture) ? (
+                <img src={profileUser.avatar || profileUser.profilePicture} alt="" className="absolute inset-0 w-full h-full object-cover" />
+              ) : (
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <span className="text-7xl font-bold text-white/10">{profileUser.displayName?.charAt(0)?.toUpperCase() || '?'}</span>
+                </div>
+              )}
+              <div className="absolute inset-0 bg-gradient-to-t from-[#131720] via-transparent to-transparent" />
+              <button onClick={() => setProfileUser(null)} className="absolute top-4 right-4 w-8 h-8 rounded-full bg-black/40 flex items-center justify-center" data-testid="close-profile-modal">
+                <X className="w-4 h-4 text-white/70" />
+              </button>
+              <div className="absolute bottom-4 left-5 right-5">
+                <div className="flex items-center gap-2">
+                  <h2 className="text-white text-2xl font-bold">{profileUser.displayName}</h2>
+                  {(profileUser.isFounder || profileUser.role === 'founder') && <Crown className="w-5 h-5 text-amber-400" />}
+                  {profileUser.verified && <Check className="w-4 h-4 text-emerald-400" />}
+                </div>
+                {profileUser.bio && <p className="text-white/40 text-sm mt-1">{profileUser.bio}</p>}
+              </div>
+            </div>
+
+            <div className="px-5 pb-8 pt-4">
+              {/* Actions */}
+              <div className="flex gap-2.5 mb-5">
+                {!isFriend(profileUser.id) && profileUser.id !== user.id && (
+                  <button onClick={() => { sendFriendRequest(profileUser.id); setProfileUser(null); }} className="flex-1 py-3 rounded-xl text-sm font-bold bg-[#D4A54A] text-black hover:bg-[#D4A54A]/80 transition-colors" data-testid="profile-connect-btn">Connect</button>
+                )}
+                {isFriend(profileUser.id) && (
+                  <button onClick={() => { router.push(`/inbox?dm=${profileUser.id}`); setProfileUser(null); }} className="flex-1 py-3 rounded-xl text-sm font-bold bg-[#3B82F6] text-white hover:bg-[#3B82F6]/80 transition-colors" data-testid="profile-message-btn">Message</button>
+                )}
+                <button onClick={() => { router.push(`/search?view=${profileUser.id}`); setProfileUser(null); }} className="py-3 px-5 rounded-xl text-sm font-medium bg-white/5 text-white/60 hover:bg-white/10 transition-colors" data-testid="profile-full-btn">Full Profile</button>
+              </div>
+
+              {/* Info grid */}
+              {(profileUser.age || profileUser.location) && (
+                <div className="flex gap-2 mb-4">
+                  {profileUser.age && (
+                    <div className="px-3 py-2 rounded-lg bg-white/5"><p className="text-white text-sm font-bold">{profileUser.age}</p><p className="text-white/30 text-[10px]">Age</p></div>
+                  )}
+                  {profileUser.location && (
+                    <div className="px-3 py-2 rounded-lg bg-white/5"><p className="text-white text-sm font-bold truncate">{profileUser.location}</p><p className="text-white/30 text-[10px]">Location</p></div>
+                  )}
+                </div>
+              )}
+
+              {/* About */}
+              {(profileUser.aboutMe || profileUser.bio) && (
+                <div className="mb-4">
+                  <h3 className="text-white/50 text-xs font-bold uppercase tracking-wider mb-2">About</h3>
+                  <p className="text-white/60 text-sm leading-relaxed">{profileUser.aboutMe || profileUser.bio}</p>
+                </div>
+              )}
+
+              {/* Stats */}
+              <div className="flex gap-3">
+                <div className="flex-1 py-3 rounded-xl bg-white/5 text-center">
+                  <p className="text-white font-bold">{profileUser.friends?.length || 0}</p>
+                  <p className="text-white/30 text-[10px]">Friends</p>
+                </div>
+                <div className="flex-1 py-3 rounded-xl bg-white/5 text-center">
+                  <p className="text-white font-bold">{profileUser.galleryCount || profileUser.gallery?.length || 0}</p>
+                  <p className="text-white/30 text-[10px]">Photos</p>
+                </div>
+              </div>
+
+              {/* Gallery preview */}
+              {profileUser.gallery && profileUser.gallery.length > 0 && (
+                <div className="mt-4">
+                  <h3 className="text-white/50 text-xs font-bold uppercase tracking-wider mb-2">Gallery</h3>
+                  <div className="grid grid-cols-3 gap-1.5">
+                    {profileUser.gallery.slice(0, 3).map((img, i) => (
+                      <div key={i} className="aspect-square rounded-lg overflow-hidden bg-white/5">
+                        {typeof img === 'string' ? (
+                          <img src={img} alt="" className="w-full h-full object-cover" />
+                        ) : img.url ? (
+                          <img src={img.url} alt="" className="w-full h-full object-cover" />
+                        ) : null}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Bottom Navigation */}
       <nav className="fixed bottom-0 left-0 right-0 z-20 backdrop-blur-2xl border-t border-white/[0.04]" style={{ background: 'rgba(11,13,20,0.90)' }} data-testid="bottom-nav">

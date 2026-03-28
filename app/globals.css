@@ -287,6 +287,12 @@ h1, h2, h3, h4, h5, h6, .font-heading {
 }
 .animate-fade-in { animation: fadeIn 0.3s ease-out forwards; }
 
+@keyframes slideUp {
+  from { transform: translateY(100%); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+.animate-slide-up { animation: slideUp 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+
 .page-enter { animation: fadeInUp 0.35s ease-out forwards; }
 
 @keyframes shimmer {
