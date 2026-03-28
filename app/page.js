@@ -549,22 +549,22 @@ const HomePage = ({ user, onLogout, setUser }) => {
   const getLoungeTheme = (lounge) => {
     const name = (lounge.name || '').toLowerCase()
     if (name.includes('grown folk'))
-      return { accent: '#C9A84C', bgFrom: '#1A1608', bgTo: '#12100A', label: 'Grown energy. Real connections. No games.', glow: 'rgba(201,168,76,0.12)', featured: true }
+      return { accent: '#FFD700', bgFrom: '#1A1608', bgTo: '#0D0B05', label: 'Grown energy. Real connections. No games.', glow: 'rgba(255,215,0,0.20)', neonBorder: 'rgba(255,215,0,0.50)', neonShadow: '0 0 30px rgba(255,215,0,0.35), 0 0 10px rgba(255,215,0,0.20), 0 4px 20px rgba(0,0,0,0.4)', iconType: 'gfb', featured: true }
     if (name.includes('lowkey') || name.includes('chill'))
-      return { accent: '#8B5CF6', bgFrom: '#14101F', bgTo: '#0F0D18', label: 'Where everyone starts. Real people, real energy.', glow: 'rgba(139,92,246,0.08)' }
+      return { accent: '#A855F7', bgFrom: '#14101F', bgTo: '#0A0818', label: 'Where everyone starts. Real people, real energy.', glow: 'rgba(168,85,247,0.15)', neonBorder: 'rgba(168,85,247,0.40)', neonShadow: '0 0 22px rgba(168,85,247,0.25), 0 0 6px rgba(59,130,246,0.12), 0 4px 20px rgba(0,0,0,0.4)', iconType: 'lk' }
     if (name.includes('after dark'))
-      return { accent: '#D4A54A', bgFrom: '#15120A', bgTo: '#0F0E08', label: 'No names. No limits. Just energy.', glow: 'rgba(212,165,74,0.08)' }
+      return { accent: '#3B82F6', bgFrom: '#0A0D18', bgTo: '#060810', label: 'No names. No limits. Just energy.', glow: 'rgba(59,130,246,0.15)', neonBorder: 'rgba(59,130,246,0.42)', neonShadow: '0 0 22px rgba(59,130,246,0.28), 0 0 6px rgba(59,130,246,0.12), 0 4px 20px rgba(0,0,0,0.4)', iconType: 'moon', iconAccent: '#FFD700' }
     if (name.includes('kink'))
-      return { accent: '#EF4444', bgFrom: '#1A0F0F', bgTo: '#140C0C', label: 'Push boundaries. Find your people.', glow: 'rgba(239,68,68,0.10)' }
+      return { accent: '#EF4444', bgFrom: '#1A0808', bgTo: '#0F0505', label: 'Push boundaries. Find your people.', glow: 'rgba(239,68,68,0.18)', neonBorder: 'rgba(239,68,68,0.50)', neonShadow: '0 0 25px rgba(239,68,68,0.32), 0 0 8px rgba(239,68,68,0.15), 0 4px 20px rgba(0,0,0,0.4)', iconType: 'handcuffs' }
     if (name.includes('vip') || name.includes('exclusive') || name.includes('premium'))
-      return { accent: '#D4A54A', bgFrom: '#18150E', bgTo: '#12100C', label: 'Private access. Elevated connections.', glow: 'rgba(212,165,74,0.08)' }
+      return { accent: '#10B981', bgFrom: '#0A1810', bgTo: '#060F0A', label: 'Private access. Elevated connections.', glow: 'rgba(16,185,129,0.15)', neonBorder: 'rgba(16,185,129,0.42)', neonShadow: '0 0 22px rgba(16,185,129,0.28), 0 0 6px rgba(16,185,129,0.12), 0 4px 20px rgba(0,0,0,0.4)', iconType: 'crown', iconAccent: '#FFD700' }
     if (name.includes('night') || name.includes('owl'))
-      return { accent: '#F59E0B', bgFrom: '#17130D', bgTo: '#110F0B', label: 'The night is young. Step in.', glow: 'rgba(245,158,11,0.08)' }
+      return { accent: '#F59E0B', bgFrom: '#17130D', bgTo: '#110F0B', label: 'The night is young. Step in.', glow: 'rgba(245,158,11,0.15)', neonBorder: 'rgba(245,158,11,0.35)', neonShadow: '0 0 20px rgba(245,158,11,0.22), 0 4px 20px rgba(0,0,0,0.4)', iconType: 'default' }
     if (name.includes('late') || name.includes('talk'))
-      return { accent: '#EF4444', bgFrom: '#1A0F0F', bgTo: '#140C0C', label: 'Deep conversations after midnight.', glow: 'rgba(239,68,68,0.08)' }
+      return { accent: '#EF4444', bgFrom: '#1A0F0F', bgTo: '#140C0C', label: 'Deep conversations after midnight.', glow: 'rgba(239,68,68,0.15)', neonBorder: 'rgba(239,68,68,0.35)', neonShadow: '0 0 20px rgba(239,68,68,0.22), 0 4px 20px rgba(0,0,0,0.4)', iconType: 'default' }
     if (name.includes('music'))
-      return { accent: '#06B6D4', bgFrom: '#0E1518', bgTo: '#0B1114', label: 'Share your favourite tracks live.', glow: 'rgba(6,182,212,0.08)' }
-    return { accent: '#6366F1', bgFrom: '#111118', bgTo: '#0D0D14', label: 'Step in and vibe.', glow: 'rgba(99,102,241,0.08)' }
+      return { accent: '#06B6D4', bgFrom: '#0E1518', bgTo: '#0B1114', label: 'Share your favourite tracks live.', glow: 'rgba(6,182,212,0.15)', neonBorder: 'rgba(6,182,212,0.35)', neonShadow: '0 0 20px rgba(6,182,212,0.22), 0 4px 20px rgba(0,0,0,0.4)', iconType: 'default' }
+    return { accent: '#6366F1', bgFrom: '#111118', bgTo: '#0D0D14', label: 'Step in and vibe.', glow: 'rgba(99,102,241,0.15)', neonBorder: 'rgba(99,102,241,0.35)', neonShadow: '0 0 20px rgba(99,102,241,0.22), 0 4px 20px rgba(0,0,0,0.4)', iconType: 'default' }
   }
 
   // ═══════════════════════════════════════════
@@ -574,9 +574,9 @@ const HomePage = ({ user, onLogout, setUser }) => {
     <div className="min-h-screen relative" style={{ background: '#0C0E15' }} data-testid="home-page">
       {/* Subtle ambient glow */}
       <div className="pointer-events-none fixed inset-0 z-0">
-        <div className="absolute -top-20 -left-20 w-[500px] h-[400px] bg-rose-500/[0.04] rounded-full blur-[120px]" />
-        <div className="absolute top-[40%] -right-20 w-[400px] h-[350px] bg-indigo-500/[0.03] rounded-full blur-[100px]" />
-        <div className="absolute -bottom-20 left-[30%] w-[350px] h-[300px] bg-amber-500/[0.025] rounded-full blur-[100px]" />
+        <div className="absolute -top-20 -left-20 w-[500px] h-[400px] bg-purple-500/[0.06] rounded-full blur-[120px]" />
+        <div className="absolute top-[40%] -right-20 w-[400px] h-[350px] bg-blue-500/[0.05] rounded-full blur-[100px]" />
+        <div className="absolute -bottom-20 left-[30%] w-[350px] h-[300px] bg-amber-500/[0.04] rounded-full blur-[100px]" />
       </div>
 
       {/* ─── COMPACT TOP BAR ─── */}
@@ -686,7 +686,7 @@ const HomePage = ({ user, onLogout, setUser }) => {
         <section className="pt-4 pb-1" data-testid="discover-section">
           <div className="px-5 flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
-              <Flame className="w-4 h-4 text-rose-400" />
+              <Flame className="w-4 h-4 text-rose-400" style={{ filter: 'drop-shadow(0 0 6px rgba(244,63,94,0.6))' }} />
               <h2 className="text-white/90 text-sm font-bold uppercase tracking-wider">Discover</h2>
             </div>
             <button onClick={() => router.push('/search')} className="flex items-center gap-1 text-rose-400/70 text-xs font-semibold hover:text-rose-400 transition-colors" data-testid="see-all-people">
@@ -698,7 +698,7 @@ const HomePage = ({ user, onLogout, setUser }) => {
               const badge = getBadge(m)
               return (
                 <button key={m.id} onClick={() => router.push(`/profile/${m.id}`)} className="flex-none group" data-testid={`discover-card-${m.id}`}>
-                  <div className="relative w-[170px] h-[240px] rounded-2xl overflow-hidden" style={{ boxShadow: '0 6px 28px rgba(0,0,0,0.55), inset 0 0 0 1px rgba(255,255,255,0.06)' }}>
+                  <div className="relative w-[170px] h-[240px] rounded-2xl overflow-hidden" style={{ border: `1.5px solid ${['rgba(168,85,247,0.45)','rgba(59,130,246,0.45)','rgba(236,72,153,0.45)','rgba(6,182,212,0.45)','rgba(239,68,68,0.45)','rgba(168,85,247,0.45)','rgba(59,130,246,0.45)','rgba(236,72,153,0.45)','rgba(6,182,212,0.45)','rgba(239,68,68,0.45)','rgba(168,85,247,0.45)','rgba(59,130,246,0.45)'][idx%12]}`, boxShadow: `0 0 18px ${['rgba(168,85,247,0.25)','rgba(59,130,246,0.25)','rgba(236,72,153,0.25)','rgba(6,182,212,0.25)','rgba(239,68,68,0.25)','rgba(168,85,247,0.25)','rgba(59,130,246,0.25)','rgba(236,72,153,0.25)','rgba(6,182,212,0.25)','rgba(239,68,68,0.25)','rgba(168,85,247,0.25)','rgba(59,130,246,0.25)'][idx%12]}, 0 6px 28px rgba(0,0,0,0.55)` }}>
                     <img src={getPhoto(m, idx)} alt={m.displayName} className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" loading="lazy" />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/15 to-transparent" />
                     {/* Online dot */}
@@ -737,7 +737,7 @@ const HomePage = ({ user, onLogout, setUser }) => {
         <section className="px-5 mb-3" data-testid="active-now-section">
           <div className="flex items-center justify-between mb-2.5">
             <p className="text-white/40 text-xs font-bold uppercase tracking-wider flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" /> Active Now
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" style={{ boxShadow: '0 0 8px rgba(16,185,129,0.6)' }} /> Active Now
             </p>
             <span className="text-white/20 text-[10px]">{members.length} online</span>
           </div>
@@ -753,7 +753,7 @@ const HomePage = ({ user, onLogout, setUser }) => {
               const storyIdx = members.findIndex(mm => mm.id === sg.userId)
               return (
                 <button key={`st-${sg.userId}`} onClick={() => viewStory(sg)} className="flex-none flex flex-col items-center gap-1.5" data-testid={`story-${sg.userId}`}>
-                  <div className={`w-[52px] h-[52px] rounded-full p-[2px] ${hasNew ? 'bg-gradient-to-br from-rose-500 via-amber-400 to-rose-500' : 'bg-white/10'}`}>
+                  <div className={`w-[52px] h-[52px] rounded-full p-[2px] ${hasNew ? 'bg-gradient-to-br from-rose-500 via-amber-400 to-rose-500' : 'bg-gradient-to-br from-purple-500/50 via-blue-500/40 to-cyan-500/40'}`} style={hasNew ? { boxShadow: '0 0 12px rgba(244,63,94,0.4)' } : { boxShadow: '0 0 8px rgba(168,85,247,0.3)' }}>
                     <div className="w-full h-full rounded-full bg-[#0C0E15] p-[1.5px]">
                       <div className="w-full h-full rounded-full overflow-hidden">
                         <img src={getPhoto(sg, storyIdx >= 0 ? storyIdx : 0)} alt="" className="w-full h-full object-cover" />
@@ -767,7 +767,7 @@ const HomePage = ({ user, onLogout, setUser }) => {
             {/* Show active members as avatar strip if no stories */}
             {stories.length === 0 && members.slice(0, 8).map((m, mi) => (
               <button key={`active-${m.id}`} onClick={() => router.push(`/profile/${m.id}`)} className="flex-none flex flex-col items-center gap-1.5">
-                <div className="w-[52px] h-[52px] rounded-full p-[2px] bg-white/8">
+                <div className="w-[52px] h-[52px] rounded-full p-[2px]" style={{ background: ['rgba(168,85,247,0.55)','rgba(59,130,246,0.55)','rgba(236,72,153,0.55)','rgba(6,182,212,0.55)','rgba(239,68,68,0.55)','rgba(245,158,11,0.55)','rgba(16,185,129,0.55)','rgba(99,102,241,0.55)'][mi%8], boxShadow: ['0 0 12px rgba(168,85,247,0.35)','0 0 12px rgba(59,130,246,0.35)','0 0 12px rgba(236,72,153,0.35)','0 0 12px rgba(6,182,212,0.35)','0 0 12px rgba(239,68,68,0.35)','0 0 12px rgba(245,158,11,0.35)','0 0 12px rgba(16,185,129,0.35)','0 0 12px rgba(99,102,241,0.35)'][mi%8] }}>
                   <div className="w-full h-full rounded-full overflow-hidden">
                     <img src={getPhoto(m, mi)} alt="" className="w-full h-full object-cover" />
                   </div>
@@ -800,21 +800,28 @@ const HomePage = ({ user, onLogout, setUser }) => {
         {/* ─── 3. RECENT ACTIVITY ─── */}
         <section className="px-5 mb-3" data-testid="live-feed-section">
           <p className="text-white/40 text-xs font-bold uppercase tracking-wider mb-2.5 flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-rose-500 animate-pulse" /> Recent Activity
+            <span className="w-2 h-2 rounded-full bg-rose-500 animate-pulse" style={{ boxShadow: '0 0 8px rgba(244,63,94,0.6)' }} /> Recent Activity
           </p>
           <div className="space-y-1.5">
-            {liveFeedItems.map((item, i) => (
-              <button key={item.id} onClick={() => item.userId ? router.push(`/profile/${item.userId}`) : null} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/[0.04] transition-colors group" style={{ background: 'rgba(255,255,255,0.018)', border: '1px solid rgba(255,255,255,0.025)' }} data-testid={`feed-item-${i}`}>
-                <div className="w-9 h-9 rounded-lg overflow-hidden flex-shrink-0 ring-1 ring-white/5">
+            {liveFeedItems.map((item, i) => {
+              const t = (item.text || '').toLowerCase()
+              const ac = t.includes('online') || t.includes('active') ? { bg: 'rgba(59,130,246,0.06)', border: 'rgba(59,130,246,0.18)', ring: 'rgba(59,130,246,0.5)', glow: 'rgba(59,130,246,0.25)', chevron: 'rgba(59,130,246,0.4)' }
+                : t.includes('joined') || t.includes('lounge') ? { bg: 'rgba(16,185,129,0.06)', border: 'rgba(16,185,129,0.18)', ring: 'rgba(16,185,129,0.5)', glow: 'rgba(16,185,129,0.25)', chevron: 'rgba(16,185,129,0.4)' }
+                : t.includes('updated') || t.includes('profile') || t.includes('exploring') ? { bg: 'rgba(168,85,247,0.06)', border: 'rgba(168,85,247,0.18)', ring: 'rgba(168,85,247,0.5)', glow: 'rgba(168,85,247,0.25)', chevron: 'rgba(168,85,247,0.4)' }
+                : { bg: 'rgba(255,255,255,0.025)', border: 'rgba(255,255,255,0.04)', ring: 'rgba(255,255,255,0.08)', glow: 'transparent', chevron: 'rgba(255,255,255,0.1)' }
+              return (
+              <button key={item.id} onClick={() => item.userId ? router.push(`/profile/${item.userId}`) : null} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/[0.06] transition-all duration-200 group" style={{ background: ac.bg, border: `1px solid ${ac.border}` }} data-testid={`feed-item-${i}`}>
+                <div className="w-9 h-9 rounded-lg overflow-hidden flex-shrink-0" style={{ boxShadow: `0 0 0 1.5px ${ac.ring}, 0 0 8px ${ac.glow}` }}>
                   <img src={item.member ? getPhoto(item.member, item.photoIdx) : STOCK_PHOTOS[item.photoIdx % STOCK_PHOTOS.length]} alt="" className="w-full h-full object-cover" />
                 </div>
                 <div className="flex-1 min-w-0 text-left">
                   <p className="text-white/60 text-[13px] group-hover:text-white/80 transition-colors truncate">{item.text}</p>
                   <p className="text-white/15 text-[10px] mt-0.5">{timeAgo(item.time)}</p>
                 </div>
-                <ChevronRight className="w-3.5 h-3.5 text-white/10 flex-shrink-0 group-hover:text-white/20 transition-colors" />
+                <ChevronRight className="w-3.5 h-3.5 flex-shrink-0 transition-colors" style={{ color: ac.chevron }} />
               </button>
-            ))}
+              )
+            })}
           </div>
         </section>
 
@@ -869,7 +876,7 @@ const HomePage = ({ user, onLogout, setUser }) => {
         <section className="mb-3" data-testid="active-lounges-section">
           <div className="px-5 flex items-center justify-between mb-2.5">
             <div className="flex items-center gap-2">
-              <Sofa className="w-4 h-4 text-indigo-400" />
+              <Sofa className="w-4 h-4 text-indigo-400" style={{ filter: 'drop-shadow(0 0 6px rgba(99,102,241,0.6))' }} />
               <h2 className="text-white/90 text-sm font-bold uppercase tracking-wider">Lounges</h2>
             </div>
             <button onClick={() => handleTileClick('lounge', '/lounge')} className="flex items-center gap-1 text-indigo-400/70 text-xs font-semibold hover:text-indigo-400 transition-colors" data-testid="see-all-lounges">
@@ -896,50 +903,54 @@ const HomePage = ({ user, onLogout, setUser }) => {
                 const theme = getLoungeTheme(l)
                 const count = l.memberCount || l.members?.length || 0
                 const isAfterDark = l.isAfterDark || l.name?.toLowerCase().includes('after dark')
-                const isGrownFolks = l.name?.toLowerCase().includes('grown folk')
                 const handleClick = () => {
                   if (isAfterDark) { handleTileClick('afterdark', '/afterdark') }
                   else { router.push(`/lounge?id=${l.id}`) }
                 }
                 return (
-                  <button key={l.id} onClick={handleClick} className="w-full rounded-2xl overflow-hidden text-left group hover:translate-y-[-1px] transition-all duration-200 relative" style={{ background: `linear-gradient(145deg, ${theme.bgFrom}, ${theme.bgTo})`, border: `1px solid ${theme.accent}${theme.featured ? '25' : '12'}`, boxShadow: `0 4px 20px ${theme.glow}${theme.featured ? ', inset 0 0 30px rgba(201,168,76,0.03)' : ''}` }} data-testid={`home-lounge-${l.id}`}>
+                  <button key={l.id} onClick={handleClick} className="w-full rounded-2xl overflow-hidden text-left group hover:translate-y-[-2px] transition-all duration-300 relative" style={{ background: `linear-gradient(145deg, ${theme.bgFrom}, ${theme.bgTo})`, border: `1.5px solid ${theme.neonBorder}`, boxShadow: theme.neonShadow }} data-testid={`home-lounge-${l.id}`}>
                     {/* Top accent line */}
-                    <div className="absolute top-0 left-0 right-0 h-[2px]" style={{ background: `linear-gradient(90deg, ${theme.accent}80, transparent 60%)` }} />
+                    <div className="absolute top-0 left-0 right-0 h-[2px]" style={{ background: `linear-gradient(90deg, ${theme.accent}, ${theme.accent}50 60%, transparent)` }} />
                     {/* Corner glow */}
-                    <div className="absolute top-0 right-0 w-28 h-20 rounded-full blur-[40px]" style={{ background: theme.glow }} />
-                    {/* Featured badge (Grown Folks only) */}
+                    <div className="absolute top-0 right-0 w-32 h-24 rounded-full blur-[50px]" style={{ background: `${theme.accent}18` }} />
+                    {/* Bottom edge glow */}
+                    <div className="absolute bottom-0 left-0 w-24 h-16 rounded-full blur-[40px]" style={{ background: `${theme.accent}10` }} />
+                    {/* Featured badge */}
                     {theme.featured && (
                       <div className="absolute top-2.5 right-3 z-20">
-                        <span className="flex items-center gap-1 px-2 py-0.5 rounded-md text-[8px] font-bold tracking-wider uppercase" style={{ background: 'rgba(201,168,76,0.12)', color: '#C9A84C', border: '1px solid rgba(201,168,76,0.20)' }}>
+                        <span className="flex items-center gap-1 px-2.5 py-1 rounded-md text-[8px] font-bold tracking-wider uppercase" style={{ background: 'rgba(255,215,0,0.15)', color: '#FFD700', border: '1px solid rgba(255,215,0,0.35)', boxShadow: '0 0 14px rgba(255,215,0,0.25)' }}>
                           <Sparkles className="w-2.5 h-2.5" /> Featured Community
                         </span>
                       </div>
                     )}
                     <div className="relative p-3.5 z-10">
                       <div className="flex items-center gap-3 mb-1.5">
-                        {/* Logo for Grown Folks */}
-                        {isGrownFolks && (
-                          <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: 'rgba(201,168,76,0.10)', border: '1px solid rgba(201,168,76,0.18)' }}>
-                            <span className="text-[10px] font-black leading-none" style={{ color: '#C9A84C' }}>GFB</span>
-                          </div>
-                        )}
+                        {/* Lounge Icon */}
+                        <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: `${theme.accent}15`, border: `1px solid ${theme.accent}35`, boxShadow: `0 0 12px ${theme.accent}25` }}>
+                          {theme.iconType === 'gfb' && <span className="text-[10px] font-black leading-none" style={{ color: theme.accent, textShadow: `0 0 8px ${theme.accent}60` }}>GFB</span>}
+                          {theme.iconType === 'lk' && <span className="text-[12px] font-black leading-none" style={{ color: theme.accent, textShadow: `0 0 8px ${theme.accent}60` }}>LK</span>}
+                          {theme.iconType === 'moon' && <Moon className="w-4 h-4" style={{ color: theme.iconAccent || theme.accent, filter: `drop-shadow(0 0 4px ${theme.iconAccent || theme.accent})` }} strokeWidth={2} />}
+                          {theme.iconType === 'crown' && <Crown className="w-4 h-4" style={{ color: theme.iconAccent || theme.accent, filter: `drop-shadow(0 0 4px ${theme.iconAccent || theme.accent})` }} strokeWidth={2} />}
+                          {theme.iconType === 'handcuffs' && <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={theme.accent} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ filter: `drop-shadow(0 0 4px ${theme.accent})` }}><circle cx="8" cy="15" r="4.5" /><circle cx="16" cy="15" r="4.5" /><path d="M8 10.5V7M16 10.5V7M8 7h8" /></svg>}
+                          {(!theme.iconType || theme.iconType === 'default') && <Sofa className="w-4 h-4" style={{ color: theme.accent, filter: `drop-shadow(0 0 4px ${theme.accent})` }} strokeWidth={2} />}
+                        </div>
                         <div className="flex items-center justify-between flex-1 min-w-0">
                           <h3 className="text-white font-bold text-[14px] truncate flex-1 mr-3">{l.name}</h3>
                           {count > 0 && (
                             <span className="flex items-center gap-1.5 shrink-0">
-                              <span className="w-2 h-2 rounded-full animate-pulse shadow-lg" style={{ background: theme.accent, boxShadow: `0 0 8px ${theme.accent}60` }} />
-                              <span className="text-[10px] font-bold tracking-wider" style={{ color: theme.accent }}>LIVE</span>
+                              <span className="w-2 h-2 rounded-full animate-pulse" style={{ background: theme.accent, boxShadow: `0 0 12px ${theme.accent}, 0 0 4px ${theme.accent}80` }} />
+                              <span className="text-[10px] font-bold tracking-wider" style={{ color: theme.accent, textShadow: `0 0 6px ${theme.accent}50` }}>LIVE</span>
                             </span>
                           )}
                         </div>
                       </div>
-                      <p className="text-white/30 text-[12px] leading-relaxed mb-2.5">{l.description || theme.label}</p>
+                      <p className="text-white/35 text-[12px] leading-relaxed mb-2.5">{l.description || theme.label}</p>
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-1.5">
-                          <Users className="w-3.5 h-3.5 text-white/15" strokeWidth={1.5} />
-                          <span className="text-white/25 text-[11px] font-medium">{count} {count === 1 ? 'person' : 'people'} inside</span>
+                          <Users className="w-3.5 h-3.5" style={{ color: `${theme.accent}50` }} strokeWidth={1.5} />
+                          <span className="text-white/30 text-[11px] font-medium">{count} {count === 1 ? 'person' : 'people'} inside</span>
                         </div>
-                        <span className="px-3 py-1.5 rounded-lg text-[10px] font-bold group-hover:brightness-125 transition-all" style={{ background: `${theme.accent}12`, color: theme.accent, border: `1px solid ${theme.accent}20` }}>Enter</span>
+                        <span className="px-3.5 py-1.5 rounded-lg text-[10px] font-bold group-hover:brightness-125 transition-all" style={{ background: `${theme.accent}18`, color: theme.accent, border: `1px solid ${theme.accent}30`, boxShadow: `0 0 10px ${theme.accent}20` }}>Enter</span>
                       </div>
                     </div>
                   </button>
@@ -951,18 +962,18 @@ const HomePage = ({ user, onLogout, setUser }) => {
 
         {/* ─── QUICK ACTIONS ─── */}
         <section className="px-5 mb-3" data-testid="quick-access">
-          <div className="flex items-center gap-2">
-            <button onClick={() => handleTileClick('radio', '/radio')} className="flex items-center gap-1.5 px-3 py-2 rounded-lg hover:bg-white/[0.04] transition-colors" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.04)' }} data-testid="home-radio-btn">
-              <Radio className="w-3.5 h-3.5 text-rose-400/40" strokeWidth={1.5} />
-              <span className="text-white/30 text-[11px] font-medium">Radio</span>
+          <div className="flex items-center gap-2.5">
+            <button onClick={() => handleTileClick('radio', '/radio')} className="flex items-center gap-2 px-4 py-2.5 rounded-xl hover:translate-y-[-1px] active:scale-95 transition-all duration-200" style={{ background: 'rgba(168,85,247,0.08)', border: '1px solid rgba(168,85,247,0.30)', boxShadow: '0 0 15px rgba(168,85,247,0.15), 0 0 4px rgba(236,72,153,0.1)' }} data-testid="home-radio-btn">
+              <Radio className="w-3.5 h-3.5 text-purple-400" style={{ filter: 'drop-shadow(0 0 4px rgba(168,85,247,0.6))' }} strokeWidth={1.5} />
+              <span className="text-purple-300 text-[11px] font-semibold">Radio</span>
             </button>
-            <button onClick={() => handleTileClick('games', '/games')} className="flex items-center gap-1.5 px-3 py-2 rounded-lg hover:bg-white/[0.04] transition-colors" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.04)' }} data-testid="quick-games">
-              <Gamepad2 className="w-3.5 h-3.5 text-emerald-400/40" strokeWidth={1.5} />
-              <span className="text-white/30 text-[11px] font-medium">Games</span>
+            <button onClick={() => handleTileClick('games', '/games')} className="flex items-center gap-2 px-4 py-2.5 rounded-xl hover:translate-y-[-1px] active:scale-95 transition-all duration-200" style={{ background: 'rgba(59,130,246,0.08)', border: '1px solid rgba(59,130,246,0.30)', boxShadow: '0 0 15px rgba(59,130,246,0.15)' }} data-testid="quick-games">
+              <Gamepad2 className="w-3.5 h-3.5 text-blue-400" style={{ filter: 'drop-shadow(0 0 4px rgba(59,130,246,0.6))' }} strokeWidth={1.5} />
+              <span className="text-blue-300 text-[11px] font-semibold">Games</span>
             </button>
-            <button onClick={() => router.push('/inbox')} className="flex items-center gap-1.5 px-3 py-2 rounded-lg hover:bg-white/[0.04] transition-colors" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.04)' }} data-testid="quick-inbox">
-              <MessageSquare className="w-3.5 h-3.5 text-indigo-400/40" strokeWidth={1.5} />
-              <span className="text-white/30 text-[11px] font-medium">Inbox</span>
+            <button onClick={() => router.push('/inbox')} className="flex items-center gap-2 px-4 py-2.5 rounded-xl hover:translate-y-[-1px] active:scale-95 transition-all duration-200" style={{ background: 'rgba(6,182,212,0.08)', border: '1px solid rgba(6,182,212,0.30)', boxShadow: '0 0 15px rgba(6,182,212,0.15)' }} data-testid="quick-inbox">
+              <MessageSquare className="w-3.5 h-3.5 text-cyan-400" style={{ filter: 'drop-shadow(0 0 4px rgba(6,182,212,0.6))' }} strokeWidth={1.5} />
+              <span className="text-cyan-300 text-[11px] font-semibold">Inbox</span>
             </button>
           </div>
         </section>

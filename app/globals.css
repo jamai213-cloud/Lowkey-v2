@@ -595,3 +595,16 @@ h1, h2, h3, h4, h5, h6, .font-heading {
   box-shadow: 0 0 16px rgba(147, 51, 234, 0.1);
 }
 .lk-input-neon::placeholder { color: rgba(255, 255, 255, 0.15); }
+
+/* ===== NEON NIGHTLIFE SYSTEM ===== */
+@keyframes ring-neon-pulse {
+  0%, 100% { opacity: 0.7; }
+  50% { opacity: 1; }
+}
+.ring-neon-pulse { animation: ring-neon-pulse 2.5s ease-in-out infinite; }
+
+@keyframes neon-border-breathe {
+  0%, 100% { box-shadow: var(--neon-idle); }
+  50% { box-shadow: var(--neon-peak); }
+}
+.neon-card-breathe { animation: neon-border-breathe 4s ease-in-out infinite; }
