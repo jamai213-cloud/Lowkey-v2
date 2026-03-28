@@ -6,52 +6,52 @@ Build "LowKey", a premium adult social/dating app with Next.js featuring profile
 ## Architecture
 - **Frontend**: Next.js 14 (App Router), React, Tailwind CSS
 - **Backend**: Next.js API Routes (monolithic `app/api/[[...path]]/route.js`)
-- **Database**: MongoDB (local)
+- **Database**: MongoDB
 - **Deployment**: Vercel (user-managed)
 
 ## What's Been Implemented
 
-### March 28, 2026 — Unified Lounge System + Events + Copy Upgrade
-- Renamed Main Lounge → **LowKey Lounge**, VIP Room → **VIP Lounge**
-- All 4 named lounges exist as real DB entries: LowKey Lounge (42), After Dark (31), Kink Lounge (18), VIP Lounge (7)
-- Upgraded descriptions: LowKey="Where everyone starts. Real people, real energy.", After Dark="No names. No limits. Just energy.", Kink="Push boundaries. Find your people.", VIP="Private access. Elevated connections."
-- Unified card structure across Home + Lounge list (name + LIVE indicator + description + people count + Enter CTA)
-- Events section: full-width stacked cards with date box, title, description, Join/View CTA
-- Quick Actions: compact inline pill buttons (Radio, Games, Inbox)
-- Both pages fetch regular + afterDark lounges via Promise.all
-- Testing: 13/13 backend, 15/15 frontend — all passed
+### March 28, 2026 — Auto-Seed Lounges + Fix Inbox + Fix Friend Requests
+- **Auto-seeding**: GET /api/lounges now auto-creates 4 required lounges (LowKey Lounge, After Dark, Kink Lounge, VIP Lounge) if missing — works on ANY database including production
+- **Inbox API**: Added GET /api/inbox?userId=X (conversations), GET /api/inbox/{convoId}/messages, POST /api/inbox/{convoId}/messages
+- **Inbox DM auto-open**: /inbox?dm={userId} param auto-creates conversation and opens it
+- **Friend request bug fix**: Fixed variable shadowing in /api/friends/request AND /api/friends/accept (const request → const friendReq)
+- Testing: 15/15 all passed (login, lounges, auto-seed, friend request/accept, inbox CRUD, navigation)
 
-### March 28, 2026 — Home Screen Layout Fix
-- Removed duplicate profile grids, reordered sections
-- Added Events/Promotions section from /api/events
-- Seeded Kink Lounge, After Dark, 3 events
+### March 28, 2026 — Unified Lounge System + Events
+- All 4 lounges exist as real DB entries with engaging descriptions
+- Unified card design, events section, quick actions
 
-### March 28, 2026 — Home Screen Complete Rebuild
-- Premium dating-app style layout, /profile/[userId] dynamic route
+### March 28, 2026 — Home Screen Rebuild
+- Premium dating-app layout, /profile/[userId] route
 
-## DB Schema
-- **users**: id, email, displayName, avatar, verified, role, bio, friends
-- **lounges**: id, name, description, theme, isAfterDark, members, memberCount
-- **events**: id, title, description, date, creatorId, location, rsvps
-- **stories**: id, userId, type, content, createdAt, viewedBy
-- **notifications**: id, userId, type, title, message, read, createdAt
-
-## Seeded Data
-- 9 lounges: LowKey Lounge (42), After Dark (31), Night Owls (23), Kink Lounge (18), Chill Vibes (15), Late Night Talks (12), Music Lovers (8), VIP Lounge (7), Music Corner (0)
-- 3 events: Friday Night Live, Vinyl & Vibes, After Dark: Unmasked
+## Key API Endpoints
+- POST /api/auth/login — Login
+- GET /api/users — List users
+- GET /api/profile/{id} — User profile
+- GET /api/lounges — Regular lounges (auto-seeds missing ones)
+- GET /api/lounges?afterDark=true — After Dark lounges
+- GET /api/events — Events list
+- POST /api/friends/request — Send friend request
+- GET /api/friends/requests/{userId} — Pending requests
+- POST /api/friends/accept — Accept request
+- GET /api/inbox?userId=X — Conversations
+- POST /api/inbox/{convoId}/messages — Send message
+- GET /api/inbox/{convoId}/messages — Get messages
+- POST /api/conversations — Create/find conversation
 
 ## Prioritized Backlog
 
 ### P0 (Done)
-- [x] Complete Home screen visual rebuild
-- [x] Unified lounge card design system
-- [x] Fix layout duplication, section order, add Events
-- [x] Lounge system: all 4 named lounges, unified cards, upgraded copy
+- [x] Home screen rebuild
+- [x] Unified lounge system with auto-seeding
+- [x] Fix inbox/messaging API
+- [x] Fix friend request bugs
 
 ### P1 (Next)
-- [ ] Apply new design system to Search, Inbox pages
-- [ ] RSVP functionality for Events
-- [ ] Vercel deployment synchronization
+- [ ] Apply design system to Search page
+- [ ] RSVP for Events
+- [ ] Vercel deployment verification
 
 ### P2
 - [ ] Real activity tracking backend
@@ -60,7 +60,3 @@ Build "LowKey", a premium adult social/dating app with Next.js featuring profile
 
 ## Test Credentials
 - Email: `kinglowkey@hotmail.com` / Password: `password123`
-
-## Known Issues
-1. External preview URL unreliable (platform issue)
-2. Multiplayer game logic is client-side only (mocked)
