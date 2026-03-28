@@ -58,11 +58,13 @@ function LoungePageContent() {
 
   const fetchLounges = async () => {
     try {
-      const res = await fetch('/api/lounges')
-      if (res.ok) {
-        const data = await res.json()
-        setLounges(data)
-      }
+      const [regRes, adRes] = await Promise.all([
+        fetch('/api/lounges'),
+        fetch('/api/lounges?afterDark=true')
+      ])
+      const regular = regRes.ok ? await regRes.json() : []
+      const afterDark = adRes.ok ? await adRes.json() : []
+      setLounges([...regular, ...afterDark])
     } catch (err) {
       console.error('Failed to fetch lounges')
     }
@@ -141,17 +143,21 @@ function LoungePageContent() {
   // Lounge Theme System (unified with Home page)
   const getLoungeTheme = (lounge) => {
     const name = (lounge.name || '').toLowerCase()
-    if (name.includes('main') || name.includes('lowkey') || name.includes('chill'))
-      return { accent: '#8B5CF6', bgFrom: '#14101F', bgTo: '#0F0D18', label: 'People are already inside', glow: 'rgba(139,92,246,0.08)' }
+    if (name.includes('lowkey') || name.includes('chill'))
+      return { accent: '#8B5CF6', bgFrom: '#14101F', bgTo: '#0F0D18', label: 'Where everyone starts. Real people, real energy.', glow: 'rgba(139,92,246,0.08)' }
+    if (name.includes('after dark'))
+      return { accent: '#D4A54A', bgFrom: '#15120A', bgTo: '#0F0E08', label: 'No names. No limits. Just energy.', glow: 'rgba(212,165,74,0.08)' }
+    if (name.includes('kink'))
+      return { accent: '#EF4444', bgFrom: '#1A0F0F', bgTo: '#140C0C', label: 'Push boundaries. Find your people.', glow: 'rgba(239,68,68,0.10)' }
     if (name.includes('vip') || name.includes('exclusive') || name.includes('premium'))
-      return { accent: '#D4A54A', bgFrom: '#18150E', bgTo: '#12100C', label: 'Premium conversations only', glow: 'rgba(212,165,74,0.08)' }
-    if (name.includes('dark') || name.includes('night') || name.includes('owl'))
-      return { accent: '#F59E0B', bgFrom: '#17130D', bgTo: '#110F0B', label: 'Live right now. The night is young', glow: 'rgba(245,158,11,0.08)' }
-    if (name.includes('kink') || name.includes('late') || name.includes('bold') || name.includes('talk'))
-      return { accent: '#EF4444', bgFrom: '#1A0F0F', bgTo: '#140C0C', label: 'Step in if you\'re ready', glow: 'rgba(239,68,68,0.08)' }
+      return { accent: '#D4A54A', bgFrom: '#18150E', bgTo: '#12100C', label: 'Private access. Elevated connections.', glow: 'rgba(212,165,74,0.08)' }
+    if (name.includes('night') || name.includes('owl'))
+      return { accent: '#F59E0B', bgFrom: '#17130D', bgTo: '#110F0B', label: 'The night is young. Step in.', glow: 'rgba(245,158,11,0.08)' }
+    if (name.includes('late') || name.includes('talk'))
+      return { accent: '#EF4444', bgFrom: '#1A0F0F', bgTo: '#140C0C', label: 'Deep conversations after midnight.', glow: 'rgba(239,68,68,0.08)' }
     if (name.includes('music'))
-      return { accent: '#06B6D4', bgFrom: '#0E1518', bgTo: '#0B1114', label: 'Share your favourite tracks live', glow: 'rgba(6,182,212,0.08)' }
-    return { accent: '#6366F1', bgFrom: '#111118', bgTo: '#0D0D14', label: 'Step in and vibe', glow: 'rgba(99,102,241,0.08)' }
+      return { accent: '#06B6D4', bgFrom: '#0E1518', bgTo: '#0B1114', label: 'Share your favourite tracks live.', glow: 'rgba(6,182,212,0.08)' }
+    return { accent: '#6366F1', bgFrom: '#111118', bgTo: '#0D0D14', label: 'Step in and vibe.', glow: 'rgba(99,102,241,0.08)' }
   }
 
   const filteredLounges = lounges.filter(l => 

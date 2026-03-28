@@ -547,19 +547,22 @@ const HomePage = ({ user, onLogout, setUser }) => {
 
   // ─── Lounge Theme System ────────────────
   const getLoungeTheme = (lounge) => {
-    const id = (lounge.id || '').toLowerCase()
     const name = (lounge.name || '').toLowerCase()
-    if (name.includes('main') || name.includes('lowkey') || name.includes('chill'))
-      return { accent: '#8B5CF6', bgFrom: '#14101F', bgTo: '#0F0D18', label: 'People are already inside', glow: 'rgba(139,92,246,0.08)' }
+    if (name.includes('lowkey') || name.includes('chill'))
+      return { accent: '#8B5CF6', bgFrom: '#14101F', bgTo: '#0F0D18', label: 'Where everyone starts. Real people, real energy.', glow: 'rgba(139,92,246,0.08)' }
+    if (name.includes('after dark'))
+      return { accent: '#D4A54A', bgFrom: '#15120A', bgTo: '#0F0E08', label: 'No names. No limits. Just energy.', glow: 'rgba(212,165,74,0.08)' }
+    if (name.includes('kink'))
+      return { accent: '#EF4444', bgFrom: '#1A0F0F', bgTo: '#140C0C', label: 'Push boundaries. Find your people.', glow: 'rgba(239,68,68,0.10)' }
     if (name.includes('vip') || name.includes('exclusive') || name.includes('premium'))
-      return { accent: '#D4A54A', bgFrom: '#18150E', bgTo: '#12100C', label: 'Premium conversations only', glow: 'rgba(212,165,74,0.08)' }
-    if (name.includes('dark') || name.includes('night') || name.includes('owl'))
-      return { accent: '#F59E0B', bgFrom: '#17130D', bgTo: '#110F0B', label: 'Live right now. The night is young', glow: 'rgba(245,158,11,0.08)' }
-    if (name.includes('kink') || name.includes('late') || name.includes('bold') || name.includes('talk'))
-      return { accent: '#EF4444', bgFrom: '#1A0F0F', bgTo: '#140C0C', label: 'Bold conversations. Step in if you\'re ready', glow: 'rgba(239,68,68,0.08)' }
+      return { accent: '#D4A54A', bgFrom: '#18150E', bgTo: '#12100C', label: 'Private access. Elevated connections.', glow: 'rgba(212,165,74,0.08)' }
+    if (name.includes('night') || name.includes('owl'))
+      return { accent: '#F59E0B', bgFrom: '#17130D', bgTo: '#110F0B', label: 'The night is young. Step in.', glow: 'rgba(245,158,11,0.08)' }
+    if (name.includes('late') || name.includes('talk'))
+      return { accent: '#EF4444', bgFrom: '#1A0F0F', bgTo: '#140C0C', label: 'Deep conversations after midnight.', glow: 'rgba(239,68,68,0.08)' }
     if (name.includes('music'))
-      return { accent: '#06B6D4', bgFrom: '#0E1518', bgTo: '#0B1114', label: 'Share your favourite tracks live', glow: 'rgba(6,182,212,0.08)' }
-    return { accent: '#6366F1', bgFrom: '#111118', bgTo: '#0D0D14', label: 'Step in and vibe', glow: 'rgba(99,102,241,0.08)' }
+      return { accent: '#06B6D4', bgFrom: '#0E1518', bgTo: '#0B1114', label: 'Share your favourite tracks live.', glow: 'rgba(6,182,212,0.08)' }
+    return { accent: '#6366F1', bgFrom: '#111118', bgTo: '#0D0D14', label: 'Step in and vibe.', glow: 'rgba(99,102,241,0.08)' }
   }
 
   // ═══════════════════════════════════════════
@@ -815,8 +818,8 @@ const HomePage = ({ user, onLogout, setUser }) => {
 
         {/* ─── 4. EVENTS / PROMOTIONS ─── */}
         {events.length > 0 && (
-          <section className="px-5 mb-3" data-testid="events-section">
-            <div className="flex items-center justify-between mb-2.5">
+          <section className="px-4 mb-3" data-testid="events-section">
+            <div className="flex items-center justify-between mb-3 px-1">
               <p className="text-white/40 text-xs font-bold uppercase tracking-wider flex items-center gap-2">
                 <Calendar className="w-3.5 h-3.5 text-amber-400" /> Upcoming
               </p>
@@ -824,29 +827,33 @@ const HomePage = ({ user, onLogout, setUser }) => {
                 View all <ChevronRight className="w-3.5 h-3.5" />
               </button>
             </div>
-            <div className="flex gap-2.5 overflow-x-auto scroll-horizontal pb-1">
+            <div className="space-y-2.5">
               {events.slice(0, 3).map((evt) => {
                 const evtDate = new Date(evt.date)
                 const dayName = evtDate.toLocaleDateString('en', { weekday: 'short' })
                 const dayNum = evtDate.getDate()
                 const month = evtDate.toLocaleDateString('en', { month: 'short' })
+                const rsvpCount = evt.rsvps?.length || 0
                 return (
-                  <button key={evt.id} onClick={() => router.push('/events')} className="flex-none w-[220px] rounded-2xl overflow-hidden text-left group hover:translate-y-[-1px] transition-all duration-200 relative" style={{ background: 'linear-gradient(145deg, #16141E, #11101A)', border: '1px solid rgba(245,158,11,0.08)', boxShadow: '0 4px 16px rgba(245,158,11,0.04)' }} data-testid={`event-card-${evt.id}`}>
+                  <button key={evt.id} onClick={() => router.push('/events')} className="w-full rounded-2xl overflow-hidden text-left group hover:translate-y-[-1px] transition-all duration-200 relative" style={{ background: 'linear-gradient(145deg, #16141E, #11101A)', border: '1px solid rgba(245,158,11,0.08)', boxShadow: '0 4px 20px rgba(245,158,11,0.04)' }} data-testid={`event-card-${evt.id}`}>
                     <div className="absolute top-0 left-0 right-0 h-[2px]" style={{ background: 'linear-gradient(90deg, rgba(245,158,11,0.5), transparent 60%)' }} />
-                    <div className="p-3.5 relative z-10">
-                      <div className="flex items-start gap-3 mb-2">
-                        <div className="w-11 h-11 rounded-xl flex flex-col items-center justify-center flex-shrink-0" style={{ background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.12)' }}>
-                          <span className="text-amber-400 text-[10px] font-bold leading-none">{dayName}</span>
-                          <span className="text-white text-sm font-bold leading-tight">{dayNum}</span>
+                    <div className="absolute top-0 right-0 w-24 h-20 rounded-full blur-[40px]" style={{ background: 'rgba(245,158,11,0.04)' }} />
+                    <div className="p-4 relative z-10">
+                      <div className="flex items-start gap-3.5">
+                        <div className="w-14 h-14 rounded-xl flex flex-col items-center justify-center flex-shrink-0" style={{ background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.12)' }}>
+                          <span className="text-amber-400 text-[10px] font-bold leading-none uppercase">{dayName}</span>
+                          <span className="text-white text-lg font-bold leading-tight">{dayNum}</span>
                         </div>
                         <div className="flex-1 min-w-0">
-                          <h4 className="text-white text-[13px] font-bold truncate">{evt.title}</h4>
-                          <p className="text-white/25 text-[11px] mt-0.5 truncate">{evt.description}</p>
+                          <h4 className="text-white text-[15px] font-bold truncate mb-0.5">{evt.title}</h4>
+                          <p className="text-white/30 text-[12px] leading-relaxed mb-2">{evt.description}</p>
+                          <div className="flex items-center justify-between">
+                            <span className="text-white/15 text-[11px]">{month} {dayNum} {evt.location ? `\u00B7 ${evt.location}` : ''}</span>
+                            <span className="px-3 py-1.5 rounded-lg text-[10px] font-bold bg-amber-400/10 text-amber-400 border border-amber-400/15 group-hover:bg-amber-400/20 transition-colors">
+                              {rsvpCount > 0 ? `${rsvpCount} going` : 'Join'}
+                            </span>
+                          </div>
                         </div>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <span className="text-white/15 text-[10px]">{month} {dayNum}</span>
-                        <span className="px-2.5 py-1 rounded-md text-[9px] font-bold bg-amber-400/10 text-amber-400 border border-amber-400/15 group-hover:bg-amber-400/15 transition-colors">View</span>
                       </div>
                     </div>
                   </button>
@@ -868,17 +875,14 @@ const HomePage = ({ user, onLogout, setUser }) => {
             </button>
           </div>
           <div className="space-y-2 px-4">
-            {/* Featured 4 lounges: Main/LowKey, After Dark, Kink, VIP */}
+            {/* Featured 4 lounges: LowKey, After Dark, Kink, VIP */}
             {(() => {
-              const featured = ['main', 'after-dark', 'kink', 'vip']
+              const featured = ['lowkey', 'after-dark', 'kink', 'vip']
               const featuredLounges = featured.map(key => {
-                if (key === 'after-dark') {
-                  const dbLounge = loungesList.find(l => l.name?.toLowerCase().includes('after dark'))
-                  return dbLounge || { id: 'after-dark', name: 'After Dark', memberCount: 31, description: 'Anonymous and unfiltered. Step in if you\'re ready', _isAfterDark: true }
-                }
                 return loungesList.find(l => {
                   const n = l.name?.toLowerCase() || ''
-                  if (key === 'main') return n.includes('main') || n.includes('lowkey')
+                  if (key === 'lowkey') return n.includes('lowkey')
+                  if (key === 'after-dark') return n.includes('after dark')
                   if (key === 'kink') return n.includes('kink')
                   if (key === 'vip') return n.includes('vip')
                   return false
@@ -888,7 +892,7 @@ const HomePage = ({ user, onLogout, setUser }) => {
               return featuredLounges.map((l) => {
                 const theme = getLoungeTheme(l)
                 const count = l.memberCount || l.members?.length || 0
-                const isAfterDark = l._isAfterDark || l.name?.toLowerCase().includes('after dark')
+                const isAfterDark = l.isAfterDark || l.name?.toLowerCase().includes('after dark')
                 const handleClick = () => {
                   if (isAfterDark) { handleTileClick('afterdark', '/afterdark') }
                   else { router.push(`/lounge?id=${l.id}`) }
@@ -924,19 +928,19 @@ const HomePage = ({ user, onLogout, setUser }) => {
         </section>
 
         {/* ─── QUICK ACTIONS ─── */}
-        <section className="px-4 mb-3" data-testid="quick-access">
-          <div className="grid grid-cols-3 gap-2">
-            <button onClick={() => handleTileClick('radio', '/radio')} className="flex flex-col items-center gap-1.5 py-3 rounded-xl hover:bg-white/[0.04] transition-colors" style={{ background: 'rgba(244,63,94,0.04)', border: '1px solid rgba(244,63,94,0.06)' }} data-testid="home-radio-btn">
-              <Radio className="w-4 h-4 text-rose-400/50" />
-              <span className="text-white/40 text-[11px] font-medium">Radio</span>
+        <section className="px-5 mb-3" data-testid="quick-access">
+          <div className="flex items-center gap-2">
+            <button onClick={() => handleTileClick('radio', '/radio')} className="flex items-center gap-1.5 px-3 py-2 rounded-lg hover:bg-white/[0.04] transition-colors" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.04)' }} data-testid="home-radio-btn">
+              <Radio className="w-3.5 h-3.5 text-rose-400/40" strokeWidth={1.5} />
+              <span className="text-white/30 text-[11px] font-medium">Radio</span>
             </button>
-            <button onClick={() => handleTileClick('games', '/games')} className="flex flex-col items-center gap-1.5 py-3 rounded-xl hover:bg-white/[0.04] transition-colors" style={{ background: 'rgba(34,197,94,0.04)', border: '1px solid rgba(34,197,94,0.06)' }} data-testid="quick-games">
-              <Gamepad2 className="w-4 h-4 text-emerald-400/50" />
-              <span className="text-white/40 text-[11px] font-medium">Games</span>
+            <button onClick={() => handleTileClick('games', '/games')} className="flex items-center gap-1.5 px-3 py-2 rounded-lg hover:bg-white/[0.04] transition-colors" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.04)' }} data-testid="quick-games">
+              <Gamepad2 className="w-3.5 h-3.5 text-emerald-400/40" strokeWidth={1.5} />
+              <span className="text-white/30 text-[11px] font-medium">Games</span>
             </button>
-            <button onClick={() => router.push('/inbox')} className="flex flex-col items-center gap-1.5 py-3 rounded-xl hover:bg-white/[0.04] transition-colors" style={{ background: 'rgba(99,102,241,0.04)', border: '1px solid rgba(99,102,241,0.06)' }} data-testid="quick-inbox">
-              <MessageSquare className="w-4 h-4 text-indigo-400/50" />
-              <span className="text-white/40 text-[11px] font-medium">Inbox</span>
+            <button onClick={() => router.push('/inbox')} className="flex items-center gap-1.5 px-3 py-2 rounded-lg hover:bg-white/[0.04] transition-colors" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.04)' }} data-testid="quick-inbox">
+              <MessageSquare className="w-3.5 h-3.5 text-indigo-400/40" strokeWidth={1.5} />
+              <span className="text-white/30 text-[11px] font-medium">Inbox</span>
             </button>
           </div>
         </section>
