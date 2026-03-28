@@ -1,7 +1,7 @@
 # Lowkey App - Product Requirements Document
 
 ## Overview
-A premium adult social club platform built with Next.js 14 (App Router) + MongoDB. Features include lounges, messaging, stories, events, games, radio, and member profiles.
+A premium adult social club / dating platform built with Next.js 14 (App Router) + MongoDB. The UI prioritizes people/connections first, with lounges as supporting interaction spaces and monetization visible but not intrusive.
 
 ## Core Tech Stack
 - **Frontend**: Next.js 14 (App Router), React, Tailwind CSS
@@ -15,38 +15,46 @@ A premium adult social club platform built with Next.js 14 (App Router) + MongoD
 /app
 ├── app/                  # Next.js App Router
 │   ├── api/              # API routes (monolithic route.js)
-│   ├── components/       # Shared UI components
-│   ├── contexts/         # React contexts (Radio, Notification)
+│   ├── components/       # RadioMiniPlayer, etc.
+│   ├── contexts/         # RadioContext, NotificationContext
 │   ├── globals.css       # Global styles - premium dark theme
-│   ├── page.js           # Home page (6-section layout)
+│   ├── page.js           # Home page (7-section layout, connections-first)
+│   ├── afterdark/        # After Dark feature page
 │   ├── lounge/page.js    # Lounge pages
 │   ├── search/page.js    # Member search + profiles
 │   ├── inbox/page.js     # Messages
-│   └── [other routes]    # Games, events, radio, etc.
+│   ├── radio/            # Radio feature page
+│   └── [other routes]    # Games, events, friends, profile, etc.
 ├── backend/              # FastAPI reverse proxy (port 8001 -> 3000)
 └── package.json
 ```
 
-## Home Page Structure (Implemented)
-1. **Featured Lounge** — "After Dark" hero with gold accent and "Enter" CTA
-2. **Members Online + Stories** — Merged horizontal strip with story circles and online avatars
-3. **New Matches** — Conditional section for pending friend requests
-4. **Live Moments** — Lightweight activity feed (MOCKED data)
-5. **Rooms / Lounges** — Simple flat list with colored accent bars
-6. **Quick Access** — Compact icon row (Inbox, Games, Radio, Events, Search)
+## Home Page Structure (7 Sections — Connections First)
+1. **Discover / Connections** (TOP) — 2-column profile card grid, "See all" to /search, connection requests
+2. **Active Now** — Stories + online member avatars horizontal strip
+3. **Recent Activity** — Lightweight activity signals (MOCKED: viewed profile, liked, online)
+4. **Featured Lounge** — After Dark hero card with Live indicator and Enter CTA
+5. **Lounges** — Real existing lounges in simple flat list (Night Owls, Chill Vibes, Music Lovers, etc.)
+6. **Content / Monetisation** — Credits balance + Exclusive/Unlock buttons (subtle)
+7. **Radio** — Existing radio feature, clean link to /radio (NOT renamed or rebuilt)
 
 ## Visual Design System
 - Background: Deep navy `#0B0D14`
-- Card surfaces: `#12121A`
-- Accents: Gold `#D4A54A` (premium), Red `#E8364E` (intensity), Blue `#3B82F6` (calm), Purple `#9333EA`, Green `#10B981`
-- Font: Heading (`font-heading`), clean sans-serif
-- Style: Minimal cards, subtle glows, controlled gradients
+- Cards: `#111318` with `rgba(255,255,255,0.03-0.04)` borders
+- Accents: Gold `#D4A54A` (premium), Red `#E8364E` (intensity), Blue `#3B82F6` (calm), Pink `#E84393`, Purple `#9333EA`, Green `#10B981`
+- Style: Clean, structured, minimal. NO heavy gradient cards, no tile dashboards
+- Typography: Strong hierarchy, font-heading for section labels
 
-## Monetization UI (Frontend Stubs Only)
-- Credit balance in header (wallet icon)
-- Tip buttons on profiles
-- Locked gallery photos with blur + unlock
-- "Go Private" action buttons
+## Existing Features (UNCHANGED)
+- Auth (login, signup, forgot password)
+- Stories (create photo/video/text, view, expiry)
+- Radio player (RadioMiniPlayer.js - fixed bottom bar)
+- Notifications (polling + sound)
+- Friend requests (accept/decline)
+- Lounges (7 real lounges)
+- After Dark (separate premium feature)
+- Messaging (inbox, DMs)
+- Events, Games, Profile
 
 ## Test Credentials
 - Email: `kinglowkey@hotmail.com`
@@ -54,32 +62,23 @@ A premium adult social club platform built with Next.js 14 (App Router) + MongoD
 - Role: Founder (admin privileges)
 
 ## What's Implemented
-- [x] Auth flow (login, signup, forgot password)
-- [x] Home page (6-section premium layout)
-- [x] Lounges (list, join, chat)
-- [x] Stories (create, view, expiry)
-- [x] Members (search, profiles, friend requests)
-- [x] Messaging (inbox, DMs)
-- [x] Events (CRUD, founder can delete)
-- [x] Games (Ice Breaker, Tic-Tac-Toe - client-side only)
-- [x] Radio player (mini player)
-- [x] Notification system (polling + sound)
-- [x] Monetization UI stubs (wallet, tips, locked content)
+- [x] Home page (7-section connections-first layout)
 - [x] Deep navy premium theme
-- [x] Onboarding modal
-- [x] Responsive mobile layout
+- [x] Monetization UI stubs (wallet, tips, locked content, credits)
+- [x] All existing features preserved (radio, stories, lounges, auth, etc.)
 - [x] Vercel build compatibility (Suspense boundaries)
+- [x] 100% test pass rate (backend + frontend)
 
-## Upcoming Tasks
-- [ ] **P0**: Get user feedback on Home page design, then apply to other pages
-- [ ] **P1**: Lounge page visual upgrade
+## Upcoming Tasks (Pending User Approval)
+- [ ] **P0**: User confirms Home page design
+- [ ] **P1**: Lounge page visual upgrade (same premium style)
 - [ ] **P1**: Profile page visual upgrade
 - [ ] **P1**: Inbox/Messages visual upgrade
-- [ ] **P2**: Search/Auth page refinement
+- [ ] **P1**: Search page visual upgrade
 - [ ] **P2**: Real multiplayer games
-- [ ] **P2**: Push notifications (service worker)
+- [ ] **P2**: Push notifications
 
 ## Known Limitations
-- Live Moments feed is hardcoded mock data
-- Multiplayer games are client-side only (no real-time backend)
-- Deployment sync issues with Vercel (historical)
+- Recent Activity feed uses simulated signals (not real activity tracking)
+- Preview URL unavailable (platform routing issue with forked environment)
+- Games are client-side only (no real-time multiplayer)
