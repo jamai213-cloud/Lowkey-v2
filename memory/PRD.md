@@ -4,52 +4,40 @@
 Build "LowKey", a premium adult social/dating app with Next.js featuring profiles, lounges, messaging, radio, events, games, After Dark spaces.
 
 ## Architecture
-- **Frontend**: Next.js 14 (App Router), React, Tailwind CSS
-- **Backend**: Next.js API Routes (monolithic `app/api/[[...path]]/route.js`)
-- **Database**: MongoDB
-- **Deployment**: Vercel (user-managed)
+- Frontend: Next.js 14 (App Router), React, Tailwind CSS
+- Backend: Next.js API Routes (monolithic `app/api/[[...path]]/route.js`)
+- Database: MongoDB
+- Deployment: Vercel
 
 ## What's Been Implemented
 
-### March 28, 2026 — Auto-Seed Lounges + Fix Inbox + Fix Friend Requests
-- **Auto-seeding**: GET /api/lounges now auto-creates 4 required lounges (LowKey Lounge, After Dark, Kink Lounge, VIP Lounge) if missing — works on ANY database including production
-- **Inbox API**: Added GET /api/inbox?userId=X (conversations), GET /api/inbox/{convoId}/messages, POST /api/inbox/{convoId}/messages
-- **Inbox DM auto-open**: /inbox?dm={userId} param auto-creates conversation and opens it
-- **Friend request bug fix**: Fixed variable shadowing in /api/friends/request AND /api/friends/accept (const request → const friendReq)
-- Testing: 15/15 all passed (login, lounges, auto-seed, friend request/accept, inbox CRUD, navigation)
+### March 28, 2026 — Grown Folks Featured Lounge
+- Added "Grown Folks" lounge with gold/champagne premium glow (#C9A84C)
+- Same unified card structure as all other lounges
+- Additions: "Featured Community" badge (top-right), GFB logo (left of name)
+- Auto-seeds in API alongside other 4 required lounges
+- First position in featured lounges list on Home page
 
-### March 28, 2026 — Unified Lounge System + Events
-- All 4 lounges exist as real DB entries with engaging descriptions
-- Unified card design, events section, quick actions
+### March 28, 2026 — Auto-Seed + Inbox + Friend Request Fixes
+- Auto-seeding: /api/lounges creates 5 required lounges if missing (works on ANY DB)
+- Inbox API: GET/POST /api/inbox endpoints for conversations and messages
+- Friend request variable shadowing bug fixed
 
-### March 28, 2026 — Home Screen Rebuild
-- Premium dating-app layout, /profile/[userId] route
+### March 28, 2026 — Unified Lounge System + Events + Home Rebuild
+- Complete Home screen rebuild (premium dating-app layout)
+- Unified lounge card design system
+- Events section, Quick Actions, Bottom Nav
 
-## Key API Endpoints
-- POST /api/auth/login — Login
-- GET /api/users — List users
-- GET /api/profile/{id} — User profile
-- GET /api/lounges — Regular lounges (auto-seeds missing ones)
-- GET /api/lounges?afterDark=true — After Dark lounges
-- GET /api/events — Events list
-- POST /api/friends/request — Send friend request
-- GET /api/friends/requests/{userId} — Pending requests
-- POST /api/friends/accept — Accept request
-- GET /api/inbox?userId=X — Conversations
-- POST /api/inbox/{convoId}/messages — Send message
-- GET /api/inbox/{convoId}/messages — Get messages
-- POST /api/conversations — Create/find conversation
+## Seeded Lounges (Auto-Created)
+1. Grown Folks (56) — gold/champagne, "Featured Community" badge
+2. LowKey Lounge (42) — purple/blue
+3. After Dark (31) — black/gold, isAfterDark=true
+4. Kink Lounge (18) — deep red/neon
+5. VIP Lounge (7) — gold/champagne
 
 ## Prioritized Backlog
-
-### P0 (Done)
-- [x] Home screen rebuild
-- [x] Unified lounge system with auto-seeding
-- [x] Fix inbox/messaging API
-- [x] Fix friend request bugs
-
 ### P1 (Next)
-- [ ] Apply design system to Search page
+- [ ] Apply design system to Search, Inbox pages
 - [ ] RSVP for Events
 - [ ] Vercel deployment verification
 
@@ -59,4 +47,4 @@ Build "LowKey", a premium adult social/dating app with Next.js featuring profile
 - [ ] Push notifications
 
 ## Test Credentials
-- Email: `kinglowkey@hotmail.com` / Password: `password123`
+- Email: kinglowkey@hotmail.com / Password: password123
