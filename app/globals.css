@@ -33,7 +33,7 @@ html {
 /* ===== DESIGN SYSTEM CSS VARIABLES ===== */
 :root {
   /* Base — deep navy, not flat black */
-  --lk-bg: #0B0D14;
+  --lk-bg: #0F1219;
   --lk-surface: #111420;
   --lk-surface-elevated: #171B28;
   --lk-border-subtle: rgba(255, 255, 255, 0.05);
@@ -112,7 +112,7 @@ h1, h2, h3, h4, h5, h6, .font-heading {
   inset: 0;
   overflow: hidden;
   z-index: 0;
-  background: #0B0D14;
+  background: #0F1219;
 }
 
 .blob {

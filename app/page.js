@@ -1099,9 +1099,9 @@ const HomePage = ({ user, onLogout, setUser }) => {
 
   return (
     <div className="min-h-screen bg-[#0B0D14] relative page-enter" data-testid="home-page">
-      {/* Ambient background — subtle warmth */}
-      <div className="absolute top-0 left-0 w-[400px] h-[350px] rounded-full bg-[#D4A54A]/[0.02] blur-[150px] pointer-events-none z-0" />
-      <div className="absolute top-[40%] right-0 w-[350px] h-[300px] rounded-full bg-[#3B82F6]/[0.02] blur-[130px] pointer-events-none z-0" />
+      {/* Ambient warmth */}
+      <div className="absolute top-0 left-0 w-[400px] h-[300px] rounded-full bg-[#F43F5E]/[0.03] blur-[120px] pointer-events-none z-0" />
+      <div className="absolute top-[50%] right-0 w-[300px] h-[250px] rounded-full bg-[#6366F1]/[0.025] blur-[100px] pointer-events-none z-0" />
       
       {/* Header */}
       <header className="lk-page-header relative z-10 flex items-center justify-between" data-testid="home-header">
@@ -1548,423 +1548,376 @@ const HomePage = ({ user, onLogout, setUser }) => {
         </div>
       )}
 
-      {/* ===== HOME EXPERIENCE ===== */}
+      {/* ===== HOME ===== */}
       <main className="relative z-[5] pb-28">
 
-        {/* --- 1. DISCOVER / CONNECTIONS — dominant, engaging --- */}
-        <section className="pt-4 pb-2" data-testid="discover-section">
-          <div className="px-5 flex items-center justify-between mb-4">
-            <h2 className="text-white text-xl font-heading font-bold tracking-tight">Discover</h2>
-            <button onClick={() => router.push('/search')} className="text-xs text-[#D4A54A] font-semibold hover:text-[#D4A54A]/80 transition-colors" data-testid="discover-see-all">See all</button>
-          </div>
+        {/* Greeting */}
+        <div className="px-5 pt-3 pb-4">
+          <h1 className="text-white text-2xl font-bold tracking-tight">Hey, {user.displayName?.split(' ')[0] || 'you'}</h1>
+          <p className="text-white/40 text-sm mt-0.5">Who catches your eye tonight?</p>
+        </div>
 
-          {members.length > 0 && (
+        {(() => {
+          /* Fallback avatars for users without photos */
+          const stockPhotos = [
+            'https://images.unsplash.com/photo-1766228030153-b13583fd3db8?w=400&h=500&fit=crop&crop=face',
+            'https://images.pexels.com/photos/8044115/pexels-photo-8044115.jpeg?auto=compress&w=400&h=500&fit=crop',
+            'https://images.unsplash.com/photo-1712863132626-60bb701a6f4a?w=400&h=500&fit=crop&crop=face',
+            'https://images.unsplash.com/photo-1534664393936-5220914620f0?w=400&h=500&fit=crop&crop=face',
+            'https://images.unsplash.com/photo-1572852781348-4634bb3225bd?w=400&h=500&fit=crop&crop=face',
+            'https://images.pexels.com/photos/20744270/pexels-photo-20744270.jpeg?auto=compress&w=400&h=500&fit=crop',
+            'https://images.unsplash.com/photo-1589723710704-3d64c57ae972?w=400&h=500&fit=crop&crop=face',
+            'https://images.pexels.com/photos/4164085/pexels-photo-4164085.jpeg?auto=compress&w=400&h=500&fit=crop',
+            'https://images.unsplash.com/photo-1585807145425-793be610875c?w=400&h=500&fit=crop&crop=face',
+            'https://images.unsplash.com/photo-1672794444732-e007954a177c?w=400&h=500&fit=crop&crop=face',
+          ]
+          const getPhoto = (m, idx) => m.avatar || m.profilePicture || stockPhotos[idx % stockPhotos.length]
+          const getBadge = (m) => {
+            if (m.isFounder || m.role === 'founder') return { icon: Crown, color: 'text-amber-400', label: 'Founder' }
+            if (m.verified) return { icon: Check, color: 'text-emerald-400', label: 'Verified' }
+            return null
+          }
+          return (
             <>
-              {/* Hero profile card — first member, full width */}
-              {(() => {
-                const m = members[0]
-                const badge = getVerificationBadge(m)
-                return (
+              {/* HERO PROFILE CARD */}
+              {members.length > 0 && (
+                <div className="px-3 mb-3">
                   <button
-                    key={`hero-${m.id}`}
-                    onClick={() => viewProfile(m.id)}
-                    className="w-full block mb-3 group"
-                    data-testid={`discover-hero-${m.id}`}
+                    onClick={() => viewProfile(members[0].id)}
+                    className="relative w-full rounded-3xl overflow-hidden block group"
+                    style={{ aspectRatio: '3/4' }}
+                    data-testid={`discover-hero-${members[0].id}`}
                   >
-                    <div className="relative mx-5 rounded-2xl overflow-hidden" style={{ aspectRatio: '16/9' }}>
-                      <div className="absolute inset-0 bg-gradient-to-br from-[#D4A54A]/30 via-[#C7254E]/20 to-[#1a1020]" />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
-                      {(m.avatar || m.profilePicture) ? (
-                        <img src={m.avatar || m.profilePicture} alt="" className="absolute inset-0 w-full h-full object-cover" />
-                      ) : (
-                        <div className="absolute inset-0 flex items-center justify-center">
-                          <span className="text-6xl font-bold text-white/20">{m.displayName?.charAt(0)?.toUpperCase() || '?'}</span>
-                        </div>
-                      )}
-                      <div className="absolute bottom-0 left-0 right-0 p-5">
-                        <div className="flex items-center gap-2">
-                          <h3 className="text-white text-lg font-bold">{m.displayName || 'Member'}</h3>
-                          {badge && <badge.icon className={`w-4 h-4 ${badge.color}`} />}
-                          <span className="w-2 h-2 rounded-full bg-[#10B981] ml-1" />
-                        </div>
-                        <p className="text-white/40 text-xs mt-1">{m.bio || 'Online now'}</p>
+                    <img
+                      src={getPhoto(members[0], 0)}
+                      alt={members[0].displayName}
+                      className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent" />
+                    <div className="absolute bottom-0 left-0 right-0 p-5">
+                      <div className="flex items-center gap-2 mb-1">
+                        <h2 className="text-white text-2xl font-bold">{members[0].displayName}</h2>
+                        {(() => { const b = getBadge(members[0]); return b ? <b.icon className={`w-5 h-5 ${b.color}`} /> : null })()}
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="w-2 h-2 rounded-full bg-[#22C55E]" />
+                        <span className="text-white/60 text-sm">Online now</span>
                       </div>
                     </div>
                   </button>
-                )
-              })()}
+                </div>
+              )}
 
-              {/* Profile grid — remaining members, 2 columns */}
-              <div className="px-5 grid grid-cols-2 gap-2.5" data-testid="discover-grid">
-                {members.slice(1, 7).map((m, i) => {
-                  const gradients = [
-                    'from-[#2563EB]/25 via-[#7C3AED]/15 to-[#0F172A]',
-                    'from-[#E84393]/25 via-[#D4A54A]/10 to-[#1a0f20]',
-                    'from-[#059669]/20 via-[#0EA5E9]/10 to-[#0a1a1a]',
-                    'from-[#9333EA]/25 via-[#EC4899]/10 to-[#1a0f24]',
-                    'from-[#F59E0B]/20 via-[#EF4444]/10 to-[#1a1410]',
-                    'from-[#06B6D4]/25 via-[#8B5CF6]/10 to-[#0f1a20]',
-                  ]
-                  const badge = getVerificationBadge(m)
-                  return (
-                    <button
-                      key={m.id}
-                      onClick={() => viewProfile(m.id)}
-                      className="text-left rounded-xl overflow-hidden group"
-                      data-testid={`discover-card-${m.id}`}
-                    >
-                      <div className="relative" style={{ aspectRatio: '3/4' }}>
-                        <div className={`absolute inset-0 bg-gradient-to-br ${gradients[i % gradients.length]}`} />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-                        {(m.avatar || m.profilePicture) ? (
-                          <img src={m.avatar || m.profilePicture} alt="" className="absolute inset-0 w-full h-full object-cover" />
-                        ) : (
-                          <div className="absolute inset-0 flex items-center justify-center">
-                            <span className="text-4xl font-bold text-white/15 group-hover:text-white/25 transition-colors">{m.displayName?.charAt(0)?.toUpperCase() || '?'}</span>
+              {/* ACTIVE NOW — floating inline */}
+              <div className="px-5 py-3 flex items-center gap-3" data-testid="active-now-section">
+                <div className="flex -space-x-2">
+                  {members.slice(0, 5).map((m, i) => (
+                    <div key={`dot-${m.id}`} className="w-8 h-8 rounded-full border-2 border-[#0F1219] overflow-hidden">
+                      <img src={getPhoto(m, i)} alt="" className="w-full h-full object-cover" />
+                    </div>
+                  ))}
+                </div>
+                <button onClick={() => router.push('/search')} className="flex items-center gap-1.5 group" data-testid="active-now-count">
+                  <span className="w-2 h-2 rounded-full bg-[#22C55E] animate-pulse" />
+                  <span className="text-white/70 text-sm font-semibold group-hover:text-white transition-colors">{members.length} online</span>
+                  <ChevronRight className="w-3.5 h-3.5 text-white/30" />
+                </button>
+              </div>
+
+              {/* STORIES ROW */}
+              {stories.length > 0 && (
+                <div className="flex gap-3 overflow-x-auto pb-2 px-5 mb-1" style={{ scrollbarWidth: 'none' }} data-testid="stories-row">
+                  {stories.map((sg) => {
+                    const hasNew = sg.stories?.some(s => !s.viewedBy?.includes(user.id))
+                    return (
+                      <button key={`st-${sg.userId}`} onClick={() => viewStory(sg)} className="flex-none flex flex-col items-center gap-1" data-testid={`story-${sg.userId}`}>
+                        <div className={`w-14 h-14 rounded-full p-[2px] ${hasNew ? 'bg-gradient-to-br from-[#F43F5E] to-[#F59E0B]' : 'bg-white/10'}`}>
+                          <div className="w-full h-full rounded-full bg-[#0F1219] p-[1px]">
+                            <div className="w-full h-full rounded-full overflow-hidden">
+                              <img src={getPhoto(sg, members.findIndex(mm => mm.id === sg.userId))} alt="" className="w-full h-full object-cover" />
+                            </div>
                           </div>
-                        )}
+                        </div>
+                        <span className="text-white/30 text-[9px]">{sg.userId === user.id ? 'You' : sg.displayName?.split(' ')[0]?.slice(0,6)}</span>
+                      </button>
+                    )
+                  })}
+                  <button onClick={() => setShowAddStory(true)} className="flex-none flex flex-col items-center gap-1" data-testid="add-story-btn">
+                    <div className="w-14 h-14 rounded-full border-2 border-dashed border-white/15 flex items-center justify-center hover:border-[#F43F5E]/40 transition-colors">
+                      <Plus className="w-4 h-4 text-white/30" />
+                    </div>
+                    <span className="text-white/20 text-[9px]">Add</span>
+                  </button>
+                </div>
+              )}
+              {stories.length === 0 && (
+                <div className="px-5 mb-2">
+                  <button onClick={() => setShowAddStory(true)} className="flex items-center gap-2 text-sm text-white/30 hover:text-white/50 transition-colors" data-testid="add-story-btn">
+                    <div className="w-8 h-8 rounded-full border border-dashed border-white/15 flex items-center justify-center">
+                      <Plus className="w-3.5 h-3.5 text-white/25" />
+                    </div>
+                    <span>Share a story</span>
+                  </button>
+                </div>
+              )}
+
+              {/* 2-UP PROFILE CARDS */}
+              {members.length > 2 && (
+                <div className="px-3 grid grid-cols-2 gap-2 mb-2" data-testid="discover-grid-1">
+                  {members.slice(1, 3).map((m, i) => {
+                    const badge = getBadge(m)
+                    return (
+                      <button key={m.id} onClick={() => viewProfile(m.id)} className="relative rounded-2xl overflow-hidden group" style={{ aspectRatio: '3/4' }} data-testid={`discover-card-${m.id}`}>
+                        <img src={getPhoto(m, i + 1)} alt={m.displayName} className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
                         <div className="absolute bottom-0 left-0 right-0 p-3">
                           <div className="flex items-center gap-1.5">
-                            <p className="text-white text-sm font-semibold truncate">{m.displayName || 'Member'}</p>
-                            {badge && <badge.icon className={`w-3 h-3 flex-shrink-0 ${badge.color}`} />}
+                            <p className="text-white text-base font-bold truncate">{m.displayName}</p>
+                            {badge && <badge.icon className={`w-3.5 h-3.5 flex-shrink-0 ${badge.color}`} />}
                           </div>
                           <div className="flex items-center gap-1 mt-0.5">
-                            <span className="w-1.5 h-1.5 rounded-full bg-[#10B981]" />
-                            <span className="text-white/35 text-[10px]">Online</span>
+                            <span className="w-1.5 h-1.5 rounded-full bg-[#22C55E]" />
+                            <span className="text-white/50 text-[10px]">Online</span>
                           </div>
                         </div>
+                      </button>
+                    )
+                  })}
+                </div>
+              )}
+
+              {/* CONNECTION REQUESTS */}
+              {pendingFriendRequests.length > 0 && (
+                <div className="px-5 py-3" data-testid="connection-requests">
+                  {pendingFriendRequests.slice(0, 2).map((req, ri) => (
+                    <div key={req.id || req.fromUserId} className="flex items-center gap-3 py-3 mb-1.5 rounded-2xl px-4" style={{ background: 'linear-gradient(135deg, rgba(244,63,94,0.08), rgba(245,158,11,0.04))' }} data-testid={`match-${req.fromUserId}`}>
+                      <div className="w-12 h-12 rounded-full overflow-hidden flex-shrink-0">
+                        <img src={stockPhotos[(ri + 5) % stockPhotos.length]} alt="" className="w-full h-full object-cover" />
                       </div>
-                    </button>
-                  )
-                })}
+                      <div className="flex-1 min-w-0">
+                        <p className="text-white text-sm font-bold truncate">{req.fromName || 'Someone'}</p>
+                        <p className="text-white/35 text-xs">Wants to connect</p>
+                      </div>
+                      <button onClick={(e) => { e.stopPropagation(); acceptFriendRequest(req.fromUserId); }} className="px-4 py-2 rounded-full text-xs font-bold bg-[#F43F5E] text-white hover:bg-[#F43F5E]/80 transition-colors">Accept</button>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* RECENT ACTIVITY — inline, social */}
+              <div className="px-5 py-3" data-testid="recent-activity-section">
+                <p className="text-white/40 text-xs font-bold uppercase tracking-widest mb-2">Happening Now</p>
+                {notifications.length > 0 ? (
+                  notifications.slice(0, 3).map((n, i) => (
+                    <div key={n.id || i} className="flex items-center gap-3 py-2" data-testid={`activity-${i}`}>
+                      <div className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0">
+                        <img src={stockPhotos[i % stockPhotos.length]} alt="" className="w-full h-full object-cover" />
+                      </div>
+                      <p className="text-white/60 text-sm flex-1">{n.message}</p>
+                    </div>
+                  ))
+                ) : (
+                  members.slice(0, 3).map((m, i) => {
+                    const verbs = ['is browsing', 'just came online', 'is active now']
+                    return (
+                      <button key={`hap-${m.id}`} onClick={() => viewProfile(m.id)} className="w-full flex items-center gap-3 py-2 group" data-testid={`activity-${i}`}>
+                        <div className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0">
+                          <img src={getPhoto(m, i)} alt="" className="w-full h-full object-cover" />
+                        </div>
+                        <p className="text-white/50 text-sm flex-1 text-left group-hover:text-white/70 transition-colors">
+                          <span className="text-white/80 font-semibold">{m.displayName?.split(' ')[0]}</span> {verbs[i]}
+                        </p>
+                        <span className="w-1.5 h-1.5 rounded-full bg-[#22C55E]" />
+                      </button>
+                    )
+                  })
+                )}
+              </div>
+
+              {/* AFTER DARK — vibrant banner */}
+              <div className="px-3 py-2">
+                <button onClick={() => handleTileClick('afterdark', '/afterdark')} className="relative w-full rounded-2xl overflow-hidden group" data-testid="featured-lounge">
+                  <div className="absolute inset-0" style={{ background: 'linear-gradient(135deg, #1E1028 0%, #2D1535 30%, #1A0F1D 100%)' }} />
+                  <div className="absolute top-0 right-0 w-40 h-32 bg-[#F43F5E]/10 blur-[60px]" />
+                  <div className="absolute bottom-0 left-0 w-32 h-24 bg-[#F59E0B]/8 blur-[50px]" />
+                  <div className="relative px-6 py-6 flex items-center justify-between">
+                    <div>
+                      <div className="flex items-center gap-2 mb-1">
+                        <Sparkles className="w-4 h-4 text-[#F59E0B]" />
+                        <span className="text-[#F59E0B] text-xs font-bold tracking-wider uppercase">After Dark</span>
+                      </div>
+                      <p className="text-white/80 text-lg font-bold">The private room</p>
+                      <div className="flex items-center gap-1.5 mt-1">
+                        <span className="w-1.5 h-1.5 rounded-full bg-[#F43F5E] animate-pulse" />
+                        <span className="text-white/40 text-xs">{loungesList.reduce((s, l) => s + (l.memberCount || 0), 0)} inside</span>
+                      </div>
+                    </div>
+                    <div className="w-12 h-12 rounded-full flex items-center justify-center bg-[#F43F5E]/15 group-hover:bg-[#F43F5E]/25 transition-colors">
+                      <ChevronRight className="w-5 h-5 text-[#F43F5E]" />
+                    </div>
+                  </div>
+                </button>
+              </div>
+
+              {/* MORE PROFILE CARDS */}
+              {members.length > 4 && (
+                <div className="px-3 grid grid-cols-2 gap-2 mt-2 mb-2" data-testid="discover-grid-2">
+                  {members.slice(3, 5).map((m, i) => {
+                    const badge = getBadge(m)
+                    return (
+                      <button key={m.id} onClick={() => viewProfile(m.id)} className="relative rounded-2xl overflow-hidden group" style={{ aspectRatio: '3/4' }} data-testid={`discover-card-${m.id}`}>
+                        <img src={getPhoto(m, i + 3)} alt={m.displayName} className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
+                        <div className="absolute bottom-0 left-0 right-0 p-3">
+                          <div className="flex items-center gap-1.5">
+                            <p className="text-white text-base font-bold truncate">{m.displayName}</p>
+                            {badge && <badge.icon className={`w-3.5 h-3.5 flex-shrink-0 ${badge.color}`} />}
+                          </div>
+                          <div className="flex items-center gap-1 mt-0.5">
+                            <span className="w-1.5 h-1.5 rounded-full bg-[#22C55E]" />
+                            <span className="text-white/50 text-[10px]">Online</span>
+                          </div>
+                        </div>
+                      </button>
+                    )
+                  })}
+                </div>
+              )}
+
+              {/* LOUNGES — horizontal scroll chips */}
+              <div className="py-3" data-testid="active-lounges-section">
+                <div className="px-5 flex items-center justify-between mb-2">
+                  <p className="text-white/40 text-xs font-bold uppercase tracking-widest">Lounges</p>
+                  <button onClick={() => handleTileClick('lounge', '/lounge')} className="text-[#6366F1] text-xs font-semibold" data-testid="see-all-lounges">See all</button>
+                </div>
+                <div className="flex gap-2 overflow-x-auto px-5" style={{ scrollbarWidth: 'none' }}>
+                  {loungesList.slice(0, 5).map((l) => {
+                    const count = l.memberCount || 0
+                    return (
+                      <button key={l.id} onClick={() => router.push(`/lounge?id=${l.id}`)} className="flex-none px-4 py-2.5 rounded-full flex items-center gap-2 hover:bg-white/8 transition-colors" style={{ background: 'rgba(99,102,241,0.08)', border: '1px solid rgba(99,102,241,0.12)' }} data-testid={`home-lounge-${l.id}`}>
+                        <span className="text-white/80 text-sm font-medium whitespace-nowrap">{l.name}</span>
+                        {count > 0 && (
+                          <span className="flex items-center gap-1">
+                            <span className="w-1 h-1 rounded-full bg-[#22C55E]" />
+                            <span className="text-white/30 text-[10px]">{count}</span>
+                          </span>
+                        )}
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+
+              {/* EVEN MORE PROFILES */}
+              {members.length > 6 && (
+                <div className="px-3 grid grid-cols-2 gap-2 mb-2" data-testid="discover-grid-3">
+                  {members.slice(5, 7).map((m, i) => {
+                    const badge = getBadge(m)
+                    return (
+                      <button key={m.id} onClick={() => viewProfile(m.id)} className="relative rounded-2xl overflow-hidden group" style={{ aspectRatio: '3/4' }} data-testid={`discover-card-${m.id}`}>
+                        <img src={getPhoto(m, i + 5)} alt={m.displayName} className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
+                        <div className="absolute bottom-0 left-0 right-0 p-3">
+                          <div className="flex items-center gap-1.5">
+                            <p className="text-white text-base font-bold truncate">{m.displayName}</p>
+                            {badge && <badge.icon className={`w-3.5 h-3.5 flex-shrink-0 ${badge.color}`} />}
+                          </div>
+                          <div className="flex items-center gap-1 mt-0.5">
+                            <span className="w-1.5 h-1.5 rounded-full bg-[#22C55E]" />
+                            <span className="text-white/50 text-[10px]">Online</span>
+                          </div>
+                        </div>
+                      </button>
+                    )
+                  })}
+                </div>
+              )}
+
+              {/* QUICK ACCESS — inline row, not boxed */}
+              <div className="px-5 py-3 flex items-center gap-2" data-testid="quick-access">
+                <button onClick={() => handleTileClick('radio', '/radio')} className="flex-1 flex items-center gap-2.5 py-3 px-4 rounded-2xl hover:bg-white/5 transition-colors" style={{ background: 'rgba(244,63,94,0.06)' }} data-testid="home-radio-btn">
+                  <Radio className="w-4 h-4 text-[#F43F5E]/60" />
+                  <span className="text-white/60 text-sm font-medium">Radio</span>
+                </button>
+                <button onClick={() => handleTileClick('games', '/games')} className="flex-1 flex items-center gap-2.5 py-3 px-4 rounded-2xl hover:bg-white/5 transition-colors" style={{ background: 'rgba(34,197,94,0.06)' }} data-testid="quick-games">
+                  <Gamepad2 className="w-4 h-4 text-[#22C55E]/60" />
+                  <span className="text-white/60 text-sm font-medium">Games</span>
+                </button>
+                <button onClick={() => router.push('/inbox')} className="flex-1 flex items-center gap-2.5 py-3 px-4 rounded-2xl hover:bg-white/5 transition-colors" style={{ background: 'rgba(99,102,241,0.06)' }} data-testid="quick-inbox">
+                  <MessageSquare className="w-4 h-4 text-[#6366F1]/60" />
+                  <span className="text-white/60 text-sm font-medium">Inbox</span>
+                </button>
+              </div>
+
+              {/* CREDITS — subtle, not a section */}
+              <div className="px-5 py-2 mb-2" data-testid="monetisation-section">
+                <button onClick={() => router.push('/wallet')} className="flex items-center gap-2 text-sm" data-testid="home-wallet-btn">
+                  <Wallet className="w-3.5 h-3.5 text-[#F59E0B]/50" />
+                  <span className="text-white/30">{user.credits || 0} credits</span>
+                  <span className="text-[#F59E0B]/40 text-xs">Top up</span>
+                </button>
               </div>
             </>
-          )}
-
-          {/* Connection Requests */}
-          {pendingFriendRequests.length > 0 && (
-            <div className="px-5 mt-4" data-testid="connection-requests">
-              <p className="text-white/50 text-xs font-semibold uppercase tracking-wider mb-2">Requests</p>
-              <div className="space-y-2">
-                {pendingFriendRequests.slice(0, 3).map((req) => (
-                  <div key={req.id || req.fromUserId} className="flex items-center gap-3 py-3 px-4 rounded-xl" style={{ background: '#151A24', border: '1px solid rgba(255,255,255,0.05)' }} data-testid={`match-${req.fromUserId}`}>
-                    <div className="w-11 h-11 rounded-full overflow-hidden flex-shrink-0 bg-gradient-to-br from-[#D4A54A]/20 to-[#E84393]/10 flex items-center justify-center">
-                      {req.fromAvatar ? (
-                        <img src={req.fromAvatar} alt="" className="w-full h-full object-cover" />
-                      ) : (
-                        <span className="text-white/40 text-sm font-bold">{req.fromName?.charAt(0) || '?'}</span>
-                      )}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-white text-sm font-semibold truncate">{req.fromName || 'Unknown'}</p>
-                      <p className="text-white/30 text-[11px]">Wants to connect</p>
-                    </div>
-                    <div className="flex gap-2 flex-shrink-0">
-                      <button onClick={(e) => { e.stopPropagation(); acceptFriendRequest(req.fromUserId); }} className="px-3.5 py-1.5 rounded-full text-[11px] font-bold bg-[#10B981] text-white hover:bg-[#10B981]/80 transition-colors">Accept</button>
-                      <button onClick={(e) => { e.stopPropagation(); declineFriendRequest(req.fromUserId); }} className="px-3 py-1.5 rounded-full text-[11px] font-medium text-white/30 bg-white/5 hover:bg-white/10 transition-colors">Pass</button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-        </section>
-
-        {/* --- 2. ACTIVE NOW — stories + online strip --- */}
-        <section className="py-4" data-testid="active-now-section">
-          <div className="px-5 flex items-center gap-2 mb-3">
-            <span className="w-2 h-2 rounded-full bg-[#10B981] animate-pulse" />
-            <h2 className="text-white/60 text-xs font-heading font-bold tracking-wider uppercase">Active Now</h2>
-            <span className="text-[#10B981]/50 text-[10px] font-semibold">{members.length}</span>
-          </div>
-
-          <div className="flex gap-3 overflow-x-auto pb-2 px-5" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', WebkitOverflowScrolling: 'touch' }} data-testid="active-now-scroll">
-            {/* Add Story */}
-            <button onClick={() => setShowAddStory(true)} className="flex-none flex flex-col items-center gap-1.5" data-testid="add-story-btn">
-              <div className="w-14 h-14 rounded-full border-2 border-dashed border-white/15 flex items-center justify-center hover:border-[#D4A54A]/40 transition-colors">
-                <Plus className="w-4 h-4 text-white/30" strokeWidth={2} />
-              </div>
-              <span className="text-white/25 text-[9px] font-medium">Story</span>
-            </button>
-
-            {/* Stories */}
-            {stories.map((storyGroup) => {
-              const hasUnviewed = storyGroup.stories?.some(s => !s.viewedBy?.includes(user.id))
-              const isOwn = storyGroup.userId === user.id
-              return (
-                <button key={`story-${storyGroup.userId}`} onClick={() => viewStory(storyGroup)} className="flex-none flex flex-col items-center gap-1.5" data-testid={`story-${storyGroup.userId}`}>
-                  <div className={`w-14 h-14 rounded-full p-[2px] ${hasUnviewed ? 'bg-gradient-to-br from-[#D4A54A] to-[#E8364E]' : 'bg-white/10'}`}>
-                    <div className="w-full h-full rounded-full bg-[#0C0F18] p-[1.5px]">
-                      <div className="w-full h-full rounded-full overflow-hidden bg-[#171C28] flex items-center justify-center">
-                        {storyGroup.avatar ? (
-                          <img src={storyGroup.avatar} alt="" className="w-full h-full object-cover" />
-                        ) : (
-                          <span className="text-white/40 text-xs font-bold">{storyGroup.displayName?.charAt(0)?.toUpperCase() || '?'}</span>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                  <span className="text-white/30 text-[9px] font-medium truncate w-14 text-center">{isOwn ? 'You' : storyGroup.displayName?.split(' ')[0]?.slice(0, 7) || 'User'}</span>
-                </button>
-              )
-            })}
-
-            {/* Online members */}
-            {members.slice(0, 12).map((m, i) => {
-              const colors = ['#D4A54A', '#3B82F6', '#E84393', '#10B981', '#9333EA', '#E8364E', '#06B6D4', '#F59E0B']
-              return (
-                <button key={`active-${m.id}`} onClick={() => viewProfile(m.id)} className="flex-none flex flex-col items-center gap-1.5 group" data-testid={`active-user-${m.id}`}>
-                  <div className="relative w-14 h-14">
-                    <div className="w-full h-full rounded-full overflow-hidden bg-[#171C28] flex items-center justify-center border border-white/[0.06]">
-                      {m.avatar || m.profilePicture ? (
-                        <img src={m.avatar || m.profilePicture} alt="" className="w-full h-full object-cover" />
-                      ) : (
-                        <span className="text-sm font-bold" style={{ color: `${colors[i % colors.length]}` }}>{m.displayName?.charAt(0)?.toUpperCase() || '?'}</span>
-                      )}
-                    </div>
-                    <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-[#10B981] ring-2 ring-[#0C0F18]" />
-                  </div>
-                  <span className="text-white/25 text-[9px] font-medium truncate w-14 text-center group-hover:text-white/50 transition-colors">{m.displayName?.split(' ')[0]?.slice(0, 7) || 'User'}</span>
-                </button>
-              )
-            })}
-          </div>
-        </section>
-
-        {/* --- 3. RECENT ACTIVITY — real data from notifications + online status --- */}
-        <section className="px-5 py-3" data-testid="recent-activity-section">
-          <h2 className="text-white/60 text-xs font-heading font-bold tracking-wider uppercase mb-3">Recent Activity</h2>
-          <div className="space-y-0.5">
-            {notifications.length > 0 ? (
-              notifications.slice(0, 4).map((n, i) => (
-                <div key={n.id || i} className="flex items-center gap-3 py-2.5 rounded-lg" data-testid={`activity-${i}`}>
-                  <div className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 bg-[#D4A54A]/10">
-                    <Bell className="w-4 h-4 text-[#D4A54A]/60" strokeWidth={1.5} />
-                  </div>
-                  <p className="text-white/60 text-[13px] flex-1 truncate">{n.message || 'New activity'}</p>
-                  <span className="text-white/20 text-[10px] flex-shrink-0">{n.time || ''}</span>
-                </div>
-              ))
-            ) : (
-              /* Use real online members as activity signals */
-              members.slice(0, 4).map((m, i) => {
-                const signals = [
-                  { icon: Eye, text: 'is browsing', color: '#3B82F6' },
-                  { icon: Users, text: 'just came online', color: '#10B981' },
-                  { icon: Heart, text: 'is active', color: '#E84393' },
-                  { icon: UserPlus, text: 'joined recently', color: '#D4A54A' },
-                ]
-                const sig = signals[i % signals.length]
-                const SigIcon = sig.icon
-                return (
-                  <button key={`act-${m.id}`} onClick={() => viewProfile(m.id)} className="w-full flex items-center gap-3 py-2.5 rounded-lg hover:bg-white/[0.02] transition-colors group" data-testid={`activity-${i}`}>
-                    <div className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0" style={{ background: `${sig.color}12` }}>
-                      <SigIcon className="w-4 h-4" style={{ color: `${sig.color}90` }} strokeWidth={1.5} />
-                    </div>
-                    <p className="text-white/50 text-[13px] flex-1 text-left truncate group-hover:text-white/70 transition-colors">
-                      <span className="text-white/80 font-medium">{m.displayName?.split(' ')[0] || 'Someone'}</span> {sig.text}
-                    </p>
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#10B981]/40 flex-shrink-0" />
-                  </button>
-                )
-              })
-            )}
-          </div>
-        </section>
-
-        {/* --- 4. FEATURED LOUNGE — After Dark --- */}
-        <section className="px-5 py-4" data-testid="featured-lounge-section">
-          <p className="text-white/40 text-[10px] font-bold uppercase tracking-[0.2em] mb-3">Featured</p>
-          <button onClick={() => handleTileClick('afterdark', '/afterdark')} className="w-full text-left group" data-testid="featured-lounge">
-            <div className="relative rounded-2xl overflow-hidden" style={{ background: 'linear-gradient(135deg, #1a1424 0%, #14101E 50%, #0F0D17 100%)', border: '1px solid rgba(212,165,74,0.10)' }}>
-              <div className="absolute top-0 right-0 w-40 h-28 bg-[#D4A54A]/[0.05] blur-[60px] pointer-events-none" />
-              <div className="absolute bottom-0 left-0 w-32 h-20 bg-[#E8364E]/[0.04] blur-[40px] pointer-events-none" />
-              <div className="relative z-[2] px-6 py-5">
-                <div className="flex items-center justify-between mb-2">
-                  <h3 className="text-white font-heading font-bold text-xl tracking-tight">After Dark</h3>
-                  <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#D4A54A]/8 border border-[#D4A54A]/15">
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#D4A54A] animate-pulse" />
-                    <span className="text-[#D4A54A] text-[9px] font-bold tracking-wider">LIVE</span>
-                  </div>
-                </div>
-                <p className="text-white/30 text-sm mb-5">Private. Discreet. For those who want more.</p>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-1.5">
-                    <Users className="w-3.5 h-3.5 text-white/20" strokeWidth={1.5} />
-                    <span className="text-white/25 text-[11px]">{loungesList.reduce((s, l) => s + (l.memberCount || 0), 0)} inside</span>
-                  </div>
-                  <div className="flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-bold text-[#D4A54A] group-hover:text-[#D4A54A]/80 transition-colors bg-[#D4A54A]/10 border border-[#D4A54A]/15 group-hover:bg-[#D4A54A]/15">
-                    Enter <ChevronRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" strokeWidth={2.5} />
-                  </div>
-                </div>
-              </div>
-            </div>
-          </button>
-        </section>
-
-        {/* --- 5. LOUNGES — real existing lounges --- */}
-        <section className="px-5 py-3" data-testid="active-lounges-section">
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="text-white/60 text-xs font-heading font-bold tracking-wider uppercase">Lounges</h2>
-            <button onClick={() => handleTileClick('lounge', '/lounge')} className="text-[10px] text-white/30 hover:text-white/50 font-semibold transition-colors" data-testid="see-all-lounges">All</button>
-          </div>
-          <div className="space-y-1">
-            {loungesList.slice(0, 5).map((lounge, idx) => {
-              const accents = ['#3B82F6', '#10B981', '#D4A54A', '#E84393', '#9333EA']
-              const accent = accents[idx % accents.length]
-              const count = lounge.memberCount || lounge.members?.length || 0
-              return (
-                <button key={lounge.id} onClick={() => router.push(`/lounge?id=${lounge.id}`)} className="w-full flex items-center gap-3.5 py-3 px-3 rounded-xl hover:bg-white/[0.03] transition-colors group" data-testid={`home-lounge-${lounge.id}`}>
-                  <div className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: `${accent}12` }}>
-                    <Sofa className="w-4 h-4" style={{ color: `${accent}80` }} strokeWidth={1.5} />
-                  </div>
-                  <div className="flex-1 min-w-0 text-left">
-                    <h3 className="text-white/80 text-sm font-semibold truncate group-hover:text-white transition-colors">{lounge.name}</h3>
-                    {lounge.description && <p className="text-white/20 text-[11px] truncate">{lounge.description}</p>}
-                  </div>
-                  <div className="flex items-center gap-2 flex-shrink-0">
-                    {count > 0 && (
-                      <div className="flex items-center gap-1">
-                        <span className="w-1.5 h-1.5 rounded-full" style={{ background: accent }} />
-                        <span className="text-white/30 text-[11px] font-medium">{count}</span>
-                      </div>
-                    )}
-                    <ChevronRight className="w-3.5 h-3.5 text-white/10 group-hover:text-white/30 transition-colors" strokeWidth={1.5} />
-                  </div>
-                </button>
-              )
-            })}
-          </div>
-        </section>
-
-        {/* --- 6. CONTENT / MONETISATION --- */}
-        <section className="px-5 py-3" data-testid="monetisation-section">
-          <div className="flex gap-2.5">
-            <button onClick={() => router.push('/wallet')} className="flex-1 flex items-center gap-3 py-3.5 px-4 rounded-xl transition-colors hover:bg-white/[0.03]" style={{ background: '#131720', border: '1px solid rgba(212,165,74,0.06)' }} data-testid="home-wallet-btn">
-              <div className="w-9 h-9 rounded-full flex items-center justify-center bg-[#D4A54A]/10">
-                <Wallet className="w-4 h-4 text-[#D4A54A]/70" strokeWidth={1.5} />
-              </div>
-              <div className="text-left">
-                <p className="text-[#D4A54A] text-base font-heading font-bold">{user.credits || 0}</p>
-                <p className="text-white/30 text-[10px]">Credits</p>
-              </div>
-            </button>
-            <button onClick={() => router.push('/search')} className="flex-1 flex items-center gap-3 py-3.5 px-4 rounded-xl transition-colors hover:bg-white/[0.03]" style={{ background: '#131720', border: '1px solid rgba(232,54,78,0.05)' }} data-testid="home-unlock-btn">
-              <div className="w-9 h-9 rounded-full flex items-center justify-center bg-[#E8364E]/8">
-                <Lock className="w-4 h-4 text-[#E8364E]/50" strokeWidth={1.5} />
-              </div>
-              <div className="text-left">
-                <p className="text-white/60 text-sm font-semibold">Exclusive</p>
-                <p className="text-white/20 text-[10px]">Unlock content</p>
-              </div>
-            </button>
-          </div>
-        </section>
-
-        {/* --- 7. RADIO --- */}
-        <section className="px-5 py-3" data-testid="radio-home-section">
-          <button onClick={() => handleTileClick('radio', '/radio')} className="w-full flex items-center gap-3.5 py-3 px-4 rounded-xl transition-colors hover:bg-white/[0.03] group" style={{ background: '#131720', border: '1px solid rgba(232,54,78,0.05)' }} data-testid="home-radio-btn">
-            <div className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 bg-[#E8364E]/10">
-              <Radio className="w-4 h-4 text-[#E8364E]/60" strokeWidth={1.5} />
-            </div>
-            <div className="flex-1 text-left">
-              <p className="text-white/70 text-sm font-semibold group-hover:text-white transition-colors">Radio</p>
-              <p className="text-white/20 text-[10px]">Listen while you browse</p>
-            </div>
-            <ChevronRight className="w-4 h-4 text-white/10 group-hover:text-white/30 transition-colors" strokeWidth={1.5} />
-          </button>
-        </section>
-
-        <div className="h-4" />
+          )
+        })()}
       </main>
 
       {/* Profile Modal */}
       {profileUser && (
         <div className="fixed inset-0 z-[60] flex items-end justify-center bg-black/60 backdrop-blur-sm animate-fade-in" onClick={() => setProfileUser(null)} data-testid="profile-modal-overlay">
-          <div className="w-full max-w-lg max-h-[85vh] overflow-y-auto rounded-t-3xl animate-slide-up" style={{ background: '#131720' }} onClick={e => e.stopPropagation()} data-testid="profile-modal">
-            {/* Hero */}
-            <div className="relative h-52 overflow-hidden">
-              <div className="absolute inset-0 bg-gradient-to-br from-[#D4A54A]/20 via-[#E84393]/10 to-[#131720]" />
-              {(profileUser.avatar || profileUser.profilePicture) ? (
-                <img src={profileUser.avatar || profileUser.profilePicture} alt="" className="absolute inset-0 w-full h-full object-cover" />
-              ) : (
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <span className="text-7xl font-bold text-white/10">{profileUser.displayName?.charAt(0)?.toUpperCase() || '?'}</span>
-                </div>
-              )}
-              <div className="absolute inset-0 bg-gradient-to-t from-[#131720] via-transparent to-transparent" />
-              <button onClick={() => setProfileUser(null)} className="absolute top-4 right-4 w-8 h-8 rounded-full bg-black/40 flex items-center justify-center" data-testid="close-profile-modal">
-                <X className="w-4 h-4 text-white/70" />
+          <div className="w-full max-w-lg max-h-[88vh] overflow-y-auto rounded-t-3xl animate-slide-up" style={{ background: '#151820' }} onClick={e => e.stopPropagation()} data-testid="profile-modal">
+            <div className="relative h-64 overflow-hidden">
+              {(() => {
+                const idx = members.findIndex(mm => mm.id === profileUser.id)
+                const stockPhotos = [
+                  'https://images.unsplash.com/photo-1766228030153-b13583fd3db8?w=600&h=400&fit=crop&crop=face',
+                  'https://images.pexels.com/photos/8044115/pexels-photo-8044115.jpeg?auto=compress&w=600&h=400&fit=crop',
+                  'https://images.unsplash.com/photo-1712863132626-60bb701a6f4a?w=600&h=400&fit=crop&crop=face',
+                  'https://images.unsplash.com/photo-1534664393936-5220914620f0?w=600&h=400&fit=crop&crop=face',
+                  'https://images.unsplash.com/photo-1572852781348-4634bb3225bd?w=600&h=400&fit=crop&crop=face',
+                  'https://images.pexels.com/photos/20744270/pexels-photo-20744270.jpeg?auto=compress&w=600&h=400&fit=crop',
+                  'https://images.unsplash.com/photo-1589723710704-3d64c57ae972?w=600&h=400&fit=crop&crop=face',
+                  'https://images.pexels.com/photos/4164085/pexels-photo-4164085.jpeg?auto=compress&w=600&h=400&fit=crop',
+                  'https://images.unsplash.com/photo-1585807145425-793be610875c?w=600&h=400&fit=crop&crop=face',
+                  'https://images.unsplash.com/photo-1672794444732-e007954a177c?w=600&h=400&fit=crop&crop=face',
+                ]
+                const photo = profileUser.avatar || profileUser.profilePicture || stockPhotos[(idx >= 0 ? idx : 0) % stockPhotos.length]
+                return <img src={photo} alt="" className="absolute inset-0 w-full h-full object-cover" />
+              })()}
+              <div className="absolute inset-0 bg-gradient-to-t from-[#151820] via-transparent to-transparent" />
+              <button onClick={() => setProfileUser(null)} className="absolute top-4 right-4 w-9 h-9 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center" data-testid="close-profile-modal">
+                <X className="w-4 h-4 text-white" />
               </button>
-              <div className="absolute bottom-4 left-5 right-5">
+              <div className="absolute bottom-4 left-5">
                 <div className="flex items-center gap-2">
                   <h2 className="text-white text-2xl font-bold">{profileUser.displayName}</h2>
                   {(profileUser.isFounder || profileUser.role === 'founder') && <Crown className="w-5 h-5 text-amber-400" />}
-                  {profileUser.verified && <Check className="w-4 h-4 text-emerald-400" />}
+                  {profileUser.verified && !(profileUser.isFounder || profileUser.role === 'founder') && <Check className="w-4 h-4 text-emerald-400" />}
                 </div>
-                {profileUser.bio && <p className="text-white/40 text-sm mt-1">{profileUser.bio}</p>}
+                {(profileUser.bio || profileUser.aboutMe) && <p className="text-white/50 text-sm mt-0.5">{profileUser.bio || profileUser.aboutMe}</p>}
               </div>
             </div>
-
-            <div className="px-5 pb-8 pt-4">
-              {/* Actions */}
-              <div className="flex gap-2.5 mb-5">
-                {!isFriend(profileUser.id) && profileUser.id !== user.id && (
-                  <button onClick={() => { sendFriendRequest(profileUser.id); setProfileUser(null); }} className="flex-1 py-3 rounded-xl text-sm font-bold bg-[#D4A54A] text-black hover:bg-[#D4A54A]/80 transition-colors" data-testid="profile-connect-btn">Connect</button>
+            <div className="px-5 pb-8 pt-3">
+              <div className="flex gap-2 mb-5">
+                {profileUser.id !== user.id && !isFriend(profileUser.id) && (
+                  <button onClick={() => { sendFriendRequest(profileUser.id); setProfileUser(null); }} className="flex-1 py-3.5 rounded-2xl text-sm font-bold bg-[#F43F5E] text-white hover:bg-[#F43F5E]/80 transition-colors" data-testid="profile-connect-btn">Connect</button>
                 )}
                 {isFriend(profileUser.id) && (
-                  <button onClick={() => { router.push(`/inbox?dm=${profileUser.id}`); setProfileUser(null); }} className="flex-1 py-3 rounded-xl text-sm font-bold bg-[#3B82F6] text-white hover:bg-[#3B82F6]/80 transition-colors" data-testid="profile-message-btn">Message</button>
+                  <button onClick={() => { router.push(`/inbox?dm=${profileUser.id}`); setProfileUser(null); }} className="flex-1 py-3.5 rounded-2xl text-sm font-bold bg-[#6366F1] text-white hover:bg-[#6366F1]/80 transition-colors" data-testid="profile-message-btn">Message</button>
                 )}
-                <button onClick={() => { router.push(`/search?view=${profileUser.id}`); setProfileUser(null); }} className="py-3 px-5 rounded-xl text-sm font-medium bg-white/5 text-white/60 hover:bg-white/10 transition-colors" data-testid="profile-full-btn">Full Profile</button>
+                <button onClick={() => { router.push(`/search?view=${profileUser.id}`); setProfileUser(null); }} className="py-3.5 px-6 rounded-2xl text-sm font-medium bg-white/5 text-white/60 hover:bg-white/10 transition-colors" data-testid="profile-full-btn">Full Profile</button>
               </div>
-
-              {/* Info grid */}
-              {(profileUser.age || profileUser.location) && (
-                <div className="flex gap-2 mb-4">
-                  {profileUser.age && (
-                    <div className="px-3 py-2 rounded-lg bg-white/5"><p className="text-white text-sm font-bold">{profileUser.age}</p><p className="text-white/30 text-[10px]">Age</p></div>
-                  )}
-                  {profileUser.location && (
-                    <div className="px-3 py-2 rounded-lg bg-white/5"><p className="text-white text-sm font-bold truncate">{profileUser.location}</p><p className="text-white/30 text-[10px]">Location</p></div>
-                  )}
-                </div>
-              )}
-
-              {/* About */}
-              {(profileUser.aboutMe || profileUser.bio) && (
-                <div className="mb-4">
-                  <h3 className="text-white/50 text-xs font-bold uppercase tracking-wider mb-2">About</h3>
-                  <p className="text-white/60 text-sm leading-relaxed">{profileUser.aboutMe || profileUser.bio}</p>
-                </div>
-              )}
-
-              {/* Stats */}
-              <div className="flex gap-3">
-                <div className="flex-1 py-3 rounded-xl bg-white/5 text-center">
-                  <p className="text-white font-bold">{profileUser.friends?.length || 0}</p>
-                  <p className="text-white/30 text-[10px]">Friends</p>
-                </div>
-                <div className="flex-1 py-3 rounded-xl bg-white/5 text-center">
-                  <p className="text-white font-bold">{profileUser.galleryCount || profileUser.gallery?.length || 0}</p>
-                  <p className="text-white/30 text-[10px]">Photos</p>
-                </div>
+              <div className="flex gap-3 mb-4">
+                <div className="flex-1 py-3 rounded-2xl bg-white/5 text-center"><p className="text-white font-bold">{profileUser.friends?.length || 0}</p><p className="text-white/30 text-xs">Friends</p></div>
+                <div className="flex-1 py-3 rounded-2xl bg-white/5 text-center"><p className="text-white font-bold">{profileUser.galleryCount || profileUser.gallery?.length || 0}</p><p className="text-white/30 text-xs">Photos</p></div>
               </div>
-
-              {/* Gallery preview */}
               {profileUser.gallery && profileUser.gallery.length > 0 && (
-                <div className="mt-4">
-                  <h3 className="text-white/50 text-xs font-bold uppercase tracking-wider mb-2">Gallery</h3>
-                  <div className="grid grid-cols-3 gap-1.5">
-                    {profileUser.gallery.slice(0, 3).map((img, i) => (
-                      <div key={i} className="aspect-square rounded-lg overflow-hidden bg-white/5">
-                        {typeof img === 'string' ? (
-                          <img src={img} alt="" className="w-full h-full object-cover" />
-                        ) : img.url ? (
-                          <img src={img.url} alt="" className="w-full h-full object-cover" />
-                        ) : null}
-                      </div>
-                    ))}
-                  </div>
+                <div className="grid grid-cols-3 gap-1.5">
+                  {profileUser.gallery.slice(0, 3).map((img, i) => (
+                    <div key={i} className="aspect-square rounded-xl overflow-hidden bg-white/5">
+                      <img src={typeof img === 'string' ? img : img.url} alt="" className="w-full h-full object-cover" />
+                    </div>
+                  ))}
                 </div>
               )}
             </div>
@@ -1973,7 +1926,7 @@ const HomePage = ({ user, onLogout, setUser }) => {
       )}
 
       {/* Bottom Navigation */}
-      <nav className="fixed bottom-0 left-0 right-0 z-20 backdrop-blur-2xl border-t border-white/[0.04]" style={{ background: 'rgba(11,13,20,0.90)' }} data-testid="bottom-nav">
+      <nav className="fixed bottom-0 left-0 right-0 z-20 backdrop-blur-2xl border-t border-white/[0.05]" style={{ background: 'rgba(15,18,25,0.92)' }} data-testid="bottom-nav">
         <div className="flex items-center justify-around py-2.5 max-w-lg mx-auto">
           <button className="flex flex-col items-center gap-0.5 px-4 py-1.5" data-testid="nav-home">
             <Home className="w-5 h-5 text-[#9333EA]" strokeWidth={1.5} />
