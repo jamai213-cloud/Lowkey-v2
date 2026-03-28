@@ -3,16 +3,19 @@
 ## Original Problem Statement
 Build "LowKey", a premium adult social/dating app with Next.js. The app features user profiles, lounges, messaging, radio, events, games, After Dark spaces, and more.
 
-## Latest Pivot (March 2026)
-Complete UI replacement of the Home screen to feel like a premium, bright, and highly social dating app. NOT a refinement — a completely new visual composition from scratch.
+## Latest Pivots
 
-## Core Requirements (Current)
-1. **People-First Layout**: Hero section with horizontal scroll of large profile cards
-2. **Compact Top Bar**: Small avatar, username, online status, notifications, wallet
-3. **Visual Live Feed**: Replace text-based activity with visual feed cards
-4. **Lounges Secondary**: Horizontal card chips, not dominant
-5. **Functional Routing**: Clicking any user goes to `/profile/[userId]`
-6. **Premium Style**: Brighter luxury palette, high contrast, sharp edges, not gloomy
+### March 28, 2026 — Home Screen Rebuild
+Complete UI replacement of the Home screen to feel like a premium, bright, and highly social dating app. People-first layout with horizontal profile cards, stories, live feed, lounges, and bottom navigation.
+
+### March 28, 2026 — Unified Lounge Card System
+Unify all lounge cards across the entire app into a single design system. Same structure (name + LIVE indicator + description + user count + Enter CTA) on both Home page and Lounge list page. Visual themes differentiate lounges by color:
+- LowKey/Chill: purple (#8B5CF6)
+- After Dark/Night: amber (#F59E0B)
+- VIP/Exclusive: gold (#D4A54A)
+- Bold/Late Night: red (#EF4444)
+- Music: cyan (#06B6D4)
+- Default: indigo (#6366F1)
 
 ## Architecture
 - **Frontend**: Next.js 14 (App Router), React, Tailwind CSS
@@ -20,78 +23,49 @@ Complete UI replacement of the Home screen to feel like a premium, bright, and h
 - **Database**: MongoDB (local)
 - **Deployment**: Vercel (user-managed)
 
-## Key Pages
-- `/` — Home (Auth + Dashboard)
-- `/profile/[userId]` — User profile view
-- `/search` — Member search
-- `/lounge` — Chat lounges
-- `/inbox` — Direct messages
-- `/afterdark` — Private spaces
-- `/radio` — Live radio
-- `/games` — Mini games
-- `/events` — Events
-- `/profile/edit` — Edit own profile
-
 ## What's Been Implemented
 
+### March 28, 2026 — Unified Lounge Design System
+- Consistent card structure across Home page and Lounge list page
+- Theme mapping by lounge name keywords (purple, amber, gold, red, cyan, indigo)
+- Each card: name, LIVE indicator, description, dynamic user count, Enter CTA
+- After Dark banner uses same unified card structure
+- Active copy: "People are already inside", "Step in if you're ready"
+- No routing to /search from any lounge element
+- Testing: 12/12 frontend features verified
+
 ### March 28, 2026 — Home Screen Complete Rebuild
-- Completely new Home screen layout (premium dating app style)
-- Compact top bar: avatar, username "Hey, [name]", online status, wallet, notifications, settings
-- Hero Discover section: horizontal scroll of large profile cards (155x210px) with photos, names, online indicators, verification badges
-- Stories row with gradient rings and Add Story button
-- Connection requests inline cards
-- 2-up featured profiles grid (3:4 aspect ratio)
-- Visual Live Feed ("Happening Now") with user images, action text, timestamps
-- After Dark banner (slim, gradient)
-- Active Lounges horizontal scroll with accent-colored cards
-- Quick Access row (Radio, Games, Inbox)
-- Bottom navigation (Home, Search, Lounge, After Dark, Profile)
-- `/profile/[userId]` dynamic route: full hero photo, name, age, badges, Connect/Message/Like actions, stats, gallery
-- All profile clicks route to `/profile/[userId]` (not /search)
-- Testing: 13/13 backend APIs passing, 9/9 frontend features verified
+- Premium dating-app Home screen from scratch
+- Compact top bar, Hero Discover section, Stories, Live Feed, Lounges, Quick Access, Bottom Nav
+- `/profile/[userId]` dynamic route
+- Testing: 13/13 backend, 9/9 frontend verified
 
 ### Previous Sessions
-- Auth system (login/register with SHA-256 hashed passwords)
-- Radio bar layout fix
-- Professional notification system with sound
-- Event deletion for creators/founders
-- Message & status expiry (12h/24h)
-- Dashboard stories panel
-- "Add Story" functionality
-- Mobile-friendliness sweep
-- Game stubs (Ice Breaker, Tic-Tac-Toe — client-only)
+- Auth, Radio, Notifications, Events, Stories, Mobile fixes, Game stubs
 
 ## Prioritized Backlog
 
 ### P0 (Done)
 - [x] Complete Home screen visual rebuild
+- [x] Unified lounge card design system
 
 ### P1 (Next)
-- [ ] Apply new design system to Search, Inbox, Lounge pages
-- [ ] Fix Vercel deployment synchronization (recurring issue)
+- [ ] Apply new design system to Search, Inbox pages
+- [ ] Fix Vercel deployment synchronization
 
 ### P2
-- [ ] Real activity tracking backend (currently uses member activity + notifications)
-- [ ] Real multiplayer games (currently client-side stubs)
-- [ ] Push notifications (service worker)
+- [ ] Real activity tracking backend
+- [ ] Real multiplayer games
+- [ ] Push notifications
 
 ### P3
 - [ ] Image compression for uploads
 - [ ] Analytics backend
-- [ ] Profile verification flow improvements
-
-## DB Schema
-- **users**: id, email, displayName, avatar, verified, role, bio, friends
-- **lounges**: id, name, description, theme, members, memberCount
-- **stories**: id, userId, type, content, createdAt, viewedBy
-- **notifications**: id, userId, type, title, message, read, createdAt
-- **lounge_messages**: id, loungeId, createdAt, content
 
 ## Test Credentials
 - Email: `kinglowkey@hotmail.com`
 - Password: `password123`
 
 ## Known Issues
-1. External preview URL unreliable (platform infrastructure issue)
+1. External preview URL unreliable (platform issue)
 2. Multiplayer game logic is client-side only (mocked)
-3. Live feed supplements real notifications with member activity when insufficient notifications exist
